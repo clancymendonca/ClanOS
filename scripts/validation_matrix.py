@@ -78,6 +78,16 @@ def main() -> int:
             args.smoke_timeout,
         ),
         (
+            "phase7-storage-check",
+            [
+                "python",
+                "scripts/phase7_storage_check.py",
+                "--timeout",
+                str(args.smoke_timeout),
+            ],
+            None,
+        ),
+        (
             "phase5-soak-check",
             [
                 "python",
