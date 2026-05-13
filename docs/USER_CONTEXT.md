@@ -1,6 +1,6 @@
 # User Context Groundwork
 
-Phase 17 prepares descriptor-level user entry contexts. It adds user segment selectors and builds an iret-style frame for a validated image entry point, but it does not enter Ring 3.
+Phase 17 prepares descriptor-level user entry contexts. It adds user segment selectors and builds an iret-style frame for a validated image entry point, but it does not enter Ring 3. Phase 18 consumes these descriptors in a controlled trampoline result path.
 
 ## Context Contents
 
@@ -44,4 +44,4 @@ Phase17-UserContext: contexts=..., rejected=..., user_code=..., user_data=..., e
 
 ## Safety Boundary
 
-Phase 17 prepares the data needed for a future transition. It does not execute `iretq`, switch CR3, enter Ring 3, or jump to ELF code.
+Phase 17 prepares the data needed for a future transition. It does not execute `iretq`, switch CR3, enter Ring 3, or jump to ELF code. Phase 18 adds controlled entry/trap metadata, but still does not run arbitrary ELF code.

@@ -47,6 +47,9 @@ pub enum SyscallId {
     TotalUserPageTablePages = 40,
     UserContextCount = 41,
     RejectedUserContextCount = 42,
+    Ring3EntryCount = 43,
+    Ring3TrapCount = 44,
+    RejectedRing3Count = 45,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -315,6 +318,24 @@ pub fn invoke_raw(id: u64, arg0: u64) -> Result<u64, SyscallError> {
                 return Err(SyscallError::InvalidArgument);
             }
             Ok(crate::task::program_loader::status().rejected_user_context_count)
+        }
+        x if x == SyscallId::Ring3EntryCount as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::task::program_loader::status().ring3_entry_count)
+        }
+        x if x == SyscallId::Ring3TrapCount as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::task::program_loader::status().ring3_trap_count)
+        }
+        x if x == SyscallId::RejectedRing3Count as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::task::program_loader::status().rejected_ring3_count)
         }
         _ => Err(SyscallError::InvalidSyscall),
     }

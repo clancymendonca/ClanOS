@@ -73,6 +73,7 @@ pub enum ProcessLoadState {
     FrameBacked,
     PageTableReady,
     UserContextReady,
+    UserTrapped,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

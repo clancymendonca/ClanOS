@@ -292,6 +292,18 @@ Checklist: `docs/phase-17-checklist.md`
 
 User context deep dive: `docs/USER_CONTEXT.md`
 
+### Phase 18 — Controlled Ring 3 Trampoline
+
+* controlled user-entry/trap result records
+* reserved user trap vector metadata
+* blocked `UserTrapped` process metadata
+
+Status: ✅ Complete (validated 2026-05-13; controlled Ring 3 trampoline smoke)
+
+Checklist: `docs/phase-18-checklist.md`
+
+Ring 3 trampoline deep dive: `docs/RING3_TRAMPOLINE.md`
+
 ---
 
 # Project Structure
@@ -305,6 +317,7 @@ AresOS
 │   ├── src/
 │   │   ├── main.rs            kernel entry point
 │   │   ├── device.rs          device registry + PCI discovery skeleton
+│   │   ├── ring3_trampoline.rs controlled user-entry trap records
 │   │   ├── block.rs           block-device manager
 │   │   ├── security.rs        identity + permission policy primitives
 │   │   ├── exec_image.rs      executable image parser and validation
@@ -459,6 +472,12 @@ Phase 17 user-context check:
 
 ```
 ./scripts/phase17-user-context-check --timeout 20
+```
+
+Phase 18 controlled Ring 3 check:
+
+```
+./scripts/phase18-ring3-check --timeout 20
 ```
 
 Full validation matrix (QEMU-backed):

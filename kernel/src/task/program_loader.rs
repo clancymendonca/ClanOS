@@ -66,6 +66,7 @@ pub enum ProgramLoadError {
     FrameBackingRejected,
     PageTableRejected,
     UserContextRejected,
+    Ring3TrampolineRejected,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -94,6 +95,9 @@ pub struct LoaderStatus {
     pub total_user_page_table_pages: u64,
     pub user_context_count: u64,
     pub rejected_user_context_count: u64,
+    pub ring3_entry_count: u64,
+    pub ring3_trap_count: u64,
+    pub rejected_ring3_count: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -129,6 +133,12 @@ pub struct UserContextProgramImage {
     pub context: crate::user_context::UserContextDescriptor,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Ring3TrampolineProgramImage {
+    pub user_context: UserContextProgramImage,
+    pub result: crate::ring3_trampoline::Ring3TrampolineResult,
+}
+
 static LAUNCH_COUNT: AtomicU64 = AtomicU64::new(0);
 static FAILED_LAUNCH_COUNT: AtomicU64 = AtomicU64::new(0);
 static DENIED_LAUNCH_COUNT: AtomicU64 = AtomicU64::new(0);
@@ -149,6 +159,9 @@ static REJECTED_USER_PAGE_TABLE_COUNT: AtomicU64 = AtomicU64::new(0);
 static TOTAL_USER_PAGE_TABLE_PAGES: AtomicU64 = AtomicU64::new(0);
 static USER_CONTEXT_COUNT: AtomicU64 = AtomicU64::new(0);
 static REJECTED_USER_CONTEXT_COUNT: AtomicU64 = AtomicU64::new(0);
+static RING3_ENTRY_COUNT: AtomicU64 = AtomicU64::new(0);
+static RING3_TRAP_COUNT: AtomicU64 = AtomicU64::new(0);
+static REJECTED_RING3_COUNT: AtomicU64 = AtomicU64::new(0);
 
 pub fn parse_manifest(contents: &str) -> Result<ProgramManifest, ProgramLoadError> {
     let mut lines = contents.lines();
@@ -315,6 +328,9 @@ pub fn status() -> LoaderStatus {
         total_user_page_table_pages: TOTAL_USER_PAGE_TABLE_PAGES.load(Ordering::Relaxed),
         user_context_count: USER_CONTEXT_COUNT.load(Ordering::Relaxed),
         rejected_user_context_count: REJECTED_USER_CONTEXT_COUNT.load(Ordering::Relaxed),
+        ring3_entry_count: RING3_ENTRY_COUNT.load(Ordering::Relaxed),
+        ring3_trap_count: RING3_TRAP_COUNT.load(Ordering::Relaxed),
+        rejected_ring3_count: REJECTED_RING3_COUNT.load(Ordering::Relaxed),
     }
 }
 
@@ -623,6 +639,48 @@ pub fn phase17_smoke_check() -> bool {
     prepared && after.user_context_count > before.user_context_count
 }
 
+pub fn enter_controlled_ring3_trampoline(
+    credentials: crate::security::Credentials,
+    name: &str,
+) -> Result<Ring3TrampolineProgramImage, ProgramLoadError> {
+    let user_context = prepare_user_context(credentials, name)?;
+    let result = crate::ring3_trampoline::enter_controlled_trampoline(&user_context.context)
+        .map_err(|_| {
+            REJECTED_RING3_COUNT.fetch_add(1, Ordering::Relaxed);
+            ProgramLoadError::Ring3TrampolineRejected
+        })?;
+
+    RING3_ENTRY_COUNT.fetch_add(1, Ordering::Relaxed);
+    if result.trapped_back {
+        RING3_TRAP_COUNT.fetch_add(1, Ordering::Relaxed);
+    }
+    record_ring3_trap_process(
+        credentials,
+        &user_context.page_table.backed.mapped.prepared,
+        &user_context.page_table.backed.backed,
+        &result,
+    );
+
+    Ok(Ring3TrampolineProgramImage {
+        user_context,
+        result,
+    })
+}
+
+pub fn phase18_smoke_check() -> bool {
+    let before = status();
+    let entered = enter_controlled_ring3_trampoline(
+        crate::security::Credentials::shell_user(),
+        "hello",
+    )
+    .map(|entered| entered.result.ring3_entered && entered.result.trapped_back)
+    .unwrap_or(false);
+    let after = status();
+    entered
+        && after.ring3_entry_count > before.ring3_entry_count
+        && after.ring3_trap_count > before.ring3_trap_count
+}
+
 fn validate_manifest_image(
     manifest: &ProgramManifest,
 ) -> (Option<crate::exec_image::ExecutableImage>, Option<crate::exec_image::ImageLoadError>) {
@@ -846,6 +904,46 @@ fn record_user_context_process(
     };
     if let Some(pid) = crate::task::process::create_kernel_process_with_metadata(
         "image-user-context",
+        tick,
+        credentials,
+        metadata,
+        load,
+    ) {
+        let _ = crate::task::process::set_process_state(pid, crate::task::process::ProcessState::Blocked);
+    }
+}
+
+fn record_ring3_trap_process(
+    credentials: crate::security::Credentials,
+    prepared: &PreparedProgramImage,
+    backed: &crate::frame_backing::FrameBackedImage,
+    result: &crate::ring3_trampoline::Ring3TrampolineResult,
+) {
+    let tick =
+        crate::performance::metrics::TICK_COUNTER.load(core::sync::atomic::Ordering::Relaxed);
+    let metadata = crate::task::process::ProcessImageMetadata {
+        source_path: static_source_path(&prepared.program.source_path),
+        format: prepared.image.format,
+        entry_point: result.entry_rip,
+        segment_count: prepared.image.segments.len(),
+        address_space_id: Some(backed.address_space_id),
+        trust: prepared.image.trust,
+        owner: credentials,
+    };
+    let load = crate::task::process::ProcessLoadMetadata {
+        state: crate::task::process::ProcessLoadState::UserTrapped,
+        source_path: static_source_path(&prepared.image.source_path),
+        entry_point: result.entry_rip,
+        planned_pages: backed.total_pages,
+        region_count: backed.regions.len(),
+        stack_pages: prepared.load_plan.stack_pages,
+        mapping_id: Some(backed.mapping_id),
+        copied_bytes: backed.copied_bytes,
+        zero_filled_bytes: backed.zero_filled_bytes,
+        executable_pages: backed.executable_pages,
+    };
+    if let Some(pid) = crate::task::process::create_kernel_process_with_metadata(
+        "image-ring3-trap",
         tick,
         credentials,
         metadata,

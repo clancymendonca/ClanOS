@@ -188,6 +188,16 @@ def main() -> int:
             None,
         ),
         (
+            "phase18-ring3-check",
+            [
+                "python",
+                "scripts/phase18_ring3_check.py",
+                "--timeout",
+                str(args.smoke_timeout),
+            ],
+            None,
+        ),
+        (
             "phase5-soak-check",
             [
                 "python",

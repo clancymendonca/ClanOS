@@ -27,6 +27,7 @@ pub mod load_plan;
 pub mod mapping_stub;
 pub mod memory;
 pub mod performance;
+pub mod ring3_trampoline;
 pub mod serial;
 pub mod security;
 pub mod storage;

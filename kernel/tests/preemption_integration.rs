@@ -946,3 +946,54 @@ fn phase17_loader_process_metadata_syscalls_and_smoke_work() {
     );
     assert!(kernel::task::program_loader::phase17_smoke_check());
 }
+
+#[test_case]
+fn phase18_controlled_ring3_trampoline_enters_and_traps_back() {
+    kernel::storage::format().expect("format should seed image manifests");
+    let entered = kernel::task::program_loader::enter_controlled_ring3_trampoline(
+        security::Credentials::shell_user(),
+        "hello",
+    )
+    .expect("controlled ring3 trampoline should run");
+    assert!(entered.result.ring3_entered);
+    assert!(entered.result.trapped_back);
+    assert_eq!(entered.result.trap_vector, kernel::interrupts::USER_TRAP_VECTOR);
+}
+
+#[test_case]
+fn phase18_process_metadata_syscalls_and_smoke_work() {
+    kernel::storage::format().expect("format should seed image manifests");
+    let before = kernel::task::program_loader::status();
+    let entered = kernel::task::program_loader::enter_controlled_ring3_trampoline(
+        security::Credentials::shell_user(),
+        "hello",
+    )
+    .expect("controlled ring3 trampoline should run");
+    let after = kernel::task::program_loader::status();
+    assert!(after.ring3_entry_count > before.ring3_entry_count);
+    assert!(after.ring3_trap_count > before.ring3_trap_count);
+
+    let has_trap_record = process::get_all_processes_with_details()
+        .iter()
+        .any(|(_, name, state, _, owner, _, load)| {
+            *name == "image-ring3-trap"
+                && *state == process::ProcessState::Blocked
+                && *owner == security::Credentials::shell_user()
+                && load
+                    .as_ref()
+                    .map(|load| {
+                        load.state == process::ProcessLoadState::UserTrapped
+                            && load.entry_point == entered.result.entry_rip
+                    })
+                    .unwrap_or(false)
+        });
+    assert!(has_trap_record);
+
+    assert!(syscall::invoke_raw(syscall::SyscallId::Ring3EntryCount as u64, 0).unwrap() > 0);
+    assert!(syscall::invoke_raw(syscall::SyscallId::Ring3TrapCount as u64, 0).unwrap() > 0);
+    assert_eq!(
+        syscall::invoke_raw(syscall::SyscallId::Ring3EntryCount as u64, 1),
+        Err(syscall::SyscallError::InvalidArgument)
+    );
+    assert!(kernel::task::program_loader::phase18_smoke_check());
+}

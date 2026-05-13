@@ -269,6 +269,24 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         user_selectors.data.0,
         phase17_context_ok
     );
+    let phase18_ring3_ok = kernel::task::program_loader::phase18_smoke_check();
+    let ring3_status = kernel::task::program_loader::status();
+    println!(
+        "Phase18-Ring3: entries={}, traps={}, rejected={}, trap_vector={}, survived={}",
+        ring3_status.ring3_entry_count,
+        ring3_status.ring3_trap_count,
+        ring3_status.rejected_ring3_count,
+        kernel::interrupts::USER_TRAP_VECTOR,
+        phase18_ring3_ok
+    );
+    kernel::serial_println!(
+        "Phase18-Ring3: entries={}, traps={}, rejected={}, trap_vector={}, survived={}",
+        ring3_status.ring3_entry_count,
+        ring3_status.ring3_trap_count,
+        ring3_status.rejected_ring3_count,
+        kernel::interrupts::USER_TRAP_VECTOR,
+        phase18_ring3_ok
+    );
 
     // Display performance counters at startup.
     let counters = PerformanceCounters::read();
