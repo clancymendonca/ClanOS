@@ -108,6 +108,26 @@ def main() -> int:
             None,
         ),
         (
+            "phase10-security-check",
+            [
+                "python",
+                "scripts/phase10_security_check.py",
+                "--timeout",
+                str(args.smoke_timeout),
+            ],
+            None,
+        ),
+        (
+            "phase11-image-check",
+            [
+                "python",
+                "scripts/phase11_image_check.py",
+                "--timeout",
+                str(args.smoke_timeout),
+            ],
+            None,
+        ),
+        (
             "phase5-soak-check",
             [
                 "python",
