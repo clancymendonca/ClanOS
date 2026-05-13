@@ -162,6 +162,26 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         load_plan_status.total_planned_pages,
         phase12_load_plan_ok
     );
+    let phase13_mapping_ok = kernel::task::program_loader::phase13_smoke_check();
+    let mapping_status = kernel::task::program_loader::status();
+    println!(
+        "Phase13-MappingStub: mapped={}, rejected={}, pages={}, copied={}, zeroed={}, exec_blocked_ok={}",
+        mapping_status.mapped_image_count,
+        mapping_status.rejected_mapping_count,
+        mapping_status.total_mapped_pages,
+        mapping_status.copied_bytes,
+        mapping_status.zero_filled_bytes,
+        phase13_mapping_ok
+    );
+    kernel::serial_println!(
+        "Phase13-MappingStub: mapped={}, rejected={}, pages={}, copied={}, zeroed={}, exec_blocked_ok={}",
+        mapping_status.mapped_image_count,
+        mapping_status.rejected_mapping_count,
+        mapping_status.total_mapped_pages,
+        mapping_status.copied_bytes,
+        mapping_status.zero_filled_bytes,
+        phase13_mapping_ok
+    );
 
     // Display performance counters at startup.
     let counters = PerformanceCounters::read();

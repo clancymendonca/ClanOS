@@ -121,6 +121,26 @@ pub fn descriptor_for_load_plan(
     })
 }
 
+pub fn descriptor_for_mapped_image(mapped: &crate::mapping_stub::MappedImage) -> AddressSpaceDescriptor {
+    let regions = mapped
+        .regions
+        .iter()
+        .map(|region| VirtualRegion {
+            start: region.start,
+            size: region.size,
+            kind: kind_for_load_permissions(region.permissions),
+            flags: segment_flags_for_load_permissions(region.permissions),
+        })
+        .collect::<Vec<_>>();
+    let mut reservation = reservation_for_regions(&regions, 0);
+    reservation.mapping_state = MappingState::MappedStub;
+    AddressSpaceDescriptor {
+        id: mapped.address_space_id,
+        regions,
+        reservation,
+    }
+}
+
 pub fn validate_regions(regions: &[VirtualRegion]) -> Result<(), AddressSpaceError> {
     for (index, region) in regions.iter().enumerate() {
         if region.start < USER_MIN || region.size == 0 {

@@ -575,3 +575,149 @@ fn phase12_syscalls_and_smoke_report_load_plan_status() {
         Err("unsupported executable image")
     );
 }
+
+#[test_case]
+fn phase13_mapping_stub_generates_frame_tokens_and_accounting() {
+    let image = kernel::exec_image::parse_elf64_image(
+        "hello",
+        "/bin/hello.elf",
+        kernel::storage::phase11_sample_elf_image().as_bytes(),
+        kernel::task::program_loader::ProgramTrust::User,
+        security::Credentials::shell_user().user,
+    )
+    .expect("sample ELF image should parse");
+    let plan = kernel::load_plan::build_load_plan(&image).expect("load plan should build");
+    let mapped = kernel::mapping_stub::map_load_plan(
+        security::Credentials::shell_user(),
+        kernel::mapping_stub::MappingId::from_raw(13),
+        kernel::address_space::AddressSpaceId::from_raw(13),
+        &plan,
+    )
+    .expect("mapping stub should build");
+    assert_eq!(mapped.total_pages, plan.total_pages);
+    assert_eq!(mapped.regions[0].pages.len(), plan.total_pages);
+    assert_eq!(mapped.regions[0].pages[0].frame.as_u64(), 130_000);
+    assert_eq!(mapped.copied_bytes, 4);
+    assert_eq!(mapped.zero_filled_bytes, 4092);
+    assert_eq!(mapped.state, kernel::address_space::MappingState::MappedStub);
+}
+
+#[test_case]
+fn phase13_registry_add_list_lookup_and_status() {
+    let image = kernel::exec_image::parse_elf64_image(
+        "hello",
+        "/bin/hello.elf",
+        kernel::storage::phase11_sample_elf_image().as_bytes(),
+        kernel::task::program_loader::ProgramTrust::User,
+        security::Credentials::shell_user().user,
+    )
+    .expect("sample ELF image should parse");
+    let plan = kernel::load_plan::build_load_plan(&image).expect("load plan should build");
+    let before = kernel::mapping_stub::status();
+    let mapped = kernel::mapping_stub::register_mapping(
+        security::Credentials::shell_user(),
+        kernel::address_space::AddressSpaceId::from_raw(14),
+        &plan,
+    )
+    .expect("registry mapping should succeed");
+    let listed = kernel::mapping_stub::list_mappings();
+    assert!(listed.iter().any(|entry| entry.id == mapped.id));
+    assert_eq!(
+        kernel::mapping_stub::get_mapping(mapped.id)
+            .expect("lookup should find mapping")
+            .image_name,
+        "hello"
+    );
+    let after = kernel::mapping_stub::status();
+    assert!(after.mapped_count > before.mapped_count);
+    assert!(after.total_pages >= before.total_pages + mapped.total_pages);
+}
+
+#[test_case]
+fn phase13_mapping_rejects_unsafe_permissions() {
+    let unsafe_plan = kernel::load_plan::LoadPlan {
+        image_name: "unsafe".into(),
+        source_path: "/bin/unsafe.elf".into(),
+        entry_point: 0x400000,
+        regions: alloc::vec![kernel::load_plan::LoadRegion {
+            start: 0x400000,
+            size: kernel::load_plan::PAGE_SIZE,
+            page_count: 1,
+            permissions: kernel::load_plan::LoadPermissions::from_bits(
+                kernel::load_plan::LoadPermissions::WRITE
+                    | kernel::load_plan::LoadPermissions::EXECUTE,
+            ),
+            actions: alloc::vec![],
+        }],
+        total_pages: 1,
+        stack_pages: 0,
+    };
+    assert_eq!(
+        kernel::mapping_stub::map_load_plan(
+            security::Credentials::shell_user(),
+            kernel::mapping_stub::MappingId::from_raw(99),
+            kernel::address_space::AddressSpaceId::from_raw(99),
+            &unsafe_plan,
+        ),
+        Err(kernel::mapping_stub::MappingStubError::UnsafePermissions)
+    );
+}
+
+#[test_case]
+fn phase13_loader_map_path_process_metadata_and_syscalls() {
+    kernel::storage::format().expect("format should seed image manifests");
+    let before = kernel::task::program_loader::status();
+    let mapped = kernel::task::program_loader::map_prepared_program(
+        security::Credentials::shell_user(),
+        "hello",
+    )
+    .expect("map path should succeed");
+    assert_eq!(mapped.mapped.total_pages, 1);
+    assert_eq!(
+        mapped.address_space.reservation.mapping_state,
+        kernel::address_space::MappingState::MappedStub
+    );
+
+    let after = kernel::task::program_loader::status();
+    assert!(after.mapped_image_count > before.mapped_image_count);
+    assert!(after.total_mapped_pages > before.total_mapped_pages);
+    assert!(after.copied_bytes > before.copied_bytes);
+    assert!(after.zero_filled_bytes > before.zero_filled_bytes);
+
+    let has_mapped_record = process::get_all_processes_with_details()
+        .iter()
+        .any(|(_, name, state, _, owner, _, load)| {
+            *name == "image-mapped-stub"
+                && *state == process::ProcessState::Blocked
+                && *owner == security::Credentials::shell_user()
+                && load
+                    .as_ref()
+                    .map(|load| {
+                        load.state == process::ProcessLoadState::MappedStub
+                            && load.mapping_id == Some(mapped.mapped.id)
+                            && load.copied_bytes == mapped.mapped.copied_bytes
+                            && load.zero_filled_bytes == mapped.mapped.zero_filled_bytes
+                    })
+                    .unwrap_or(false)
+        });
+    assert!(has_mapped_record);
+
+    assert!(syscall::invoke_raw(syscall::SyscallId::MappedImageCount as u64, 0).unwrap() > 0);
+    assert!(syscall::invoke_raw(syscall::SyscallId::TotalMappedPages as u64, 0).unwrap() > 0);
+    assert!(syscall::invoke_raw(syscall::SyscallId::MappedCopiedBytes as u64, 0).unwrap() > 0);
+    assert!(syscall::invoke_raw(syscall::SyscallId::MappedZeroFilledBytes as u64, 0).unwrap() > 0);
+    assert_eq!(
+        syscall::invoke_raw(syscall::SyscallId::MappedImageCount as u64, 1),
+        Err(syscall::SyscallError::InvalidArgument)
+    );
+}
+
+#[test_case]
+fn phase13_smoke_preserves_unsupported_execution() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase13_smoke_check());
+    assert_eq!(
+        kernel::task::userspace::run_program("hello", &[]),
+        Err("unsupported executable image")
+    );
+}

@@ -62,6 +62,7 @@ pub enum ProgramLoadError {
     UnsupportedExecution,
     ImageInvalid,
     LoadPlanRejected,
+    MappingRejected,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -77,6 +78,11 @@ pub struct LoaderStatus {
     pub prepared_image_count: u64,
     pub rejected_load_plan_count: u64,
     pub total_planned_pages: u64,
+    pub mapped_image_count: u64,
+    pub rejected_mapping_count: u64,
+    pub total_mapped_pages: u64,
+    pub copied_bytes: u64,
+    pub zero_filled_bytes: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -87,6 +93,13 @@ pub struct PreparedProgramImage {
     pub address_space: crate::address_space::AddressSpaceDescriptor,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MappedProgramImage {
+    pub prepared: PreparedProgramImage,
+    pub mapped: crate::mapping_stub::MappedImage,
+    pub address_space: crate::address_space::AddressSpaceDescriptor,
+}
+
 static LAUNCH_COUNT: AtomicU64 = AtomicU64::new(0);
 static FAILED_LAUNCH_COUNT: AtomicU64 = AtomicU64::new(0);
 static DENIED_LAUNCH_COUNT: AtomicU64 = AtomicU64::new(0);
@@ -94,6 +107,11 @@ static UNSUPPORTED_EXECUTION_COUNT: AtomicU64 = AtomicU64::new(0);
 static PREPARED_IMAGE_COUNT: AtomicU64 = AtomicU64::new(0);
 static REJECTED_LOAD_PLAN_COUNT: AtomicU64 = AtomicU64::new(0);
 static TOTAL_PLANNED_PAGES: AtomicU64 = AtomicU64::new(0);
+static MAPPED_IMAGE_COUNT: AtomicU64 = AtomicU64::new(0);
+static REJECTED_MAPPING_COUNT: AtomicU64 = AtomicU64::new(0);
+static TOTAL_MAPPED_PAGES: AtomicU64 = AtomicU64::new(0);
+static COPIED_BYTES: AtomicU64 = AtomicU64::new(0);
+static ZERO_FILLED_BYTES: AtomicU64 = AtomicU64::new(0);
 
 pub fn parse_manifest(contents: &str) -> Result<ProgramManifest, ProgramLoadError> {
     let mut lines = contents.lines();
@@ -247,6 +265,11 @@ pub fn status() -> LoaderStatus {
         prepared_image_count: PREPARED_IMAGE_COUNT.load(Ordering::Relaxed),
         rejected_load_plan_count: REJECTED_LOAD_PLAN_COUNT.load(Ordering::Relaxed),
         total_planned_pages: TOTAL_PLANNED_PAGES.load(Ordering::Relaxed),
+        mapped_image_count: MAPPED_IMAGE_COUNT.load(Ordering::Relaxed),
+        rejected_mapping_count: REJECTED_MAPPING_COUNT.load(Ordering::Relaxed),
+        total_mapped_pages: TOTAL_MAPPED_PAGES.load(Ordering::Relaxed),
+        copied_bytes: COPIED_BYTES.load(Ordering::Relaxed),
+        zero_filled_bytes: ZERO_FILLED_BYTES.load(Ordering::Relaxed),
     }
 }
 
@@ -384,6 +407,58 @@ pub fn phase12_smoke_check() -> bool {
         && after.unsupported_execution_count > before.unsupported_execution_count
 }
 
+pub fn map_prepared_program(
+    credentials: crate::security::Credentials,
+    name: &str,
+) -> Result<MappedProgramImage, ProgramLoadError> {
+    let prepared = prepare_program_image(credentials, name)?;
+    let mapping = crate::mapping_stub::register_mapping(
+        credentials,
+        prepared.address_space.id,
+        &prepared.load_plan,
+    )
+    .map_err(|_| {
+        REJECTED_MAPPING_COUNT.fetch_add(1, Ordering::Relaxed);
+        ProgramLoadError::MappingRejected
+    })?;
+    let mapped_address_space = crate::address_space::descriptor_for_mapped_image(&mapping);
+
+    MAPPED_IMAGE_COUNT.fetch_add(1, Ordering::Relaxed);
+    TOTAL_MAPPED_PAGES.fetch_add(mapping.total_pages as u64, Ordering::Relaxed);
+    COPIED_BYTES.fetch_add(mapping.copied_bytes as u64, Ordering::Relaxed);
+    ZERO_FILLED_BYTES.fetch_add(mapping.zero_filled_bytes as u64, Ordering::Relaxed);
+    record_mapped_process(credentials, &prepared, &mapping);
+
+    Ok(MappedProgramImage {
+        prepared,
+        mapped: mapping,
+        address_space: mapped_address_space,
+    })
+}
+
+pub fn phase13_smoke_check() -> bool {
+    let before = status();
+    let mapped = map_prepared_program(crate::security::Credentials::shell_user(), "hello")
+        .map(|mapped| {
+            mapped.mapped.total_pages > 0
+                && mapped.mapped.copied_bytes > 0
+                && mapped.mapped.zero_filled_bytes > 0
+                && mapped.address_space.reservation.mapping_state
+                    == crate::address_space::MappingState::MappedStub
+        })
+        .unwrap_or(false);
+    let blocked = crate::task::userspace::run_program("hello", &[])
+        .map(|_| false)
+        .unwrap_or(true);
+    let after = status();
+    mapped
+        && blocked
+        && after.mapped_image_count > before.mapped_image_count
+        && after.total_mapped_pages > before.total_mapped_pages
+        && after.copied_bytes > before.copied_bytes
+        && after.zero_filled_bytes > before.zero_filled_bytes
+}
+
 fn validate_manifest_image(
     manifest: &ProgramManifest,
 ) -> (Option<crate::exec_image::ExecutableImage>, Option<crate::exec_image::ImageLoadError>) {
@@ -442,9 +517,52 @@ fn record_prepared_process(
         planned_pages: load_plan.total_pages,
         region_count: load_plan.regions.len(),
         stack_pages: load_plan.stack_pages,
+        mapping_id: None,
+        copied_bytes: 0,
+        zero_filled_bytes: 0,
+        executable_pages: 0,
     };
     if let Some(pid) = crate::task::process::create_kernel_process_with_metadata(
         "image-prepare",
+        tick,
+        credentials,
+        metadata,
+        load,
+    ) {
+        let _ = crate::task::process::set_process_state(pid, crate::task::process::ProcessState::Blocked);
+    }
+}
+
+fn record_mapped_process(
+    credentials: crate::security::Credentials,
+    prepared: &PreparedProgramImage,
+    mapped: &crate::mapping_stub::MappedImage,
+) {
+    let tick =
+        crate::performance::metrics::TICK_COUNTER.load(core::sync::atomic::Ordering::Relaxed);
+    let metadata = crate::task::process::ProcessImageMetadata {
+        source_path: static_source_path(&prepared.program.source_path),
+        format: prepared.image.format,
+        entry_point: prepared.image.entry_point,
+        segment_count: prepared.image.segments.len(),
+        address_space_id: Some(mapped.address_space_id),
+        trust: prepared.image.trust,
+        owner: credentials,
+    };
+    let load = crate::task::process::ProcessLoadMetadata {
+        state: crate::task::process::ProcessLoadState::MappedStub,
+        source_path: static_source_path(&prepared.image.source_path),
+        entry_point: prepared.load_plan.entry_point,
+        planned_pages: mapped.total_pages,
+        region_count: mapped.regions.len(),
+        stack_pages: prepared.load_plan.stack_pages,
+        mapping_id: Some(mapped.id),
+        copied_bytes: mapped.copied_bytes,
+        zero_filled_bytes: mapped.zero_filled_bytes,
+        executable_pages: mapped.executable_pages,
+    };
+    if let Some(pid) = crate::task::process::create_kernel_process_with_metadata(
+        "image-mapped-stub",
         tick,
         credentials,
         metadata,

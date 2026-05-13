@@ -27,7 +27,7 @@ Address-space descriptors now include reservation metadata:
 - read-only pages
 - mapping state
 
-The mapping state remains `Planned` in Phase 12. These are accounting records only; no active page table is mutated by shell or loader prepare paths.
+The mapping state remains `Planned` in Phase 12. Phase 13 can convert a prepared plan into `MappedStub`, which is still accounting-only; no active page table is mutated by shell or loader paths.
 
 ## Loader Prepare Flow
 
@@ -42,18 +42,28 @@ ProcessMetadata --> ShellStatus[ShellStatus]
 
 The loader exposes `prepare_program_image(credentials, name)` for image programs. `run hello` still returns unsupported execution, preserving the Phase 11 safety boundary.
 
+Phase 13 adds `map_prepared_program(credentials, name)`, which takes the same validated plan and creates deterministic frame-token mapping records. It records copy and zero-fill byte counts, but does not write image bytes into executable memory.
+
 ## Shell And Smoke
 
 The shell exposes:
 
 - `bin prepare <program>`
+- `bin map <program>`
 - richer `bin info <program>`
 - `bin plans` or `loadplans`
+- `bin mappings`
 
 Boot emits:
 
 ```text
 Phase12-LoadPlan: prepared=..., rejected=..., pages=..., exec_blocked_ok=true
+```
+
+Phase 13 additionally emits:
+
+```text
+Phase13-MappingStub: mapped=..., rejected=..., pages=..., copied=..., zeroed=..., exec_blocked_ok=true
 ```
 
 ## Deferred Work

@@ -207,7 +207,9 @@ fn execute_console_command(command: &str) {
             println!("  bin info <program>");
             println!("  bin validate <program>");
             println!("  bin prepare <program>");
+            println!("  bin map <program>");
             println!("  bin plans");
+            println!("  bin mappings");
             println!("  ls");
             println!("  cat <path>");
             println!("  touch <path>");
@@ -244,6 +246,7 @@ fn execute_console_command(command: &str) {
                             crate::task::process::ProcessLoadState::Prepared => "prepared",
                             crate::task::process::ProcessLoadState::Rejected => "rejected",
                             crate::task::process::ProcessLoadState::ExecutionBlocked => "blocked",
+                            crate::task::process::ProcessLoadState::MappedStub => "mapped",
                         })
                         .unwrap_or("-");
                     println!(
@@ -334,13 +337,15 @@ fn execute_console_command(command: &str) {
             }
             let status = crate::task::program_loader::status();
             println!(
-                "Program loader: programs={}, images={}/{}, invalid_images={}, prepared={}, planned_pages={}, launches={}, failed_launches={}",
+                "Program loader: programs={}, images={}/{}, invalid_images={}, prepared={}, planned_pages={}, mapped={}, mapped_pages={}, launches={}, failed_launches={}",
                 status.program_count,
                 status.valid_image_count,
                 status.image_count,
                 status.invalid_image_count,
                 status.prepared_image_count,
                 status.total_planned_pages,
+                status.mapped_image_count,
+                status.total_mapped_pages,
                 status.launch_count,
                 status.failed_launch_count
             );
@@ -396,15 +401,46 @@ fn execute_console_command(command: &str) {
             ),
             Err(err) => println!("program prepare error: {:?}", err),
         },
+        ["bin", "map", program] => match crate::task::program_loader::map_prepared_program(
+            crate::security::current_credentials(),
+            program,
+        ) {
+            Ok(mapped) => println!(
+                "Mapped {}: id={}, pages={}, copied={}, zeroed={}, state={:?}",
+                mapped.mapped.image_name,
+                mapped.mapped.id.as_u64(),
+                mapped.mapped.total_pages,
+                mapped.mapped.copied_bytes,
+                mapped.mapped.zero_filled_bytes,
+                mapped.mapped.state
+            ),
+            Err(err) => println!("program map error: {:?}", err),
+        },
         ["bin", "plans"] | ["loadplans"] => {
             let status = crate::task::program_loader::status();
             println!(
-                "Load plans: prepared={}, rejected={}, planned_pages={}, exec_blocked={}",
+                "Load plans: prepared={}, rejected={}, planned_pages={}, mapped={}, mapped_pages={}, exec_blocked={}",
                 status.prepared_image_count,
                 status.rejected_load_plan_count,
                 status.total_planned_pages,
+                status.mapped_image_count,
+                status.total_mapped_pages,
                 status.unsupported_execution_count
             );
+        }
+        ["bin", "mappings"] => {
+            for mapping in crate::mapping_stub::list_mappings() {
+                println!(
+                    "Mapping {}: image={}, asid={}, pages={}, copied={}, zeroed={}, state={:?}",
+                    mapping.id.as_u64(),
+                    mapping.image_name,
+                    mapping.address_space_id.as_u64(),
+                    mapping.total_pages,
+                    mapping.copied_bytes,
+                    mapping.zero_filled_bytes,
+                    mapping.state
+                );
+            }
         }
         ["ls"] => match crate::storage::list_files() {
             Ok(files) => {

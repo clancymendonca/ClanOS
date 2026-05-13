@@ -71,3 +71,5 @@ Phase 10 intentionally does not provide CPU privilege separation, page-table iso
 Phase 11 adds descriptor-only address spaces and ELF64 validation, but still does not switch page tables or run arbitrary stored code.
 
 Phase 12 adds load-plan and reservation accounting for validated images. It still does not allocate executable user frames, mutate process page tables, switch CR3, enter Ring 3, or jump to stored ELF entry points.
+
+Phase 13 adds deterministic mapping stubs for prepared images. These stubs record owner credentials, frame tokens, mapped pages, copy bytes, and zero-fill bytes, but they remain policy and accounting records rather than hardware-enforced user mappings.

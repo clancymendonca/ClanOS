@@ -138,6 +138,16 @@ def main() -> int:
             None,
         ),
         (
+            "phase13-mapping-stub-check",
+            [
+                "python",
+                "scripts/phase13_mapping_stub_check.py",
+                "--timeout",
+                str(args.smoke_timeout),
+            ],
+            None,
+        ),
+        (
             "phase5-soak-check",
             [
                 "python",

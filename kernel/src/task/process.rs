@@ -69,6 +69,7 @@ pub enum ProcessLoadState {
     Prepared,
     Rejected,
     ExecutionBlocked,
+    MappedStub,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -79,6 +80,10 @@ pub struct ProcessLoadMetadata {
     pub planned_pages: usize,
     pub region_count: usize,
     pub stack_pages: usize,
+    pub mapping_id: Option<crate::mapping_stub::MappingId>,
+    pub copied_bytes: usize,
+    pub zero_filled_bytes: usize,
+    pub executable_pages: usize,
 }
 
 impl ProcessState {

@@ -232,6 +232,18 @@ Checklist: `docs/phase-12-checklist.md`
 
 Load-plan deep dive: `docs/LOAD_PLANS.md`
 
+### Phase 13 — Frame-Backed Mapping Stubs
+
+* deterministic mapping-stub records for prepared load plans
+* frame-token, copy-byte, and zero-fill accounting
+* mapped-stub process metadata without executable scheduling
+
+Status: ✅ Complete (validated 2026-05-13; mapping-stub smoke + execution-block preservation)
+
+Checklist: `docs/phase-13-checklist.md`
+
+Mapping-stub deep dive: `docs/MAPPING_STUBS.md`
+
 ---
 
 # Project Structure
@@ -250,6 +262,7 @@ AresOS
 │   │   ├── exec_image.rs      executable image parser and validation
 │   │   ├── address_space.rs   descriptor-only process address spaces
 │   │   ├── load_plan.rs       executable load-plan accounting
+│   │   ├── mapping_stub.rs    deterministic executable mapping stubs
 │   │   ├── lib.rs             shared kernel modules
 │   │   ├── interrupts.rs      IDT + IRQ handlers
 │   │   ├── memory.rs          paging + frame allocator
@@ -364,6 +377,12 @@ Phase 12 executable load-plan check:
 
 ```
 ./scripts/phase12-load-plan-check --timeout 20
+```
+
+Phase 13 mapping-stub check:
+
+```
+./scripts/phase13-mapping-stub-check --timeout 20
 ```
 
 Full validation matrix (QEMU-backed):

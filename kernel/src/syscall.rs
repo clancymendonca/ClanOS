@@ -28,6 +28,11 @@ pub enum SyscallId {
     RejectedLoadPlanCount = 21,
     TotalPlannedPages = 22,
     ExecutionBlockedCount = 23,
+    MappedImageCount = 24,
+    RejectedMappingCount = 25,
+    TotalMappedPages = 26,
+    MappedCopiedBytes = 27,
+    MappedZeroFilledBytes = 28,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -182,6 +187,36 @@ pub fn invoke_raw(id: u64, arg0: u64) -> Result<u64, SyscallError> {
                 return Err(SyscallError::InvalidArgument);
             }
             Ok(crate::task::program_loader::status().unsupported_execution_count)
+        }
+        x if x == SyscallId::MappedImageCount as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::task::program_loader::status().mapped_image_count)
+        }
+        x if x == SyscallId::RejectedMappingCount as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::task::program_loader::status().rejected_mapping_count)
+        }
+        x if x == SyscallId::TotalMappedPages as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::task::program_loader::status().total_mapped_pages)
+        }
+        x if x == SyscallId::MappedCopiedBytes as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::task::program_loader::status().copied_bytes)
+        }
+        x if x == SyscallId::MappedZeroFilledBytes as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::task::program_loader::status().zero_filled_bytes)
         }
         _ => Err(SyscallError::InvalidSyscall),
     }
