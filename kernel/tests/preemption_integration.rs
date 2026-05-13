@@ -759,3 +759,74 @@ fn phase14_frame_status_syscalls_and_smoke_work() {
         Err(syscall::SyscallError::InvalidArgument)
     );
 }
+
+#[test_case]
+fn phase15_frame_backing_consumes_owned_frames_and_accounts_actions() {
+    kernel::storage::format().expect("format should seed image manifests");
+    let frame_before = kernel::frame_ownership::status();
+    let backed = kernel::task::program_loader::back_mapped_program(
+        security::Credentials::shell_user(),
+        "hello",
+    )
+    .expect("frame backing should succeed");
+    assert_eq!(backed.backed.total_pages, 1);
+    assert_eq!(backed.backed.copied_bytes, 4);
+    assert_eq!(backed.backed.zero_filled_bytes, 4092);
+    assert_eq!(
+        backed.backed.state,
+        kernel::address_space::MappingState::FrameBacked
+    );
+    assert_eq!(backed.backed.regions[0].pages[0].copied_bytes, 4);
+    assert_eq!(backed.backed.regions[0].pages[0].zero_filled_bytes, 4092);
+    assert!(
+        kernel::frame_ownership::status().allocated_frames > frame_before.allocated_frames
+    );
+}
+
+#[test_case]
+fn phase15_loader_status_process_metadata_and_syscalls_report_backing() {
+    kernel::storage::format().expect("format should seed image manifests");
+    let before = kernel::task::program_loader::status();
+    let backed = kernel::task::program_loader::back_mapped_program(
+        security::Credentials::shell_user(),
+        "hello",
+    )
+    .expect("frame backing should succeed");
+    let after = kernel::task::program_loader::status();
+    assert!(after.frame_backed_image_count > before.frame_backed_image_count);
+    assert!(after.total_frame_backed_pages > before.total_frame_backed_pages);
+
+    let has_backed_record = process::get_all_processes_with_details()
+        .iter()
+        .any(|(_, name, state, _, owner, _, load)| {
+            *name == "image-frame-backed"
+                && *state == process::ProcessState::Blocked
+                && *owner == security::Credentials::shell_user()
+                && load
+                    .as_ref()
+                    .map(|load| {
+                        load.state == process::ProcessLoadState::FrameBacked
+                            && load.mapping_id == Some(backed.backed.mapping_id)
+                            && load.copied_bytes == backed.backed.copied_bytes
+                    })
+                    .unwrap_or(false)
+        });
+    assert!(has_backed_record);
+
+    assert!(syscall::invoke_raw(syscall::SyscallId::FrameBackedImageCount as u64, 0).unwrap() > 0);
+    assert!(syscall::invoke_raw(syscall::SyscallId::TotalFrameBackedPages as u64, 0).unwrap() > 0);
+    assert_eq!(
+        syscall::invoke_raw(syscall::SyscallId::FrameBackedImageCount as u64, 1),
+        Err(syscall::SyscallError::InvalidArgument)
+    );
+    assert_eq!(
+        kernel::task::userspace::run_program("hello", &[]),
+        Err("unsupported executable image")
+    );
+}
+
+#[test_case]
+fn phase15_smoke_reports_frame_backed_image_status() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase15_smoke_check());
+}

@@ -211,6 +211,29 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         frame_status.failed_allocation_count,
         phase14_frames_ok
     );
+    let phase15_backing_ok = kernel::task::program_loader::phase15_smoke_check();
+    let backing_status = kernel::task::program_loader::status();
+    let backing_frames = kernel::frame_ownership::status();
+    println!(
+        "Phase15-FrameBackedImage: backed={}, rejected={}, pages={}, frame_allocated={}, copied={}, zeroed={}, smoke_ok={}",
+        backing_status.frame_backed_image_count,
+        backing_status.rejected_frame_backing_count,
+        backing_status.total_frame_backed_pages,
+        backing_frames.allocated_frames,
+        backing_status.copied_bytes,
+        backing_status.zero_filled_bytes,
+        phase15_backing_ok
+    );
+    kernel::serial_println!(
+        "Phase15-FrameBackedImage: backed={}, rejected={}, pages={}, frame_allocated={}, copied={}, zeroed={}, smoke_ok={}",
+        backing_status.frame_backed_image_count,
+        backing_status.rejected_frame_backing_count,
+        backing_status.total_frame_backed_pages,
+        backing_frames.allocated_frames,
+        backing_status.copied_bytes,
+        backing_status.zero_filled_bytes,
+        phase15_backing_ok
+    );
 
     // Display performance counters at startup.
     let counters = PerformanceCounters::read();

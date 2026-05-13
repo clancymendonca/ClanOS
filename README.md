@@ -256,6 +256,18 @@ Checklist: `docs/phase-14-checklist.md`
 
 Frame ownership deep dive: `docs/FRAME_OWNERSHIP.md`
 
+### Phase 15 — Real Backing Frames For Load Plans
+
+* frame-backed image records for mapped executable pages
+* owned-frame consumption from the Phase 14 registry
+* copy and zero-fill accounting attached to backed pages
+
+Status: ✅ Complete (validated 2026-05-13; frame-backed image smoke)
+
+Checklist: `docs/phase-15-checklist.md`
+
+Frame-backed image deep dive: `docs/FRAME_BACKED_IMAGES.md`
+
 ---
 
 # Project Structure
@@ -272,6 +284,7 @@ AresOS
 │   │   ├── block.rs           block-device manager
 │   │   ├── security.rs        identity + permission policy primitives
 │   │   ├── exec_image.rs      executable image parser and validation
+│   │   ├── frame_backing.rs   frame-backed executable image records
 │   │   ├── frame_ownership.rs persistent frame ownership bookkeeping
 │   │   ├── address_space.rs   descriptor-only process address spaces
 │   │   ├── load_plan.rs       executable load-plan accounting
@@ -402,6 +415,12 @@ Phase 14 frame ownership check:
 
 ```
 ./scripts/phase14-frame-check --timeout 20
+```
+
+Phase 15 frame-backed image check:
+
+```
+./scripts/phase15-frame-backing-check --timeout 20
 ```
 
 Full validation matrix (QEMU-backed):

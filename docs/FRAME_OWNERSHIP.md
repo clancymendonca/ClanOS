@@ -41,4 +41,6 @@ Phase14-Frames: initialized=..., tracked=..., available=..., allocated=..., allo
 
 ## Safety Boundary
 
-Phase 14 is ownership bookkeeping. Phase 13 mapping stubs still use deterministic frame tokens and do not consume real owned frames. Real backing frames for executable images are deferred to Phase 15.
+Phase 14 is ownership bookkeeping. Phase 13 mapping stubs still use deterministic frame tokens and do not consume real owned frames.
+
+Phase 15 consumes owned frames for frame-backed executable image records. Those frames are still not installed into user page tables or executed.

@@ -42,6 +42,7 @@ pub enum MappingState {
     Planned,
     Reserved,
     MappedStub,
+    FrameBacked,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

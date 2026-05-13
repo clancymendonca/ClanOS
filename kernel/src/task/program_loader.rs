@@ -63,6 +63,7 @@ pub enum ProgramLoadError {
     ImageInvalid,
     LoadPlanRejected,
     MappingRejected,
+    FrameBackingRejected,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -83,6 +84,9 @@ pub struct LoaderStatus {
     pub total_mapped_pages: u64,
     pub copied_bytes: u64,
     pub zero_filled_bytes: u64,
+    pub frame_backed_image_count: u64,
+    pub rejected_frame_backing_count: u64,
+    pub total_frame_backed_pages: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -100,6 +104,12 @@ pub struct MappedProgramImage {
     pub address_space: crate::address_space::AddressSpaceDescriptor,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FrameBackedProgramImage {
+    pub mapped: MappedProgramImage,
+    pub backed: crate::frame_backing::FrameBackedImage,
+}
+
 static LAUNCH_COUNT: AtomicU64 = AtomicU64::new(0);
 static FAILED_LAUNCH_COUNT: AtomicU64 = AtomicU64::new(0);
 static DENIED_LAUNCH_COUNT: AtomicU64 = AtomicU64::new(0);
@@ -112,6 +122,9 @@ static REJECTED_MAPPING_COUNT: AtomicU64 = AtomicU64::new(0);
 static TOTAL_MAPPED_PAGES: AtomicU64 = AtomicU64::new(0);
 static COPIED_BYTES: AtomicU64 = AtomicU64::new(0);
 static ZERO_FILLED_BYTES: AtomicU64 = AtomicU64::new(0);
+static FRAME_BACKED_IMAGE_COUNT: AtomicU64 = AtomicU64::new(0);
+static REJECTED_FRAME_BACKING_COUNT: AtomicU64 = AtomicU64::new(0);
+static TOTAL_FRAME_BACKED_PAGES: AtomicU64 = AtomicU64::new(0);
 
 pub fn parse_manifest(contents: &str) -> Result<ProgramManifest, ProgramLoadError> {
     let mut lines = contents.lines();
@@ -270,6 +283,9 @@ pub fn status() -> LoaderStatus {
         total_mapped_pages: TOTAL_MAPPED_PAGES.load(Ordering::Relaxed),
         copied_bytes: COPIED_BYTES.load(Ordering::Relaxed),
         zero_filled_bytes: ZERO_FILLED_BYTES.load(Ordering::Relaxed),
+        frame_backed_image_count: FRAME_BACKED_IMAGE_COUNT.load(Ordering::Relaxed),
+        rejected_frame_backing_count: REJECTED_FRAME_BACKING_COUNT.load(Ordering::Relaxed),
+        total_frame_backed_pages: TOTAL_FRAME_BACKED_PAGES.load(Ordering::Relaxed),
     }
 }
 
@@ -459,6 +475,42 @@ pub fn phase13_smoke_check() -> bool {
         && after.zero_filled_bytes > before.zero_filled_bytes
 }
 
+pub fn back_mapped_program(
+    credentials: crate::security::Credentials,
+    name: &str,
+) -> Result<FrameBackedProgramImage, ProgramLoadError> {
+    let mapped = map_prepared_program(credentials, name)?;
+    let backed = crate::frame_backing::back_mapped_image(&mapped.mapped).map_err(|_| {
+        REJECTED_FRAME_BACKING_COUNT.fetch_add(1, Ordering::Relaxed);
+        ProgramLoadError::FrameBackingRejected
+    })?;
+
+    FRAME_BACKED_IMAGE_COUNT.fetch_add(1, Ordering::Relaxed);
+    TOTAL_FRAME_BACKED_PAGES.fetch_add(backed.total_pages as u64, Ordering::Relaxed);
+    record_frame_backed_process(credentials, &mapped.prepared, &backed);
+
+    Ok(FrameBackedProgramImage { mapped, backed })
+}
+
+pub fn phase15_smoke_check() -> bool {
+    let before = status();
+    let before_frames = crate::frame_ownership::status();
+    let backed = back_mapped_program(crate::security::Credentials::shell_user(), "hello")
+        .map(|backed| {
+            backed.backed.total_pages > 0
+                && backed.backed.copied_bytes > 0
+                && backed.backed.zero_filled_bytes > 0
+                && backed.backed.state == crate::address_space::MappingState::FrameBacked
+        })
+        .unwrap_or(false);
+    let after = status();
+    let after_frames = crate::frame_ownership::status();
+    backed
+        && after.frame_backed_image_count > before.frame_backed_image_count
+        && after.total_frame_backed_pages > before.total_frame_backed_pages
+        && after_frames.allocated_frames > before_frames.allocated_frames
+}
+
 fn validate_manifest_image(
     manifest: &ProgramManifest,
 ) -> (Option<crate::exec_image::ExecutableImage>, Option<crate::exec_image::ImageLoadError>) {
@@ -563,6 +615,45 @@ fn record_mapped_process(
     };
     if let Some(pid) = crate::task::process::create_kernel_process_with_metadata(
         "image-mapped-stub",
+        tick,
+        credentials,
+        metadata,
+        load,
+    ) {
+        let _ = crate::task::process::set_process_state(pid, crate::task::process::ProcessState::Blocked);
+    }
+}
+
+fn record_frame_backed_process(
+    credentials: crate::security::Credentials,
+    prepared: &PreparedProgramImage,
+    backed: &crate::frame_backing::FrameBackedImage,
+) {
+    let tick =
+        crate::performance::metrics::TICK_COUNTER.load(core::sync::atomic::Ordering::Relaxed);
+    let metadata = crate::task::process::ProcessImageMetadata {
+        source_path: static_source_path(&prepared.program.source_path),
+        format: prepared.image.format,
+        entry_point: prepared.image.entry_point,
+        segment_count: prepared.image.segments.len(),
+        address_space_id: Some(backed.address_space_id),
+        trust: prepared.image.trust,
+        owner: credentials,
+    };
+    let load = crate::task::process::ProcessLoadMetadata {
+        state: crate::task::process::ProcessLoadState::FrameBacked,
+        source_path: static_source_path(&prepared.image.source_path),
+        entry_point: prepared.load_plan.entry_point,
+        planned_pages: backed.total_pages,
+        region_count: backed.regions.len(),
+        stack_pages: prepared.load_plan.stack_pages,
+        mapping_id: Some(backed.mapping_id),
+        copied_bytes: backed.copied_bytes,
+        zero_filled_bytes: backed.zero_filled_bytes,
+        executable_pages: backed.executable_pages,
+    };
+    if let Some(pid) = crate::task::process::create_kernel_process_with_metadata(
+        "image-frame-backed",
         tick,
         credentials,
         metadata,

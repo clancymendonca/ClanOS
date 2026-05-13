@@ -158,6 +158,16 @@ def main() -> int:
             None,
         ),
         (
+            "phase15-frame-backing-check",
+            [
+                "python",
+                "scripts/phase15_frame_backing_check.py",
+                "--timeout",
+                str(args.smoke_timeout),
+            ],
+            None,
+        ),
+        (
             "phase5-soak-check",
             [
                 "python",

@@ -70,6 +70,7 @@ pub enum ProcessLoadState {
     Rejected,
     ExecutionBlocked,
     MappedStub,
+    FrameBacked,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

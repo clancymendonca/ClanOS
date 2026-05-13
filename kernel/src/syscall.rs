@@ -39,6 +39,9 @@ pub enum SyscallId {
     FrameAllocationCount = 32,
     FrameReleaseCount = 33,
     FrameFailedAllocationCount = 34,
+    FrameBackedImageCount = 35,
+    RejectedFrameBackingCount = 36,
+    TotalFrameBackedPages = 37,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -259,6 +262,24 @@ pub fn invoke_raw(id: u64, arg0: u64) -> Result<u64, SyscallError> {
                 return Err(SyscallError::InvalidArgument);
             }
             Ok(crate::frame_ownership::status().failed_allocation_count)
+        }
+        x if x == SyscallId::FrameBackedImageCount as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::task::program_loader::status().frame_backed_image_count)
+        }
+        x if x == SyscallId::RejectedFrameBackingCount as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::task::program_loader::status().rejected_frame_backing_count)
+        }
+        x if x == SyscallId::TotalFrameBackedPages as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::task::program_loader::status().total_frame_backed_pages)
         }
         _ => Err(SyscallError::InvalidSyscall),
     }

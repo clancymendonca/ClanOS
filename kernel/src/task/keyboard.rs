@@ -208,6 +208,7 @@ fn execute_console_command(command: &str) {
             println!("  bin validate <program>");
             println!("  bin prepare <program>");
             println!("  bin map <program>");
+            println!("  bin back <program>");
             println!("  bin plans");
             println!("  bin mappings");
             println!("  frames");
@@ -248,6 +249,7 @@ fn execute_console_command(command: &str) {
                             crate::task::process::ProcessLoadState::Rejected => "rejected",
                             crate::task::process::ProcessLoadState::ExecutionBlocked => "blocked",
                             crate::task::process::ProcessLoadState::MappedStub => "mapped",
+                            crate::task::process::ProcessLoadState::FrameBacked => "backed",
                         })
                         .unwrap_or("-");
                     println!(
@@ -417,15 +419,32 @@ fn execute_console_command(command: &str) {
             ),
             Err(err) => println!("program map error: {:?}", err),
         },
+        ["bin", "back", program] => match crate::task::program_loader::back_mapped_program(
+            crate::security::current_credentials(),
+            program,
+        ) {
+            Ok(backed) => println!(
+                "Frame-backed {}: mapping={}, pages={}, copied={}, zeroed={}, state={:?}",
+                backed.backed.image_name,
+                backed.backed.mapping_id.as_u64(),
+                backed.backed.total_pages,
+                backed.backed.copied_bytes,
+                backed.backed.zero_filled_bytes,
+                backed.backed.state
+            ),
+            Err(err) => println!("program frame-back error: {:?}", err),
+        },
         ["bin", "plans"] | ["loadplans"] => {
             let status = crate::task::program_loader::status();
             println!(
-                "Load plans: prepared={}, rejected={}, planned_pages={}, mapped={}, mapped_pages={}, exec_blocked={}",
+                "Load plans: prepared={}, rejected={}, planned_pages={}, mapped={}, mapped_pages={}, backed={}, backed_pages={}, exec_blocked={}",
                 status.prepared_image_count,
                 status.rejected_load_plan_count,
                 status.total_planned_pages,
                 status.mapped_image_count,
                 status.total_mapped_pages,
+                status.frame_backed_image_count,
+                status.total_frame_backed_pages,
                 status.unsupported_execution_count
             );
         }
