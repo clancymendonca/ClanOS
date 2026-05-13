@@ -8,6 +8,7 @@ use alloc::{
 use core::fmt;
 use lazy_static::lazy_static;
 use spin::Mutex;
+use crate::security::{AccessKind, Credentials, FileMode, UserId};
 
 pub const SECTOR_SIZE: usize = 512;
 pub const DEFAULT_SECTOR_COUNT: usize = 64;
@@ -21,6 +22,7 @@ const MAX_FILES: usize = 16;
 const MAX_PATH_LEN: usize = 48;
 const MAX_FILE_SIZE: usize = SECTOR_SIZE;
 const DIR_ENTRY_SIZE: usize = 64;
+const DIR_PATH_OFFSET: usize = 10;
 
 lazy_static! {
     static ref STORAGE: Mutex<SimpleFs<ManagedBlockDevice>> =
@@ -36,6 +38,7 @@ pub enum StorageError {
     NoSpace,
     FileTooLarge,
     InvalidImage,
+    PermissionDenied,
     Io,
 }
 
@@ -49,6 +52,7 @@ impl fmt::Display for StorageError {
             StorageError::NoSpace => write!(f, "no storage space available"),
             StorageError::FileTooLarge => write!(f, "file too large"),
             StorageError::InvalidImage => write!(f, "invalid filesystem image"),
+            StorageError::PermissionDenied => write!(f, "permission denied"),
             StorageError::Io => write!(f, "storage I/O error"),
         }
     }
@@ -64,6 +68,14 @@ pub struct StorageInfo {
     pub max_file_size: usize,
     pub backend_name: &'static str,
     pub driver_backed: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FileMetadata {
+    pub path: String,
+    pub owner: UserId,
+    pub mode: FileMode,
+    pub len: usize,
 }
 
 pub trait BlockDevice {
@@ -149,6 +161,8 @@ struct DirectoryEntry {
     path: String,
     len: usize,
     data_sector: usize,
+    owner: UserId,
+    mode: FileMode,
 }
 
 pub struct SimpleFs<D: BlockDevice> {
@@ -218,11 +232,23 @@ impl<D: BlockDevice> SimpleFs<D> {
     }
 
     pub fn create_file(&mut self, path: &str) -> Result<(), StorageError> {
-        self.write_file_internal(path, "", false)
+        self.write_file_internal(
+            path,
+            "",
+            false,
+            Credentials::admin().user,
+            default_mode_for_path(path),
+        )
     }
 
     pub fn write_file(&mut self, path: &str, contents: &str) -> Result<(), StorageError> {
-        self.write_file_internal(path, contents, true)
+        self.write_file_internal(
+            path,
+            contents,
+            true,
+            Credentials::admin().user,
+            default_mode_for_path(path),
+        )
     }
 
     pub fn delete_file(&mut self, path: &str) -> Result<(), StorageError> {
@@ -238,6 +264,35 @@ impl<D: BlockDevice> SimpleFs<D> {
         if let Some(entry) = entries[index].take() {
             self.device.write_sector(entry.data_sector, &[0; SECTOR_SIZE])?;
         }
+        self.write_directory(&entries)
+    }
+
+    pub fn metadata(&self, path: &str) -> Result<Option<FileMetadata>, StorageError> {
+        validate_path(path)?;
+        Ok(self
+            .read_directory()?
+            .into_iter()
+            .flatten()
+            .find(|entry| entry.path == path)
+            .map(|entry| FileMetadata {
+                path: entry.path,
+                owner: entry.owner,
+                mode: entry.mode,
+                len: entry.len,
+            }))
+    }
+
+    pub fn chmod_execute(&mut self, path: &str, enabled: bool) -> Result<(), StorageError> {
+        validate_path(path)?;
+        let mut entries = self.read_directory()?;
+        let Some(index) = entries
+            .iter()
+            .position(|entry| matches!(entry, Some(entry) if entry.path == path))
+        else {
+            return Err(StorageError::NotFound);
+        };
+        let entry = entries[index].as_mut().ok_or(StorageError::InvalidImage)?;
+        entry.mode.set_execute(enabled);
         self.write_directory(&entries)
     }
 
@@ -272,6 +327,8 @@ impl<D: BlockDevice> SimpleFs<D> {
         path: &str,
         contents: &str,
         overwrite: bool,
+        owner: UserId,
+        mode: FileMode,
     ) -> Result<(), StorageError> {
         validate_path(path)?;
         let bytes = contents.as_bytes();
@@ -293,6 +350,8 @@ impl<D: BlockDevice> SimpleFs<D> {
                 path: path.to_string(),
                 len: bytes.len(),
                 data_sector,
+                owner,
+                mode,
             });
             return self.write_directory(&entries);
         }
@@ -310,6 +369,8 @@ impl<D: BlockDevice> SimpleFs<D> {
             path: path.to_string(),
             len: bytes.len(),
             data_sector,
+            owner,
+            mode,
         });
         self.write_directory(&entries)
     }
@@ -437,9 +498,29 @@ pub fn read_file(path: &str) -> Result<Option<String>, StorageError> {
     STORAGE.lock().read_file(path)
 }
 
+pub fn read_file_checked(
+    credentials: Credentials,
+    path: &str,
+) -> Result<Option<String>, StorageError> {
+    ensure_backend();
+    let fs = STORAGE.lock();
+    let Some(metadata) = fs.metadata(path)? else {
+        return Ok(None);
+    };
+    authorize(credentials, metadata.owner, metadata.mode, AccessKind::Read)?;
+    fs.read_file(path)
+}
+
 pub fn create_file(path: &str) -> Result<(), StorageError> {
     ensure_backend();
     STORAGE.lock().create_file(path)
+}
+
+pub fn create_file_checked(credentials: Credentials, path: &str) -> Result<(), StorageError> {
+    ensure_backend();
+    authorize_create(credentials, path)?;
+    let mut fs = STORAGE.lock();
+    fs.write_file_internal(path, "", false, credentials.user, default_mode_for_path(path))
 }
 
 pub fn write_file(path: &str, contents: &str) -> Result<(), StorageError> {
@@ -447,9 +528,54 @@ pub fn write_file(path: &str, contents: &str) -> Result<(), StorageError> {
     STORAGE.lock().write_file(path, contents)
 }
 
+pub fn write_file_checked(
+    credentials: Credentials,
+    path: &str,
+    contents: &str,
+) -> Result<(), StorageError> {
+    ensure_backend();
+    let mut fs = STORAGE.lock();
+    if let Some(metadata) = fs.metadata(path)? {
+        authorize(credentials, metadata.owner, metadata.mode, AccessKind::Write)?;
+        fs.write_file_internal(path, contents, true, metadata.owner, metadata.mode)
+    } else {
+        authorize_create(credentials, path)?;
+        fs.write_file_internal(path, contents, true, credentials.user, default_mode_for_path(path))
+    }
+}
+
 pub fn delete_file(path: &str) -> Result<(), StorageError> {
     ensure_backend();
     STORAGE.lock().delete_file(path)
+}
+
+pub fn delete_file_checked(credentials: Credentials, path: &str) -> Result<(), StorageError> {
+    ensure_backend();
+    let mut fs = STORAGE.lock();
+    let Some(metadata) = fs.metadata(path)? else {
+        return Err(StorageError::NotFound);
+    };
+    authorize(credentials, metadata.owner, metadata.mode, AccessKind::Write)?;
+    fs.delete_file(path)
+}
+
+pub fn stat_file(path: &str) -> Result<Option<FileMetadata>, StorageError> {
+    ensure_backend();
+    STORAGE.lock().metadata(path)
+}
+
+pub fn chmod_execute_checked(
+    credentials: Credentials,
+    path: &str,
+    enabled: bool,
+) -> Result<(), StorageError> {
+    ensure_backend();
+    let mut fs = STORAGE.lock();
+    let Some(metadata) = fs.metadata(path)? else {
+        return Err(StorageError::NotFound);
+    };
+    authorize(credentials, metadata.owner, metadata.mode, AccessKind::Manage)?;
+    fs.chmod_execute(path, enabled)
 }
 
 pub fn info() -> Result<StorageInfo, StorageError> {
@@ -460,6 +586,15 @@ pub fn info() -> Result<StorageInfo, StorageError> {
         info.driver_backed = block.driver_backed;
     }
     Ok(info)
+}
+
+pub fn can_execute(credentials: Credentials, path: &str) -> Result<(), StorageError> {
+    ensure_backend();
+    let fs = STORAGE.lock();
+    let Some(metadata) = fs.metadata(path)? else {
+        return Err(StorageError::NotFound);
+    };
+    authorize(credentials, metadata.owner, metadata.mode, AccessKind::Execute)
 }
 
 fn ensure_backend() {
@@ -492,30 +627,113 @@ pub fn phase8_smoke_check() -> bool {
         && matches!(read_file(path), Ok(Some(contents)) if contents == "driver-backed-ok")
 }
 
+pub fn phase10_smoke_check() -> bool {
+    let user = Credentials::shell_user();
+    let path = "/phase10-user.txt";
+    let protected_before = crate::security::denied_access_count();
+    write_file_checked(user, path, "owned").is_ok()
+        && matches!(read_file_checked(user, path), Ok(Some(contents)) if contents == "owned")
+        && delete_file_checked(user, path).is_ok()
+        && write_file_checked(user, "/bin/echo", "blocked").is_err()
+        && crate::security::denied_access_count() > protected_before
+}
+
+pub fn phase11_sample_elf_image() -> String {
+    let mut bytes = vec![0u8; 124];
+    bytes[0..4].copy_from_slice(b"\x7fELF");
+    bytes[4] = 2; // ELFCLASS64
+    bytes[5] = 1; // little-endian
+    bytes[6] = 1; // ELF version
+    bytes[16..18].copy_from_slice(&2u16.to_le_bytes()); // executable
+    bytes[18..20].copy_from_slice(&0x3eu16.to_le_bytes()); // x86_64
+    bytes[20..24].copy_from_slice(&1u32.to_le_bytes());
+    bytes[24..32].copy_from_slice(&0x400000u64.to_le_bytes());
+    bytes[32..40].copy_from_slice(&64u64.to_le_bytes());
+    bytes[52..54].copy_from_slice(&64u16.to_le_bytes());
+    bytes[54..56].copy_from_slice(&56u16.to_le_bytes());
+    bytes[56..58].copy_from_slice(&1u16.to_le_bytes());
+
+    let ph = 64usize;
+    bytes[ph..ph + 4].copy_from_slice(&1u32.to_le_bytes()); // PT_LOAD
+    bytes[ph + 4..ph + 8].copy_from_slice(&5u32.to_le_bytes()); // read + execute
+    bytes[ph + 8..ph + 16].copy_from_slice(&120u64.to_le_bytes());
+    bytes[ph + 16..ph + 24].copy_from_slice(&0x400000u64.to_le_bytes());
+    bytes[ph + 24..ph + 32].copy_from_slice(&0x400000u64.to_le_bytes());
+    bytes[ph + 32..ph + 40].copy_from_slice(&4u64.to_le_bytes());
+    bytes[ph + 40..ph + 48].copy_from_slice(&0x1000u64.to_le_bytes());
+    bytes[ph + 48..ph + 56].copy_from_slice(&0x1000u64.to_le_bytes());
+    bytes[120..124].copy_from_slice(b"ARES");
+    String::from_utf8(bytes).unwrap_or_else(|_| String::new())
+}
+
 fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), StorageError> {
+    let sample_elf = phase11_sample_elf_image();
     for (path, contents) in [
         ("/README.txt", "AresOS persistent storage"),
         (
             "/bin/echo",
-            "ares-exec-v1\nname=echo\nkind=builtin-alias\nentry=echo\ndescription=Print arguments",
+            "ares-exec-v1\nname=echo\nkind=builtin-alias\nentry=echo\nrequires=execute\ntrust=system\nowner=admin\ndescription=Print arguments",
         ),
         (
             "/bin/time",
-            "ares-exec-v1\nname=time\nkind=builtin-alias\nentry=time\ndescription=Show uptime",
+            "ares-exec-v1\nname=time\nkind=builtin-alias\nentry=time\nrequires=execute\ntrust=system\nowner=admin\ndescription=Show uptime",
         ),
         (
             "/bin/sysinfo",
-            "ares-exec-v1\nname=sysinfo\nkind=builtin-alias\nentry=sysinfo\ndescription=Show system metrics",
+            "ares-exec-v1\nname=sysinfo\nkind=builtin-alias\nentry=sysinfo\nrequires=execute\ntrust=system\nowner=admin\ndescription=Show system metrics",
         ),
         (
             "/bin/fsinfo",
-            "ares-exec-v1\nname=fsinfo\nkind=builtin-alias\nentry=fsinfo\ndescription=Show filesystem status",
+            "ares-exec-v1\nname=fsinfo\nkind=builtin-alias\nentry=fsinfo\nrequires=execute\ntrust=system\nowner=admin\ndescription=Show filesystem status",
         ),
+        (
+            "/bin/hello",
+            "ares-exec-v1\nname=hello\nkind=elf64-image\nentry=0x400000\nimage=/bin/hello.elf\nrequires=execute\ntrust=user\nowner=user\ndescription=ELF image validation fixture",
+        ),
+        ("/bin/hello.elf", sample_elf.as_str()),
     ] {
-        match fs.write_file(path, contents) {
+        let owner = if path.starts_with("/bin/") {
+            Credentials::admin().user
+        } else {
+            Credentials::kernel().user
+        };
+        let mode = default_mode_for_path(path);
+        match fs.write_file_internal(path, contents, true, owner, mode) {
             Ok(()) | Err(StorageError::AlreadyExists) => {}
             Err(err) => return Err(err),
         }
+    }
+    Ok(())
+}
+
+fn default_mode_for_path(path: &str) -> FileMode {
+    if path.starts_with("/bin/") {
+        FileMode::system_executable()
+    } else if path == "/README.txt" {
+        FileMode::read_only()
+    } else {
+        FileMode::user_file()
+    }
+}
+
+fn authorize(
+    credentials: Credentials,
+    owner: UserId,
+    mode: FileMode,
+    access: AccessKind,
+) -> Result<(), StorageError> {
+    crate::security::can_access(credentials, owner, mode, access)
+        .map(|_| ())
+        .map_err(|_| {
+            crate::security::record_denial(access);
+            StorageError::PermissionDenied
+        })
+}
+
+fn authorize_create(credentials: Credentials, path: &str) -> Result<(), StorageError> {
+    if path.starts_with("/bin/") && !credentials.can_manage() {
+        crate::security::record_denial(AccessKind::Write);
+        return Err(StorageError::PermissionDenied);
     }
     Ok(())
 }
@@ -543,7 +761,10 @@ fn encode_entry(entry: &Option<DirectoryEntry>, out: &mut [u8]) -> Result<(), St
     out[1] = path.len() as u8;
     out[2..4].copy_from_slice(&(entry.len as u16).to_le_bytes());
     out[4..6].copy_from_slice(&(entry.data_sector as u16).to_le_bytes());
-    out[8..8 + path.len()].copy_from_slice(path);
+    let owner = entry.owner.as_u64().min(u16::MAX as u64) as u16;
+    out[6..8].copy_from_slice(&owner.to_le_bytes());
+    out[8] = entry.mode.bits();
+    out[DIR_PATH_OFFSET..DIR_PATH_OFFSET + path.len()].copy_from_slice(path);
     Ok(())
 }
 
@@ -554,13 +775,15 @@ fn decode_entry(input: &[u8]) -> Result<Option<DirectoryEntry>, StorageError> {
     let path_len = input[1] as usize;
     let len = u16::from_le_bytes([input[2], input[3]]) as usize;
     let data_sector = u16::from_le_bytes([input[4], input[5]]) as usize;
+    let owner = UserId::from_raw(u16::from_le_bytes([input[6], input[7]]) as u64);
+    let mode = FileMode::from_bits(input[8]);
     if path_len == 0 || path_len > MAX_PATH_LEN || len > MAX_FILE_SIZE {
         return Err(StorageError::InvalidImage);
     }
     if data_sector < DATA_START_SECTOR || data_sector >= DATA_START_SECTOR + MAX_FILES {
         return Err(StorageError::InvalidImage);
     }
-    let path = core::str::from_utf8(&input[8..8 + path_len])
+    let path = core::str::from_utf8(&input[DIR_PATH_OFFSET..DIR_PATH_OFFSET + path_len])
         .map_err(|_| StorageError::InvalidImage)?
         .to_string();
     validate_path(&path)?;
@@ -568,6 +791,8 @@ fn decode_entry(input: &[u8]) -> Result<Option<DirectoryEntry>, StorageError> {
         path,
         len,
         data_sector,
+        owner,
+        mode,
     }))
 }
 

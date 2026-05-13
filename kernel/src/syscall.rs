@@ -16,6 +16,14 @@ pub enum SyscallId {
     ProgramCount = 9,
     ProgramLaunchCount = 10,
     ProgramFailedLaunchCount = 11,
+    CurrentUser = 12,
+    CurrentRole = 13,
+    DeniedAccessCount = 14,
+    DeniedExecuteCount = 15,
+    ImageCount = 16,
+    ValidImageCount = 17,
+    InvalidImageCount = 18,
+    UnsupportedExecutionCount = 19,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -99,6 +107,54 @@ pub fn invoke_raw(id: u64, arg0: u64) -> Result<u64, SyscallError> {
             }
             Ok(crate::task::program_loader::status().failed_launch_count)
         }
+        x if x == SyscallId::CurrentUser as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::security::current_credentials().user.as_u64())
+        }
+        x if x == SyscallId::CurrentRole as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::security::current_credentials().role.as_u64())
+        }
+        x if x == SyscallId::DeniedAccessCount as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::security::denied_access_count())
+        }
+        x if x == SyscallId::DeniedExecuteCount as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::security::denied_execute_count())
+        }
+        x if x == SyscallId::ImageCount as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::task::program_loader::status().image_count as u64)
+        }
+        x if x == SyscallId::ValidImageCount as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::task::program_loader::status().valid_image_count as u64)
+        }
+        x if x == SyscallId::InvalidImageCount as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::task::program_loader::status().invalid_image_count as u64)
+        }
+        x if x == SyscallId::UnsupportedExecutionCount as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::task::program_loader::status().unsupported_execution_count)
+        }
         _ => Err(SyscallError::InvalidSyscall),
     }
 }
@@ -108,15 +164,18 @@ pub fn storage_list_files() -> Result<Vec<String>, SyscallError> {
 }
 
 pub fn storage_read_file(path: &str) -> Result<Option<String>, SyscallError> {
-    crate::storage::read_file(path).map_err(|_| SyscallError::Storage)
+    crate::storage::read_file_checked(crate::security::current_credentials(), path)
+        .map_err(|_| SyscallError::Storage)
 }
 
 pub fn storage_write_file(path: &str, contents: &str) -> Result<(), SyscallError> {
-    crate::storage::write_file(path, contents).map_err(|_| SyscallError::Storage)
+    crate::storage::write_file_checked(crate::security::current_credentials(), path, contents)
+        .map_err(|_| SyscallError::Storage)
 }
 
 pub fn storage_delete_file(path: &str) -> Result<(), SyscallError> {
-    crate::storage::delete_file(path).map_err(|_| SyscallError::Storage)
+    crate::storage::delete_file_checked(crate::security::current_credentials(), path)
+        .map_err(|_| SyscallError::Storage)
 }
 
 pub fn device_summary() -> crate::device::DeviceSummary {

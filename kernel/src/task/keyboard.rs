@@ -199,15 +199,20 @@ fn execute_console_command(command: &str) {
             println!("  ps");
             println!("  kill <pid>");
             println!("  metrics");
+            println!("  whoami");
+            println!("  su <admin|user|guest>");
             println!("  run <echo|time|sysinfo|fsinfo> [args...]");
             println!("  programs");
             println!("  bin list");
             println!("  bin info <program>");
+            println!("  bin validate <program>");
             println!("  ls");
             println!("  cat <path>");
             println!("  touch <path>");
             println!("  write <path> <text>");
             println!("  rm <path>");
+            println!("  stat <path>");
+            println!("  chmod +x|-x <path>");
             println!("  mount");
             println!("  format");
             println!("  fsinfo");
@@ -221,26 +226,65 @@ fn execute_console_command(command: &str) {
             println!("  sched maxproc <count>");
         }
         ["ps"] => {
-            let entries = crate::task::process::get_all_processes();
+            let entries = crate::task::process::get_all_processes_with_details();
             if entries.is_empty() {
                 println!("No processes registered");
             } else {
-                println!("PID  STATE       CPU_TICKS  NAME");
-                for (pid, name, state, ticks) in entries {
-                    println!("{:<4} {:<11?} {:<9} {}", pid.as_u64(), state, ticks, name);
+                println!("PID  STATE       CPU_TICKS  OWNER      IMAGE          NAME");
+                for (pid, name, state, ticks, owner, image) in entries {
+                    let image_source = image
+                        .as_ref()
+                        .map(|image| image.source_path)
+                        .unwrap_or("-");
+                    println!(
+                        "{:<4} {:<11?} {:<9} {:<10} {:<14} {}",
+                        pid.as_u64(),
+                        state,
+                        ticks,
+                        owner.role.name(),
+                        image_source,
+                        name
+                    );
                 }
             }
         }
         ["kill", pid] => match parse_pid(pid) {
             Ok(raw_pid) => {
                 let pid = crate::task::process::ProcessId::from_raw(raw_pid);
-                if crate::task::process::terminate_process(pid, 0) {
+                if crate::task::process::terminate_process_checked(
+                    crate::security::current_credentials(),
+                    pid,
+                    0,
+                ) {
                     println!("Terminated PID {}", raw_pid);
                 } else {
-                    println!("PID {} not found", raw_pid);
+                    println!("PID {} not found or permission denied", raw_pid);
                 }
             }
             Err(err) => println!("Invalid pid ({}): {}", err, pid),
+        },
+        ["whoami"] => {
+            let credentials = crate::security::current_credentials();
+            println!(
+                "user={} role={}",
+                credentials.user.as_u64(),
+                credentials.role.name()
+            );
+        }
+        ["su", role] => match *role {
+            "admin" => {
+                crate::security::set_current_credentials(crate::security::Credentials::admin());
+                println!("Switched to admin");
+            }
+            "user" => {
+                crate::security::set_current_credentials(crate::security::Credentials::shell_user());
+                println!("Switched to user");
+            }
+            "guest" => {
+                crate::security::set_current_credentials(crate::security::Credentials::guest());
+                println!("Switched to guest");
+            }
+            _ => println!("Unknown role: {}", role),
         },
         ["metrics"] => {
             let scheduler = crate::task::scheduler::stats();
@@ -267,24 +311,55 @@ fn execute_console_command(command: &str) {
                 println!("No stored programs discovered");
             } else {
                 for program in programs {
+                    let marker = match program.kind {
+                        crate::task::program_loader::ProgramKind::BuiltinAlias => "builtin",
+                        crate::task::program_loader::ProgramKind::Elf64Image => "elf64-image",
+                    };
                     println!(
-                        "{} -> {} ({})",
-                        program.name, program.entry, program.source_path
+                        "{} [{}] -> {} ({})",
+                        program.name, marker, program.entry, program.source_path
                     );
                 }
             }
             let status = crate::task::program_loader::status();
             println!(
-                "Program loader: programs={}, launches={}, failed_launches={}",
-                status.program_count, status.launch_count, status.failed_launch_count
+                "Program loader: programs={}, images={}/{}, invalid_images={}, launches={}, failed_launches={}",
+                status.program_count,
+                status.valid_image_count,
+                status.image_count,
+                status.invalid_image_count,
+                status.launch_count,
+                status.failed_launch_count
             );
         }
         ["bin", "info", program] => match crate::task::program_loader::program_info(program) {
             Ok(info) => println!(
-                "Program {}: path={}, kind={:?}, entry={}, description={}",
-                info.name, info.source_path, info.kind, info.entry, info.description
+                "Program {}: path={}, kind={:?}, entry={}, image={:?}, segments={}, trust={:?}, exec_supported={}, description={}",
+                info.name,
+                info.source_path,
+                info.kind,
+                info.entry,
+                info.image_path,
+                info.image.as_ref().map(|image| image.segments.len()).unwrap_or(0),
+                info.trust,
+                info.kind == crate::task::program_loader::ProgramKind::BuiltinAlias,
+                info.description
             ),
             Err(err) => println!("program info error: {:?}", err),
+        },
+        ["bin", "validate", program] => match crate::task::program_loader::validate_program_image(
+            crate::security::current_credentials(),
+            program,
+        ) {
+            Ok(image) => println!(
+                "Program {} image valid: format={:?}, entry=0x{:x}, segments={}, source={}",
+                image.name,
+                image.format,
+                image.entry_point,
+                image.segments.len(),
+                image.source_path
+            ),
+            Err(err) => println!("program validate error: {:?}", err),
         },
         ["ls"] => match crate::storage::list_files() {
             Ok(files) => {
@@ -294,27 +369,70 @@ fn execute_console_command(command: &str) {
             }
             Err(err) => println!("ls error: {}", err),
         },
-        ["cat", path] => match crate::storage::read_file(path) {
+        ["cat", path] => match crate::storage::read_file_checked(
+            crate::security::current_credentials(),
+            path,
+        ) {
             Ok(Some(contents)) => println!("{}", contents),
             Ok(None) => println!("No such file: {}", path),
             Err(err) => println!("cat error: {}", err),
         },
-        ["touch", path] => match crate::storage::create_file(path) {
+        ["touch", path] => match crate::storage::create_file_checked(
+            crate::security::current_credentials(),
+            path,
+        ) {
             Ok(()) => println!("Created {}", path),
             Err(crate::storage::StorageError::AlreadyExists) => println!("File already exists: {}", path),
             Err(err) => println!("touch error: {}", err),
         },
         ["write", path, contents @ ..] if !contents.is_empty() => {
             let text = join_parts(contents);
-            match crate::storage::write_file(path, &text) {
+            match crate::storage::write_file_checked(
+                crate::security::current_credentials(),
+                path,
+                &text,
+            ) {
                 Ok(()) => println!("Wrote {}", path),
                 Err(err) => println!("write error: {}", err),
             }
         }
         ["write", ..] => println!("Usage: write <path> <text>"),
-        ["rm", path] => match crate::storage::delete_file(path) {
+        ["rm", path] => match crate::storage::delete_file_checked(
+            crate::security::current_credentials(),
+            path,
+        ) {
             Ok(()) => println!("Removed {}", path),
             Err(err) => println!("rm error: {}", err),
+        },
+        ["stat", path] => match crate::storage::stat_file(path) {
+            Ok(Some(metadata)) => println!(
+                "File {}: owner={}, mode={:03b}, len={}",
+                metadata.path,
+                metadata.owner.as_u64(),
+                metadata.mode.bits(),
+                metadata.len
+            ),
+            Ok(None) => println!("No such file: {}", path),
+            Err(err) => println!("stat error: {}", err),
+        },
+        ["chmod", flag, path] => match *flag {
+            "+x" => match crate::storage::chmod_execute_checked(
+                crate::security::current_credentials(),
+                path,
+                true,
+            ) {
+                Ok(()) => println!("Enabled execute on {}", path),
+                Err(err) => println!("chmod error: {}", err),
+            },
+            "-x" => match crate::storage::chmod_execute_checked(
+                crate::security::current_credentials(),
+                path,
+                false,
+            ) {
+                Ok(()) => println!("Disabled execute on {}", path),
+                Err(err) => println!("chmod error: {}", err),
+            },
+            _ => println!("Usage: chmod +x|-x <path>"),
         },
         ["mount"] => match crate::storage::remount() {
             Ok(()) => println!("Storage mounted"),

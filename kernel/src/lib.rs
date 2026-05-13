@@ -15,13 +15,16 @@
 extern crate alloc;
 
 pub mod allocator;
+pub mod address_space;
 pub mod block;
 pub mod device;
+pub mod exec_image;
 pub mod gdt;
 pub mod interrupts;
 pub mod memory;
 pub mod performance;
 pub mod serial;
+pub mod security;
 pub mod storage;
 pub mod syscall;
 pub mod task;

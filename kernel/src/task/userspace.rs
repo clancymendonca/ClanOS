@@ -4,19 +4,41 @@ use alloc::{format, string::String};
 use core::sync::atomic::Ordering;
 
 pub fn run_program(name: &str, args: &[&str]) -> Result<String, &'static str> {
-    let entry = match crate::task::program_loader::resolve_program(name) {
-        Ok(program) => program.entry,
-        Err(_) if is_builtin_entry(name) => String::from(name),
+    let credentials = crate::security::current_credentials();
+    let program = match crate::task::program_loader::resolve_program_for(credentials, name) {
+        Ok(program) => program,
+        Err(crate::task::program_loader::ProgramLoadError::PermissionDenied) => {
+            return Err("permission denied");
+        }
+        Err(crate::task::program_loader::ProgramLoadError::UnsupportedExecution) => {
+            return Err("unsupported executable image");
+        }
+        Err(crate::task::program_loader::ProgramLoadError::ImageInvalid) => {
+            return Err("invalid executable image");
+        }
+        Err(_) if is_builtin_entry(name) => crate::task::program_loader::LoadedProgram {
+            name: String::from(name),
+            source_path: String::from("<builtin>"),
+            kind: crate::task::program_loader::ProgramKind::BuiltinAlias,
+            entry: String::from(name),
+            image_path: None,
+            description: String::new(),
+            requires_execute: false,
+            trust: crate::task::program_loader::ProgramTrust::System,
+            owner: String::from("kernel"),
+            image: None,
+            image_error: None,
+        },
         Err(_) => {
             crate::task::program_loader::record_launch_failure();
             return Err("program not found");
         }
     };
 
-    let result = dispatch_builtin(&entry, args);
+    let result = dispatch_builtin(&program.entry, args);
     match result {
         Ok(output) => {
-            record_program_process();
+            record_program_process(credentials, &program);
             crate::task::program_loader::record_launch_success();
             Ok(output)
         }
@@ -95,11 +117,35 @@ fn is_builtin_entry(name: &str) -> bool {
     matches!(name, "echo" | "time" | "sysinfo" | "fsinfo")
 }
 
-fn record_program_process() {
+fn record_program_process(
+    credentials: crate::security::Credentials,
+    program: &crate::task::program_loader::LoadedProgram,
+) {
     let tick =
         crate::performance::metrics::TICK_COUNTER.load(core::sync::atomic::Ordering::Relaxed);
-    if let Some(pid) = crate::task::process::create_kernel_process("program", tick) {
+    let image = crate::task::process::ProcessImageMetadata {
+        source_path: static_source_path(&program.source_path),
+        format: crate::exec_image::ExecutableFormat::BuiltinAlias,
+        entry_point: 0,
+        segment_count: 0,
+        address_space_id: None,
+        trust: program.trust,
+        owner: credentials,
+    };
+    if let Some(pid) =
+        crate::task::process::create_kernel_process_as_with_image("program", tick, credentials, image)
+    {
         let _ = crate::task::process::set_process_state(pid, crate::task::process::ProcessState::Ready);
         let _ = crate::task::process::terminate_process(pid, 0);
+    }
+}
+
+fn static_source_path(path: &str) -> &'static str {
+    match path {
+        "/bin/echo" => "/bin/echo",
+        "/bin/time" => "/bin/time",
+        "/bin/sysinfo" => "/bin/sysinfo",
+        "/bin/fsinfo" => "/bin/fsinfo",
+        _ => "<builtin>",
     }
 }

@@ -7,6 +7,7 @@
 use alloc::collections::BTreeMap;
 use alloc::vec::Vec;
 use crate::performance::process_metrics::{self, EventType, ProcessMetricsGlobal};
+use crate::security::Credentials;
 use core::sync::atomic::{AtomicUsize, Ordering};
 use lazy_static::lazy_static;
 use spin::Mutex;
@@ -52,6 +53,17 @@ pub enum ProcessCpuAffinity {
     Any,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ProcessImageMetadata {
+    pub source_path: &'static str,
+    pub format: crate::exec_image::ExecutableFormat,
+    pub entry_point: u64,
+    pub segment_count: usize,
+    pub address_space_id: Option<crate::address_space::AddressSpaceId>,
+    pub trust: crate::task::program_loader::ProgramTrust,
+    pub owner: Credentials,
+}
+
 impl ProcessState {
     /// Check if the process can be scheduled.
     pub fn is_runnable(self) -> bool {
@@ -80,11 +92,24 @@ pub struct Process {
     parent_pid: Option<ProcessId>,
     /// CPU affinity hint for scheduler placement.
     affinity: ProcessCpuAffinity,
+    /// Credentials captured when the process was created.
+    owner: Credentials,
+    /// Optional image metadata for loader-backed process records.
+    image: Option<ProcessImageMetadata>,
 }
 
 impl Process {
     /// Create a new process with the given name.
     pub fn new(id: ProcessId, name: &'static str, created_tick: u64) -> Self {
+        Self::new_with_owner(id, name, created_tick, Credentials::kernel())
+    }
+
+    pub fn new_with_owner(
+        id: ProcessId,
+        name: &'static str,
+        created_tick: u64,
+        owner: Credentials,
+    ) -> Self {
         Process {
             id,
             name,
@@ -95,6 +120,8 @@ impl Process {
             switches: 0,
             parent_pid: None,
             affinity: ProcessCpuAffinity::Core0,
+            owner,
+            image: None,
         }
     }
 
@@ -158,6 +185,18 @@ impl Process {
     pub fn set_affinity(&mut self, affinity: ProcessCpuAffinity) {
         self.affinity = affinity;
     }
+
+    pub fn owner(&self) -> Credentials {
+        self.owner
+    }
+
+    pub fn image(&self) -> Option<&ProcessImageMetadata> {
+        self.image.as_ref()
+    }
+
+    pub fn set_image(&mut self, image: ProcessImageMetadata) {
+        self.image = Some(image);
+    }
 }
 
 /// Global PID allocator for process creation.
@@ -195,12 +234,34 @@ impl ProcessRegistry {
 
     /// Create and register a new process.
     pub fn create_process(&mut self, name: &'static str, created_tick: u64) -> Option<ProcessId> {
+        self.create_process_as(name, created_tick, Credentials::kernel())
+    }
+
+    pub fn create_process_as(
+        &mut self,
+        name: &'static str,
+        created_tick: u64,
+        owner: Credentials,
+    ) -> Option<ProcessId> {
+        self.create_process_as_with_image(name, created_tick, owner, None)
+    }
+
+    pub fn create_process_as_with_image(
+        &mut self,
+        name: &'static str,
+        created_tick: u64,
+        owner: Credentials,
+        image: Option<ProcessImageMetadata>,
+    ) -> Option<ProcessId> {
         if self.processes.len() >= MAX_PROCESSES_CONFIG.load(Ordering::Relaxed) {
             return None; // Process table full
         }
 
         let pid = self.allocator.allocate();
-        let process = Process::new(pid, name, created_tick);
+        let mut process = Process::new_with_owner(pid, name, created_tick, owner);
+        if let Some(image) = image {
+            process.set_image(image);
+        }
         self.processes.insert(pid, process);
         Some(pid)
     }
@@ -277,6 +338,31 @@ impl ProcessRegistry {
             .collect()
     }
 
+    pub fn all_processes_with_owner(
+        &self,
+    ) -> Vec<(ProcessId, &'static str, ProcessState, u64, Credentials)> {
+        self.processes
+            .iter()
+            .map(|(pid, p)| (*pid, p.name(), p.state(), p.cpu_ticks(), p.owner()))
+            .collect()
+    }
+
+    pub fn all_processes_with_details(
+        &self,
+    ) -> Vec<(
+        ProcessId,
+        &'static str,
+        ProcessState,
+        u64,
+        Credentials,
+        Option<ProcessImageMetadata>,
+    )> {
+        self.processes
+            .iter()
+            .map(|(pid, p)| (*pid, p.name(), p.state(), p.cpu_ticks(), p.owner(), p.image().cloned()))
+            .collect()
+    }
+
     pub fn set_affinity(&mut self, pid: ProcessId, affinity: ProcessCpuAffinity) -> bool {
         if let Some(process) = self.processes.get_mut(&pid) {
             process.set_affinity(affinity);
@@ -304,10 +390,33 @@ lazy_static! {
 
 /// Public API: Create a new kernel process.
 pub fn create_kernel_process(name: &'static str, created_tick: u64) -> Option<ProcessId> {
+    create_kernel_process_as(name, created_tick, Credentials::kernel())
+}
+
+pub fn create_kernel_process_as(
+    name: &'static str,
+    created_tick: u64,
+    owner: Credentials,
+) -> Option<ProcessId> {
     let created = PROCESS_REGISTRY
         .lock()
-        .create_process(name, created_tick);
+        .create_process_as(name, created_tick, owner);
+    record_process_create(created)
+}
 
+pub fn create_kernel_process_as_with_image(
+    name: &'static str,
+    created_tick: u64,
+    owner: Credentials,
+    image: ProcessImageMetadata,
+) -> Option<ProcessId> {
+    let created = PROCESS_REGISTRY
+        .lock()
+        .create_process_as_with_image(name, created_tick, owner, Some(image));
+    record_process_create(created)
+}
+
+fn record_process_create(created: Option<ProcessId>) -> Option<ProcessId> {
     if let Some(pid) = created {
         ProcessMetricsGlobal::record_process_creation();
         process_metrics::log_event(EventType::Ready, pid.as_u64());
@@ -352,6 +461,21 @@ pub fn terminate_process(pid: ProcessId, exit_code: i32) -> bool {
     terminated
 }
 
+pub fn terminate_process_checked(actor: Credentials, pid: ProcessId, exit_code: i32) -> bool {
+    let owner = {
+        let registry = PROCESS_REGISTRY.lock();
+        registry.get_process(pid).map(|process| process.owner())
+    };
+    let Some(owner) = owner else {
+        return false;
+    };
+    if !crate::security::can_manage_process(actor, owner) {
+        crate::security::record_denial(crate::security::AccessKind::Manage);
+        return false;
+    }
+    terminate_process(pid, exit_code)
+}
+
 /// Public API: Get total process count.
 pub fn process_count() -> usize {
     PROCESS_REGISTRY.lock().process_count()
@@ -360,6 +484,23 @@ pub fn process_count() -> usize {
 /// Public API: Get snapshot of all processes for telemetry.
 pub fn get_all_processes() -> Vec<(ProcessId, &'static str, ProcessState, u64)> {
     PROCESS_REGISTRY.lock().all_processes()
+}
+
+pub fn get_all_processes_with_owner(
+) -> Vec<(ProcessId, &'static str, ProcessState, u64, Credentials)> {
+    PROCESS_REGISTRY.lock().all_processes_with_owner()
+}
+
+pub fn get_all_processes_with_details(
+) -> Vec<(
+    ProcessId,
+    &'static str,
+    ProcessState,
+    u64,
+    Credentials,
+    Option<ProcessImageMetadata>,
+)> {
+    PROCESS_REGISTRY.lock().all_processes_with_details()
 }
 
 /// Public API: Reap terminated processes.

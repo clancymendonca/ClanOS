@@ -108,6 +108,44 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         loader_status.launch_count,
         loader_status.failed_launch_count
     );
+    let credentials = kernel::security::current_credentials();
+    let policy_ok = kernel::security::phase10_smoke_check();
+    let denied_ok = kernel::storage::phase10_smoke_check();
+    println!(
+        "Phase10-Security: user={}, role={}, policy_ok={}, denied_ok={}, denied_access={}, denied_execute={}",
+        credentials.user.as_u64(),
+        credentials.role.name(),
+        policy_ok,
+        denied_ok,
+        kernel::security::denied_access_count(),
+        kernel::security::denied_execute_count()
+    );
+    kernel::serial_println!(
+        "Phase10-Security: user={}, role={}, policy_ok={}, denied_ok={}, denied_access={}, denied_execute={}",
+        credentials.user.as_u64(),
+        credentials.role.name(),
+        policy_ok,
+        denied_ok,
+        kernel::security::denied_access_count(),
+        kernel::security::denied_execute_count()
+    );
+    let phase11_images_ok = kernel::task::program_loader::phase11_smoke_check();
+    let image_status = kernel::task::program_loader::status();
+    let exec_blocked_ok = image_status.unsupported_execution_count > 0;
+    println!(
+        "Phase11-Images: images={}, valid={}, rejected={}, exec_blocked_ok={}",
+        image_status.image_count,
+        image_status.valid_image_count,
+        image_status.invalid_image_count,
+        phase11_images_ok && exec_blocked_ok
+    );
+    kernel::serial_println!(
+        "Phase11-Images: images={}, valid={}, rejected={}, exec_blocked_ok={}",
+        image_status.image_count,
+        image_status.valid_image_count,
+        image_status.invalid_image_count,
+        phase11_images_ok && exec_blocked_ok
+    );
 
     // Display performance counters at startup.
     let counters = PerformanceCounters::read();

@@ -13,6 +13,7 @@ use core::{panic::PanicInfo, sync::atomic::Ordering};
 use kernel::{
     allocator, block, device, hlt_loop, memory,
     performance::{metrics::TICK_COUNTER, process_metrics},
+    security,
     syscall,
     task::{process, scheduler},
 };
@@ -277,4 +278,191 @@ fn phase9_loader_syscalls_report_status() {
         Err(syscall::SyscallError::InvalidArgument)
     );
     assert!(kernel::task::program_loader::phase9_smoke_check());
+}
+
+#[test_case]
+fn phase10_permission_predicates_cover_user_and_admin() {
+    let user = security::Credentials::shell_user();
+    let admin = security::Credentials::admin();
+    assert!(security::can_access(
+        user,
+        user.user,
+        security::FileMode::user_file(),
+        security::AccessKind::Write
+    )
+    .is_ok());
+    assert!(security::can_access(
+        admin,
+        user.user,
+        security::FileMode::read_only(),
+        security::AccessKind::Manage
+    )
+    .is_ok());
+    assert!(security::can_access(
+        user,
+        admin.user,
+        security::FileMode::system_executable(),
+        security::AccessKind::Write
+    )
+    .is_err());
+}
+
+#[test_case]
+fn phase10_checked_storage_enforces_file_policy() {
+    kernel::storage::format().expect("format should seed protected files");
+    let user = security::Credentials::shell_user();
+    kernel::storage::write_file_checked(user, "/phase10.txt", "owned")
+        .expect("user should write own file");
+    assert_eq!(
+        kernel::storage::read_file_checked(user, "/phase10.txt")
+            .expect("user should read own file"),
+        Some("owned".into())
+    );
+    let metadata = kernel::storage::stat_file("/phase10.txt")
+        .expect("stat should succeed")
+        .expect("file should exist");
+    assert_eq!(metadata.owner, user.user);
+    assert!(kernel::storage::write_file_checked(user, "/bin/echo", "blocked").is_err());
+    kernel::storage::delete_file_checked(user, "/phase10.txt")
+        .expect("user should delete own file");
+}
+
+#[test_case]
+fn phase10_execute_permission_is_required_for_loader_launch() {
+    kernel::storage::format().expect("format should seed executable manifests");
+    let admin = security::Credentials::admin();
+    let user = security::Credentials::shell_user();
+    security::set_current_credentials(admin);
+    kernel::storage::write_file(
+        "/bin/blocked",
+        "ares-exec-v1\nname=blocked\nkind=builtin-alias\nentry=echo\nrequires=execute\ntrust=system\nowner=admin\ndescription=Blocked test",
+    )
+    .expect("admin should seed test manifest");
+    kernel::storage::chmod_execute_checked(admin, "/bin/blocked", false)
+        .expect("admin should remove execute");
+
+    security::set_current_credentials(user);
+    let before = kernel::task::program_loader::status().denied_launch_count;
+    assert_eq!(
+        kernel::task::userspace::run_program("blocked", &["nope"]),
+        Err("permission denied")
+    );
+    assert!(kernel::task::program_loader::status().denied_launch_count > before);
+
+    security::set_current_credentials(admin);
+    kernel::storage::delete_file("/bin/blocked").expect("cleanup should succeed");
+    security::set_current_credentials(user);
+}
+
+#[test_case]
+fn phase10_process_ownership_controls_termination() {
+    let tick = TICK_COUNTER.load(Ordering::Relaxed);
+    let admin = security::Credentials::admin();
+    let user = security::Credentials::shell_user();
+    let pid = process::create_kernel_process_as("phase10-owned", tick, admin)
+        .expect("process should be created");
+    assert!(!process::terminate_process_checked(user, pid, 0));
+    assert!(process::terminate_process_checked(admin, pid, 0));
+}
+
+#[test_case]
+fn phase10_security_syscalls_report_identity_and_denials() {
+    security::set_current_credentials(security::Credentials::shell_user());
+    kernel::storage::format().expect("format should seed protected files");
+    let before = syscall::invoke_raw(syscall::SyscallId::DeniedAccessCount as u64, 0)
+        .expect("denied counter syscall should succeed");
+    assert!(kernel::storage::write_file_checked(
+        security::Credentials::shell_user(),
+        "/bin/echo",
+        "blocked"
+    )
+    .is_err());
+    assert_eq!(
+        syscall::invoke_raw(syscall::SyscallId::CurrentUser as u64, 0),
+        Ok(security::Credentials::shell_user().user.as_u64())
+    );
+    assert!(
+        syscall::invoke_raw(syscall::SyscallId::DeniedAccessCount as u64, 0)
+            .expect("denied counter syscall should succeed")
+            > before
+    );
+    assert!(kernel::security::phase10_smoke_check());
+    assert!(kernel::storage::phase10_smoke_check());
+}
+
+#[test_case]
+fn phase11_elf_image_parser_validates_seed_fixture() {
+    let image = kernel::exec_image::parse_elf64_image(
+        "hello",
+        "/bin/hello.elf",
+        kernel::storage::phase11_sample_elf_image().as_bytes(),
+        kernel::task::program_loader::ProgramTrust::User,
+        security::Credentials::shell_user().user,
+    )
+    .expect("sample ELF image should parse");
+    assert_eq!(image.format, kernel::exec_image::ExecutableFormat::Elf64);
+    assert_eq!(image.entry_point, 0x400000);
+    assert_eq!(image.segments.len(), 1);
+}
+
+#[test_case]
+fn phase11_loader_discovers_and_validates_image_programs() {
+    kernel::storage::format().expect("format should seed image manifests");
+    let program = kernel::task::program_loader::program_info("hello")
+        .expect("hello image manifest should be discoverable");
+    assert_eq!(program.kind, kernel::task::program_loader::ProgramKind::Elf64Image);
+    assert_eq!(program.image_path.as_deref(), Some("/bin/hello.elf"));
+    assert!(program.image.is_some());
+    let image = kernel::task::program_loader::validate_program_image(
+        security::Credentials::shell_user(),
+        "hello",
+    )
+    .expect("image should validate");
+    let descriptor = kernel::address_space::descriptor_for_image(
+        kernel::address_space::AddressSpaceId::from_raw(11),
+        &image,
+    )
+    .expect("address-space descriptor should validate");
+    assert_eq!(descriptor.regions.len(), 1);
+}
+
+#[test_case]
+fn phase11_image_execution_is_blocked_until_future_phase() {
+    kernel::storage::format().expect("format should seed image manifests");
+    security::set_current_credentials(security::Credentials::shell_user());
+    let before = kernel::task::program_loader::status().unsupported_execution_count;
+    assert_eq!(
+        kernel::task::userspace::run_program("hello", &[]),
+        Err("unsupported executable image")
+    );
+    assert!(kernel::task::program_loader::status().unsupported_execution_count > before);
+}
+
+#[test_case]
+fn phase11_referenced_image_requires_execute_permission() {
+    kernel::storage::format().expect("format should seed image manifests");
+    let admin = security::Credentials::admin();
+    kernel::storage::chmod_execute_checked(admin, "/bin/hello.elf", false)
+        .expect("admin should remove execute from image");
+    assert_eq!(
+        kernel::task::program_loader::validate_program_image(
+            security::Credentials::shell_user(),
+            "hello"
+        ),
+        Err(kernel::task::program_loader::ProgramLoadError::PermissionDenied)
+    );
+    kernel::storage::chmod_execute_checked(admin, "/bin/hello.elf", true)
+        .expect("admin should restore execute");
+}
+
+#[test_case]
+fn phase11_status_syscalls_report_image_counts() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(syscall::invoke_raw(syscall::SyscallId::ImageCount as u64, 0).unwrap() >= 1);
+    assert!(syscall::invoke_raw(syscall::SyscallId::ValidImageCount as u64, 0).unwrap() >= 1);
+    assert_eq!(
+        syscall::invoke_raw(syscall::SyscallId::ImageCount as u64, 1),
+        Err(syscall::SyscallError::InvalidArgument)
+    );
+    assert!(kernel::task::program_loader::phase11_smoke_check());
 }
