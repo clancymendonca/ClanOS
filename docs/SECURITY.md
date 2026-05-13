@@ -69,3 +69,5 @@ Phase10-Security: user=100, role=user, policy_ok=true, denied_ok=true, denied_ac
 Phase 10 intentionally does not provide CPU privilege separation, page-table isolation, real executable memory protections, cryptographic program signatures, groups, ACLs, or capabilities. Those are deferred until the kernel has raw ELF loading and per-process address spaces.
 
 Phase 11 adds descriptor-only address spaces and ELF64 validation, but still does not switch page tables or run arbitrary stored code.
+
+Phase 12 adds load-plan and reservation accounting for validated images. It still does not allocate executable user frames, mutate process page tables, switch CR3, enter Ring 3, or jump to stored ELF entry points.

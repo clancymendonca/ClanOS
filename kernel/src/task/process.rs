@@ -64,6 +64,23 @@ pub struct ProcessImageMetadata {
     pub owner: Credentials,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ProcessLoadState {
+    Prepared,
+    Rejected,
+    ExecutionBlocked,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ProcessLoadMetadata {
+    pub state: ProcessLoadState,
+    pub source_path: &'static str,
+    pub entry_point: u64,
+    pub planned_pages: usize,
+    pub region_count: usize,
+    pub stack_pages: usize,
+}
+
 impl ProcessState {
     /// Check if the process can be scheduled.
     pub fn is_runnable(self) -> bool {
@@ -96,6 +113,8 @@ pub struct Process {
     owner: Credentials,
     /// Optional image metadata for loader-backed process records.
     image: Option<ProcessImageMetadata>,
+    /// Optional executable load-plan metadata for Phase 12 preparation records.
+    load: Option<ProcessLoadMetadata>,
 }
 
 impl Process {
@@ -122,6 +141,7 @@ impl Process {
             affinity: ProcessCpuAffinity::Core0,
             owner,
             image: None,
+            load: None,
         }
     }
 
@@ -197,6 +217,14 @@ impl Process {
     pub fn set_image(&mut self, image: ProcessImageMetadata) {
         self.image = Some(image);
     }
+
+    pub fn load(&self) -> Option<&ProcessLoadMetadata> {
+        self.load.as_ref()
+    }
+
+    pub fn set_load(&mut self, load: ProcessLoadMetadata) {
+        self.load = Some(load);
+    }
 }
 
 /// Global PID allocator for process creation.
@@ -253,6 +281,17 @@ impl ProcessRegistry {
         owner: Credentials,
         image: Option<ProcessImageMetadata>,
     ) -> Option<ProcessId> {
+        self.create_process_with_metadata(name, created_tick, owner, image, None)
+    }
+
+    pub fn create_process_with_metadata(
+        &mut self,
+        name: &'static str,
+        created_tick: u64,
+        owner: Credentials,
+        image: Option<ProcessImageMetadata>,
+        load: Option<ProcessLoadMetadata>,
+    ) -> Option<ProcessId> {
         if self.processes.len() >= MAX_PROCESSES_CONFIG.load(Ordering::Relaxed) {
             return None; // Process table full
         }
@@ -261,6 +300,9 @@ impl ProcessRegistry {
         let mut process = Process::new_with_owner(pid, name, created_tick, owner);
         if let Some(image) = image {
             process.set_image(image);
+        }
+        if let Some(load) = load {
+            process.set_load(load);
         }
         self.processes.insert(pid, process);
         Some(pid)
@@ -356,10 +398,21 @@ impl ProcessRegistry {
         u64,
         Credentials,
         Option<ProcessImageMetadata>,
+        Option<ProcessLoadMetadata>,
     )> {
         self.processes
             .iter()
-            .map(|(pid, p)| (*pid, p.name(), p.state(), p.cpu_ticks(), p.owner(), p.image().cloned()))
+            .map(|(pid, p)| {
+                (
+                    *pid,
+                    p.name(),
+                    p.state(),
+                    p.cpu_ticks(),
+                    p.owner(),
+                    p.image().cloned(),
+                    p.load().cloned(),
+                )
+            })
             .collect()
     }
 
@@ -413,6 +466,23 @@ pub fn create_kernel_process_as_with_image(
     let created = PROCESS_REGISTRY
         .lock()
         .create_process_as_with_image(name, created_tick, owner, Some(image));
+    record_process_create(created)
+}
+
+pub fn create_kernel_process_with_metadata(
+    name: &'static str,
+    created_tick: u64,
+    owner: Credentials,
+    image: ProcessImageMetadata,
+    load: ProcessLoadMetadata,
+) -> Option<ProcessId> {
+    let created = PROCESS_REGISTRY.lock().create_process_with_metadata(
+        name,
+        created_tick,
+        owner,
+        Some(image),
+        Some(load),
+    );
     record_process_create(created)
 }
 
@@ -499,6 +569,7 @@ pub fn get_all_processes_with_details(
     u64,
     Credentials,
     Option<ProcessImageMetadata>,
+    Option<ProcessLoadMetadata>,
 )> {
     PROCESS_REGISTRY.lock().all_processes_with_details()
 }

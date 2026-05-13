@@ -1,6 +1,6 @@
 # Executable Image Groundwork
 
-Phase 11 adds executable-image recognition and address-space descriptors. It does not execute arbitrary machine code yet.
+Phase 11 adds executable-image recognition and address-space descriptors. Phase 12 adds load plans that model page-aligned placement, copy actions, zero-fill actions, and reservation accounting. Neither phase executes arbitrary machine code yet.
 
 ## Image Manifest
 
@@ -44,23 +44,38 @@ Phase 11 introduces descriptor-only address spaces:
 
 Descriptors validate user ranges, overlap, empty regions, and writable+executable mappings. They do not switch CR3 or create per-process page tables.
 
+## Load Plans
+
+Phase 12 converts validated images into load plans:
+
+- page-aligned regions
+- file-backed copy ranges
+- zero-fill ranges for memory beyond file bytes
+- planned page counts
+- stack reservation accounting
+
+These plans feed descriptor reservation metadata only. They do not allocate real user frames or mutate active page tables.
+
 ## Observability
 
 The shell exposes:
 
 - `bin validate <program>`
+- `bin prepare <program>`
 - richer `bin info <program>` output
+- `bin plans`
 - `ps` image/source display for loader-created process records
 
 Boot emits:
 
 ```text
 Phase11-Images: images=..., valid=..., rejected=..., exec_blocked_ok=true
+Phase12-LoadPlan: prepared=..., rejected=..., pages=..., exec_blocked_ok=true
 ```
 
 ## Deferred Work
 
-- actual ELF relocation and executable memory mapping
+- actual frame allocation and executable memory mapping
 - per-process page tables and CR3 switching
 - Ring 3 entry and syscall return paths
 - demand paging and memory-mapped executable files

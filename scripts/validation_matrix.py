@@ -128,6 +128,16 @@ def main() -> int:
             None,
         ),
         (
+            "phase12-load-plan-check",
+            [
+                "python",
+                "scripts/phase12_load_plan_check.py",
+                "--timeout",
+                str(args.smoke_timeout),
+            ],
+            None,
+        ),
+        (
             "phase5-soak-check",
             [
                 "python",

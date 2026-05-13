@@ -146,6 +146,22 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         image_status.invalid_image_count,
         phase11_images_ok && exec_blocked_ok
     );
+    let phase12_load_plan_ok = kernel::task::program_loader::phase12_smoke_check();
+    let load_plan_status = kernel::task::program_loader::status();
+    println!(
+        "Phase12-LoadPlan: prepared={}, rejected={}, pages={}, exec_blocked_ok={}",
+        load_plan_status.prepared_image_count,
+        load_plan_status.rejected_load_plan_count,
+        load_plan_status.total_planned_pages,
+        phase12_load_plan_ok
+    );
+    kernel::serial_println!(
+        "Phase12-LoadPlan: prepared={}, rejected={}, pages={}, exec_blocked_ok={}",
+        load_plan_status.prepared_image_count,
+        load_plan_status.rejected_load_plan_count,
+        load_plan_status.total_planned_pages,
+        phase12_load_plan_ok
+    );
 
     // Display performance counters at startup.
     let counters = PerformanceCounters::read();

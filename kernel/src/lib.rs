@@ -21,6 +21,7 @@ pub mod device;
 pub mod exec_image;
 pub mod gdt;
 pub mod interrupts;
+pub mod load_plan;
 pub mod memory;
 pub mod performance;
 pub mod serial;

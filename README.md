@@ -220,6 +220,18 @@ Checklist: `docs/phase-11-checklist.md`
 
 Executable image deep dive: `docs/EXECUTABLE_IMAGES.md`
 
+### Phase 12 — Executable Load Plans & Mapping Groundwork
+
+* page-aligned executable load plans
+* copy and zero-fill action accounting
+* frame/page reservation metadata without page-table mutation
+
+Status: ✅ Complete (validated 2026-05-13; load-plan preparation + execution-block smoke)
+
+Checklist: `docs/phase-12-checklist.md`
+
+Load-plan deep dive: `docs/LOAD_PLANS.md`
+
 ---
 
 # Project Structure
@@ -237,6 +249,7 @@ AresOS
 │   │   ├── security.rs        identity + permission policy primitives
 │   │   ├── exec_image.rs      executable image parser and validation
 │   │   ├── address_space.rs   descriptor-only process address spaces
+│   │   ├── load_plan.rs       executable load-plan accounting
 │   │   ├── lib.rs             shared kernel modules
 │   │   ├── interrupts.rs      IDT + IRQ handlers
 │   │   ├── memory.rs          paging + frame allocator
@@ -345,6 +358,12 @@ Phase 11 executable image check:
 
 ```
 ./scripts/phase11-image-check --timeout 20
+```
+
+Phase 12 executable load-plan check:
+
+```
+./scripts/phase12-load-plan-check --timeout 20
 ```
 
 Full validation matrix (QEMU-backed):

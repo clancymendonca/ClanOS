@@ -466,3 +466,112 @@ fn phase11_status_syscalls_report_image_counts() {
     );
     assert!(kernel::task::program_loader::phase11_smoke_check());
 }
+
+#[test_case]
+fn phase12_load_plan_generates_copy_and_zero_fill_actions() {
+    let image = kernel::exec_image::parse_elf64_image(
+        "hello",
+        "/bin/hello.elf",
+        kernel::storage::phase11_sample_elf_image().as_bytes(),
+        kernel::task::program_loader::ProgramTrust::User,
+        security::Credentials::shell_user().user,
+    )
+    .expect("sample ELF image should parse");
+    let plan = kernel::load_plan::build_load_plan(&image).expect("load plan should build");
+    assert_eq!(plan.total_pages, 1);
+    assert_eq!(plan.stack_pages, kernel::load_plan::STACK_RESERVATION_PAGES);
+    assert_eq!(plan.regions.len(), 1);
+    assert!(matches!(
+        plan.regions[0].actions[0],
+        kernel::load_plan::LoadAction::Copy { len: 4, .. }
+    ));
+    assert!(matches!(
+        plan.regions[0].actions[1],
+        kernel::load_plan::LoadAction::ZeroFill { len: 4092, .. }
+    ));
+}
+
+#[test_case]
+fn phase12_load_plan_rejects_unsafe_or_invalid_regions() {
+    let unsafe_region = kernel::load_plan::LoadRegion {
+        start: 0x400000,
+        size: kernel::load_plan::PAGE_SIZE,
+        page_count: 1,
+        permissions: kernel::load_plan::LoadPermissions::from_bits(
+            kernel::load_plan::LoadPermissions::WRITE
+                | kernel::load_plan::LoadPermissions::EXECUTE,
+        ),
+        actions: alloc::vec::Vec::new(),
+    };
+    assert_eq!(
+        kernel::load_plan::validate_regions(&[unsafe_region]),
+        Err(kernel::load_plan::LoadPlanError::WritableExecutable)
+    );
+
+    let image = kernel::exec_image::ExecutableImage {
+        name: "bad-entry".into(),
+        source_path: "/bin/bad.elf".into(),
+        format: kernel::exec_image::ExecutableFormat::Elf64,
+        entry_point: 0x500000,
+        image_size: 128,
+        trust: kernel::task::program_loader::ProgramTrust::User,
+        owner: security::Credentials::shell_user().user,
+        segments: alloc::vec![kernel::exec_image::ImageSegment {
+            virtual_address: 0x400000,
+            file_offset: 120,
+            file_size: 4,
+            memory_size: 0x1000,
+            flags: kernel::exec_image::SegmentFlags::from_bits(
+                kernel::exec_image::SegmentFlags::READ
+                    | kernel::exec_image::SegmentFlags::EXECUTE,
+            ),
+        }],
+    };
+    assert_eq!(
+        kernel::load_plan::build_load_plan(&image),
+        Err(kernel::load_plan::LoadPlanError::EntryOutsideExecutableSegment)
+    );
+}
+
+#[test_case]
+fn phase12_loader_prepare_path_reports_status() {
+    kernel::storage::format().expect("format should seed image manifests");
+    let before = kernel::task::program_loader::status();
+    let prepared = kernel::task::program_loader::prepare_program_image(
+        security::Credentials::shell_user(),
+        "hello",
+    )
+    .expect("prepare should succeed");
+    assert_eq!(prepared.load_plan.total_pages, 1);
+    assert_eq!(prepared.address_space.reservation.user_pages, 3);
+    let after = kernel::task::program_loader::status();
+    assert!(after.prepared_image_count > before.prepared_image_count);
+    assert!(after.total_planned_pages > before.total_planned_pages);
+}
+
+#[test_case]
+fn phase12_syscalls_and_smoke_report_load_plan_status() {
+    kernel::storage::format().expect("format should seed image manifests");
+    let before = syscall::invoke_raw(syscall::SyscallId::PreparedImageCount as u64, 0)
+        .expect("prepared count syscall should succeed");
+    kernel::task::program_loader::prepare_program_image(
+        security::Credentials::shell_user(),
+        "hello",
+    )
+    .expect("prepare should succeed");
+    assert!(
+        syscall::invoke_raw(syscall::SyscallId::PreparedImageCount as u64, 0)
+            .expect("prepared count syscall should succeed")
+            > before
+    );
+    assert!(syscall::invoke_raw(syscall::SyscallId::TotalPlannedPages as u64, 0).unwrap() > 0);
+    assert_eq!(
+        syscall::invoke_raw(syscall::SyscallId::PreparedImageCount as u64, 1),
+        Err(syscall::SyscallError::InvalidArgument)
+    );
+    assert!(kernel::task::program_loader::phase12_smoke_check());
+    assert_eq!(
+        kernel::task::userspace::run_program("hello", &[]),
+        Err("unsupported executable image")
+    );
+}

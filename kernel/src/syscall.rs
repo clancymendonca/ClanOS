@@ -24,6 +24,10 @@ pub enum SyscallId {
     ValidImageCount = 17,
     InvalidImageCount = 18,
     UnsupportedExecutionCount = 19,
+    PreparedImageCount = 20,
+    RejectedLoadPlanCount = 21,
+    TotalPlannedPages = 22,
+    ExecutionBlockedCount = 23,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -150,6 +154,30 @@ pub fn invoke_raw(id: u64, arg0: u64) -> Result<u64, SyscallError> {
             Ok(crate::task::program_loader::status().invalid_image_count as u64)
         }
         x if x == SyscallId::UnsupportedExecutionCount as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::task::program_loader::status().unsupported_execution_count)
+        }
+        x if x == SyscallId::PreparedImageCount as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::task::program_loader::status().prepared_image_count)
+        }
+        x if x == SyscallId::RejectedLoadPlanCount as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::task::program_loader::status().rejected_load_plan_count)
+        }
+        x if x == SyscallId::TotalPlannedPages as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::task::program_loader::status().total_planned_pages)
+        }
+        x if x == SyscallId::ExecutionBlockedCount as u64 => {
             if arg0 != 0 {
                 return Err(SyscallError::InvalidArgument);
             }

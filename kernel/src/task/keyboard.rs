@@ -206,6 +206,8 @@ fn execute_console_command(command: &str) {
             println!("  bin list");
             println!("  bin info <program>");
             println!("  bin validate <program>");
+            println!("  bin prepare <program>");
+            println!("  bin plans");
             println!("  ls");
             println!("  cat <path>");
             println!("  touch <path>");
@@ -230,19 +232,28 @@ fn execute_console_command(command: &str) {
             if entries.is_empty() {
                 println!("No processes registered");
             } else {
-                println!("PID  STATE       CPU_TICKS  OWNER      IMAGE          NAME");
-                for (pid, name, state, ticks, owner, image) in entries {
+                println!("PID  STATE       CPU_TICKS  OWNER      IMAGE          LOAD       NAME");
+                for (pid, name, state, ticks, owner, image, load) in entries {
                     let image_source = image
                         .as_ref()
                         .map(|image| image.source_path)
                         .unwrap_or("-");
+                    let load_state = load
+                        .as_ref()
+                        .map(|load| match load.state {
+                            crate::task::process::ProcessLoadState::Prepared => "prepared",
+                            crate::task::process::ProcessLoadState::Rejected => "rejected",
+                            crate::task::process::ProcessLoadState::ExecutionBlocked => "blocked",
+                        })
+                        .unwrap_or("-");
                     println!(
-                        "{:<4} {:<11?} {:<9} {:<10} {:<14} {}",
+                        "{:<4} {:<11?} {:<9} {:<10} {:<14} {:<10} {}",
                         pid.as_u64(),
                         state,
                         ticks,
                         owner.role.name(),
                         image_source,
+                        load_state,
                         name
                     );
                 }
@@ -323,28 +334,38 @@ fn execute_console_command(command: &str) {
             }
             let status = crate::task::program_loader::status();
             println!(
-                "Program loader: programs={}, images={}/{}, invalid_images={}, launches={}, failed_launches={}",
+                "Program loader: programs={}, images={}/{}, invalid_images={}, prepared={}, planned_pages={}, launches={}, failed_launches={}",
                 status.program_count,
                 status.valid_image_count,
                 status.image_count,
                 status.invalid_image_count,
+                status.prepared_image_count,
+                status.total_planned_pages,
                 status.launch_count,
                 status.failed_launch_count
             );
         }
         ["bin", "info", program] => match crate::task::program_loader::program_info(program) {
-            Ok(info) => println!(
-                "Program {}: path={}, kind={:?}, entry={}, image={:?}, segments={}, trust={:?}, exec_supported={}, description={}",
-                info.name,
-                info.source_path,
-                info.kind,
-                info.entry,
-                info.image_path,
-                info.image.as_ref().map(|image| image.segments.len()).unwrap_or(0),
-                info.trust,
-                info.kind == crate::task::program_loader::ProgramKind::BuiltinAlias,
-                info.description
-            ),
+            Ok(info) => {
+                let planned = info
+                    .image
+                    .as_ref()
+                    .and_then(|image| crate::load_plan::build_load_plan(image).ok());
+                println!(
+                    "Program {}: path={}, kind={:?}, entry={}, image={:?}, segments={}, planned_pages={}, planned_regions={}, trust={:?}, exec_supported={}, description={}",
+                    info.name,
+                    info.source_path,
+                    info.kind,
+                    info.entry,
+                    info.image_path,
+                    info.image.as_ref().map(|image| image.segments.len()).unwrap_or(0),
+                    planned.as_ref().map(|plan| plan.total_pages).unwrap_or(0),
+                    planned.as_ref().map(|plan| plan.regions.len()).unwrap_or(0),
+                    info.trust,
+                    info.kind == crate::task::program_loader::ProgramKind::BuiltinAlias,
+                    info.description
+                );
+            }
             Err(err) => println!("program info error: {:?}", err),
         },
         ["bin", "validate", program] => match crate::task::program_loader::validate_program_image(
@@ -361,6 +382,30 @@ fn execute_console_command(command: &str) {
             ),
             Err(err) => println!("program validate error: {:?}", err),
         },
+        ["bin", "prepare", program] => match crate::task::program_loader::prepare_program_image(
+            crate::security::current_credentials(),
+            program,
+        ) {
+            Ok(prepared) => println!(
+                "Prepared {}: entry=0x{:x}, regions={}, pages={}, stack_pages={}",
+                prepared.image.name,
+                prepared.load_plan.entry_point,
+                prepared.load_plan.regions.len(),
+                prepared.load_plan.total_pages,
+                prepared.load_plan.stack_pages
+            ),
+            Err(err) => println!("program prepare error: {:?}", err),
+        },
+        ["bin", "plans"] | ["loadplans"] => {
+            let status = crate::task::program_loader::status();
+            println!(
+                "Load plans: prepared={}, rejected={}, planned_pages={}, exec_blocked={}",
+                status.prepared_image_count,
+                status.rejected_load_plan_count,
+                status.total_planned_pages,
+                status.unsupported_execution_count
+            );
+        }
         ["ls"] => match crate::storage::list_files() {
             Ok(files) => {
                 for file in files {

@@ -37,10 +37,28 @@ pub struct VirtualRegion {
     pub flags: SegmentFlags,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MappingState {
+    Planned,
+    Reserved,
+    MappedStub,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FrameReservationSummary {
+    pub user_pages: usize,
+    pub stack_pages: usize,
+    pub executable_pages: usize,
+    pub writable_pages: usize,
+    pub read_only_pages: usize,
+    pub mapping_state: MappingState,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AddressSpaceDescriptor {
     pub id: AddressSpaceId,
     pub regions: Vec<VirtualRegion>,
+    pub reservation: FrameReservationSummary,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -57,7 +75,11 @@ pub fn descriptor_for_image(
 ) -> Result<AddressSpaceDescriptor, AddressSpaceError> {
     let mut regions = Vec::new();
     if image.format == ExecutableFormat::BuiltinAlias {
-        return Ok(AddressSpaceDescriptor { id, regions });
+        return Ok(AddressSpaceDescriptor {
+            id,
+            regions,
+            reservation: empty_reservation(),
+        });
     }
 
     for segment in &image.segments {
@@ -69,7 +91,34 @@ pub fn descriptor_for_image(
         });
     }
     validate_regions(&regions)?;
-    Ok(AddressSpaceDescriptor { id, regions })
+    let reservation = reservation_for_regions(&regions, crate::load_plan::STACK_RESERVATION_PAGES);
+    Ok(AddressSpaceDescriptor {
+        id,
+        regions,
+        reservation,
+    })
+}
+
+pub fn descriptor_for_load_plan(
+    id: AddressSpaceId,
+    plan: &crate::load_plan::LoadPlan,
+) -> Result<AddressSpaceDescriptor, AddressSpaceError> {
+    let regions = plan
+        .regions
+        .iter()
+        .map(|region| VirtualRegion {
+            start: region.start,
+            size: region.size,
+            kind: kind_for_load_permissions(region.permissions),
+            flags: segment_flags_for_load_permissions(region.permissions),
+        })
+        .collect::<Vec<_>>();
+    validate_regions(&regions)?;
+    Ok(AddressSpaceDescriptor {
+        id,
+        reservation: reservation_for_regions(&regions, plan.stack_pages),
+        regions,
+    })
 }
 
 pub fn validate_regions(regions: &[VirtualRegion]) -> Result<(), AddressSpaceError> {
@@ -107,6 +156,58 @@ fn kind_for_flags(flags: SegmentFlags) -> RegionKind {
         RegionKind::Data
     } else {
         RegionKind::Data
+    }
+}
+
+fn kind_for_load_permissions(permissions: crate::load_plan::LoadPermissions) -> RegionKind {
+    if permissions.executable() {
+        RegionKind::Code
+    } else if permissions.writable() {
+        RegionKind::Data
+    } else {
+        RegionKind::Data
+    }
+}
+
+fn segment_flags_for_load_permissions(permissions: crate::load_plan::LoadPermissions) -> SegmentFlags {
+    SegmentFlags::from_bits(
+        ((permissions.readable() as u8) * SegmentFlags::READ)
+            | ((permissions.writable() as u8) * SegmentFlags::WRITE)
+            | ((permissions.executable() as u8) * SegmentFlags::EXECUTE),
+    )
+}
+
+fn reservation_for_regions(regions: &[VirtualRegion], stack_pages: usize) -> FrameReservationSummary {
+    let mut summary = FrameReservationSummary {
+        user_pages: stack_pages,
+        stack_pages,
+        executable_pages: 0,
+        writable_pages: 0,
+        read_only_pages: 0,
+        mapping_state: MappingState::Planned,
+    };
+    for region in regions {
+        let pages = (region.size + crate::load_plan::PAGE_SIZE - 1) / crate::load_plan::PAGE_SIZE;
+        summary.user_pages += pages;
+        if region.flags.executable() {
+            summary.executable_pages += pages;
+        } else if region.flags.writable() {
+            summary.writable_pages += pages;
+        } else {
+            summary.read_only_pages += pages;
+        }
+    }
+    summary
+}
+
+fn empty_reservation() -> FrameReservationSummary {
+    FrameReservationSummary {
+        user_pages: 0,
+        stack_pages: 0,
+        executable_pages: 0,
+        writable_pages: 0,
+        read_only_pages: 0,
+        mapping_state: MappingState::Planned,
     }
 }
 
@@ -171,5 +272,6 @@ mod tests {
             .expect("descriptor should be valid");
         assert_eq!(descriptor.regions.len(), 1);
         assert_eq!(descriptor.regions[0].kind, RegionKind::Code);
+        assert_eq!(descriptor.reservation.executable_pages, 1);
     }
 }

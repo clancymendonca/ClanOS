@@ -61,6 +61,7 @@ pub enum ProgramLoadError {
     PermissionDenied,
     UnsupportedExecution,
     ImageInvalid,
+    LoadPlanRejected,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -73,12 +74,26 @@ pub struct LoaderStatus {
     pub valid_image_count: usize,
     pub invalid_image_count: usize,
     pub unsupported_execution_count: u64,
+    pub prepared_image_count: u64,
+    pub rejected_load_plan_count: u64,
+    pub total_planned_pages: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PreparedProgramImage {
+    pub program: LoadedProgram,
+    pub image: crate::exec_image::ExecutableImage,
+    pub load_plan: crate::load_plan::LoadPlan,
+    pub address_space: crate::address_space::AddressSpaceDescriptor,
 }
 
 static LAUNCH_COUNT: AtomicU64 = AtomicU64::new(0);
 static FAILED_LAUNCH_COUNT: AtomicU64 = AtomicU64::new(0);
 static DENIED_LAUNCH_COUNT: AtomicU64 = AtomicU64::new(0);
 static UNSUPPORTED_EXECUTION_COUNT: AtomicU64 = AtomicU64::new(0);
+static PREPARED_IMAGE_COUNT: AtomicU64 = AtomicU64::new(0);
+static REJECTED_LOAD_PLAN_COUNT: AtomicU64 = AtomicU64::new(0);
+static TOTAL_PLANNED_PAGES: AtomicU64 = AtomicU64::new(0);
 
 pub fn parse_manifest(contents: &str) -> Result<ProgramManifest, ProgramLoadError> {
     let mut lines = contents.lines();
@@ -229,6 +244,9 @@ pub fn status() -> LoaderStatus {
         valid_image_count,
         invalid_image_count: image_count.saturating_sub(valid_image_count),
         unsupported_execution_count: UNSUPPORTED_EXECUTION_COUNT.load(Ordering::Relaxed),
+        prepared_image_count: PREPARED_IMAGE_COUNT.load(Ordering::Relaxed),
+        rejected_load_plan_count: REJECTED_LOAD_PLAN_COUNT.load(Ordering::Relaxed),
+        total_planned_pages: TOTAL_PLANNED_PAGES.load(Ordering::Relaxed),
     }
 }
 
@@ -311,6 +329,61 @@ pub fn phase11_smoke_check() -> bool {
     validate_ok && initial_status.image_count >= 1 && initial_status.valid_image_count >= 1 && blocked_ok
 }
 
+pub fn prepare_program_image(
+    credentials: crate::security::Credentials,
+    name: &str,
+) -> Result<PreparedProgramImage, ProgramLoadError> {
+    let program = resolve_program(name)?;
+    if program.kind != ProgramKind::Elf64Image {
+        return Err(ProgramLoadError::UnsupportedKind);
+    }
+    crate::storage::can_execute(credentials, &program.source_path)
+        .map_err(|_| ProgramLoadError::PermissionDenied)?;
+    let image_path = program.image_path.as_ref().ok_or(ProgramLoadError::MissingImage)?;
+    crate::storage::can_execute(credentials, image_path)
+        .map_err(|_| ProgramLoadError::PermissionDenied)?;
+    let image = program.image.clone().ok_or(ProgramLoadError::ImageInvalid)?;
+    let load_plan = crate::load_plan::build_load_plan(&image).map_err(|_| {
+        REJECTED_LOAD_PLAN_COUNT.fetch_add(1, Ordering::Relaxed);
+        ProgramLoadError::LoadPlanRejected
+    })?;
+    let address_space_id = crate::address_space::AddressSpaceId::from_raw(
+        PREPARED_IMAGE_COUNT.load(Ordering::Relaxed).saturating_add(1),
+    );
+    let address_space = crate::address_space::descriptor_for_load_plan(address_space_id, &load_plan)
+        .map_err(|_| {
+            REJECTED_LOAD_PLAN_COUNT.fetch_add(1, Ordering::Relaxed);
+            ProgramLoadError::LoadPlanRejected
+        })?;
+
+    PREPARED_IMAGE_COUNT.fetch_add(1, Ordering::Relaxed);
+    TOTAL_PLANNED_PAGES.fetch_add(load_plan.total_pages as u64, Ordering::Relaxed);
+    record_prepared_process(credentials, &program, &image, &load_plan, address_space_id);
+
+    Ok(PreparedProgramImage {
+        program,
+        image,
+        load_plan,
+        address_space,
+    })
+}
+
+pub fn phase12_smoke_check() -> bool {
+    let before = status();
+    let prepared = prepare_program_image(crate::security::Credentials::shell_user(), "hello")
+        .map(|prepared| prepared.load_plan.total_pages > 0 && !prepared.address_space.regions.is_empty())
+        .unwrap_or(false);
+    let blocked = crate::task::userspace::run_program("hello", &[])
+        .map(|_| false)
+        .unwrap_or(true);
+    let after = status();
+    prepared
+        && blocked
+        && after.prepared_image_count > before.prepared_image_count
+        && after.total_planned_pages > before.total_planned_pages
+        && after.unsupported_execution_count > before.unsupported_execution_count
+}
+
 fn validate_manifest_image(
     manifest: &ProgramManifest,
 ) -> (Option<crate::exec_image::ExecutableImage>, Option<crate::exec_image::ImageLoadError>) {
@@ -341,6 +414,55 @@ fn owner_id_for_manifest(owner: &str) -> crate::security::UserId {
         "kernel" => crate::security::Credentials::kernel().user,
         "guest" => crate::security::Credentials::guest().user,
         _ => crate::security::Credentials::shell_user().user,
+    }
+}
+
+fn record_prepared_process(
+    credentials: crate::security::Credentials,
+    program: &LoadedProgram,
+    image: &crate::exec_image::ExecutableImage,
+    load_plan: &crate::load_plan::LoadPlan,
+    address_space_id: crate::address_space::AddressSpaceId,
+) {
+    let tick =
+        crate::performance::metrics::TICK_COUNTER.load(core::sync::atomic::Ordering::Relaxed);
+    let metadata = crate::task::process::ProcessImageMetadata {
+        source_path: static_source_path(&program.source_path),
+        format: image.format,
+        entry_point: image.entry_point,
+        segment_count: image.segments.len(),
+        address_space_id: Some(address_space_id),
+        trust: image.trust,
+        owner: credentials,
+    };
+    let load = crate::task::process::ProcessLoadMetadata {
+        state: crate::task::process::ProcessLoadState::Prepared,
+        source_path: static_source_path(&image.source_path),
+        entry_point: load_plan.entry_point,
+        planned_pages: load_plan.total_pages,
+        region_count: load_plan.regions.len(),
+        stack_pages: load_plan.stack_pages,
+    };
+    if let Some(pid) = crate::task::process::create_kernel_process_with_metadata(
+        "image-prepare",
+        tick,
+        credentials,
+        metadata,
+        load,
+    ) {
+        let _ = crate::task::process::set_process_state(pid, crate::task::process::ProcessState::Blocked);
+    }
+}
+
+fn static_source_path(path: &str) -> &'static str {
+    match path {
+        "/bin/hello" => "/bin/hello",
+        "/bin/hello.elf" => "/bin/hello.elf",
+        "/bin/echo" => "/bin/echo",
+        "/bin/time" => "/bin/time",
+        "/bin/sysinfo" => "/bin/sysinfo",
+        "/bin/fsinfo" => "/bin/fsinfo",
+        _ => "<image>",
     }
 }
 

@@ -1,0 +1,65 @@
+# Executable Load Plans
+
+Phase 12 turns validated executable images into deterministic load plans. It models how an ELF image would be placed in memory, but still does not allocate real user frames, switch page tables, enter Ring 3, or jump to stored code.
+
+## Load Plan Contents
+
+A `LoadPlan` contains:
+
+- source image name and path
+- entry point
+- page-aligned load regions
+- total planned image pages
+- reserved stack pages
+- copy actions for file-backed bytes
+- zero-fill actions for BSS-style memory beyond file bytes
+
+The seeded `/bin/hello.elf` fixture creates one executable region with a four-byte copy action and a zero-fill action for the remainder of the page.
+
+## Reservation Accounting
+
+Address-space descriptors now include reservation metadata:
+
+- user pages
+- stack pages
+- executable pages
+- writable pages
+- read-only pages
+- mapping state
+
+The mapping state remains `Planned` in Phase 12. These are accounting records only; no active page table is mutated by shell or loader prepare paths.
+
+## Loader Prepare Flow
+
+```mermaid
+flowchart TD
+Manifest["ares-exec-v1 Manifest"] --> ValidateImage[ValidateImage]
+ValidateImage --> LoadPlanner[LoadPlanner]
+LoadPlanner --> ReservationAccounting[ReservationAccounting]
+ReservationAccounting --> ProcessMetadata[ProcessMetadata]
+ProcessMetadata --> ShellStatus[ShellStatus]
+```
+
+The loader exposes `prepare_program_image(credentials, name)` for image programs. `run hello` still returns unsupported execution, preserving the Phase 11 safety boundary.
+
+## Shell And Smoke
+
+The shell exposes:
+
+- `bin prepare <program>`
+- richer `bin info <program>`
+- `bin plans` or `loadplans`
+
+Boot emits:
+
+```text
+Phase12-LoadPlan: prepared=..., rejected=..., pages=..., exec_blocked_ok=true
+```
+
+## Deferred Work
+
+- real frame allocation for user images
+- page-table mapping and CR3 switching
+- Ring 3 entry and syscall return paths
+- jumping to ELF entry points
+- relocation, dynamic linking, and memory-mapped file backing
