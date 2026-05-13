@@ -49,7 +49,10 @@ pub fn run_program(name: &str, args: &[&str]) -> Result<String, &'static str> {
             let files =
                 crate::syscall::invoke_raw(crate::syscall::SyscallId::StorageFileCount as u64, 0)
                     .map_err(|_| "syscall failed")?;
-            Ok(format!("mounted={} files={}", mounted == 1, files))
+            let blocks =
+                crate::syscall::invoke_raw(crate::syscall::SyscallId::BlockDeviceCount as u64, 0)
+                    .map_err(|_| "syscall failed")?;
+            Ok(format!("mounted={} files={} block_devices={}", mounted == 1, files, blocks))
         }
         _ => Err("unknown user program"),
     }

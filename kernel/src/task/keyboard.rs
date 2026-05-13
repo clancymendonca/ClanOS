@@ -208,6 +208,10 @@ fn execute_console_command(command: &str) {
             println!("  mount");
             println!("  format");
             println!("  fsinfo");
+            println!("  devices");
+            println!("  blk list");
+            println!("  blk info <id>");
+            println!("  mount <block-id>");
             println!("  sched show");
             println!("  sched quantum <ticks>");
             println!("  sched fairness <ticks>");
@@ -288,21 +292,85 @@ fn execute_console_command(command: &str) {
             Ok(()) => println!("Storage mounted"),
             Err(err) => println!("mount error: {}", err),
         },
+        ["mount", block_id] => match parse_block_id(block_id) {
+            Ok(id) => match crate::storage::mount_block_device(id) {
+                Ok(()) => println!("Mounted block device {}", id),
+                Err(err) => println!("mount error: {}", err),
+            },
+            Err(err) => println!("Invalid block id ({}): {}", err, block_id),
+        },
         ["format"] => match crate::storage::format() {
             Ok(()) => println!("Storage formatted"),
             Err(err) => println!("format error: {}", err),
         },
         ["fsinfo"] => match crate::storage::info() {
             Ok(info) => println!(
-                "FS: mounted={}, files={}/{}, free_slots={}, capacity_bytes={}, max_file_size={}",
+                "FS: mounted={}, files={}/{}, free_slots={}, capacity_bytes={}, max_file_size={}, backend={}, driver_backed={}",
                 info.mounted,
                 info.file_count,
                 info.max_files,
                 info.free_slots,
                 info.capacity_bytes,
-                info.max_file_size
+                info.max_file_size,
+                info.backend_name,
+                info.driver_backed
             ),
             Err(err) => println!("fsinfo error: {}", err),
+        },
+        ["devices"] => {
+            let summary = crate::device::summary();
+            println!(
+                "Devices: total={}, pci={}, block={}, storage={}",
+                summary.total, summary.pci, summary.block, summary.storage
+            );
+            for device in crate::device::list_devices() {
+                println!(
+                    "  id={} kind={:?} state={:?} name={} vendor={:?} device={:?} class={:?} subclass={:?}",
+                    device.id.as_u64(),
+                    device.kind,
+                    device.state,
+                    device.name,
+                    device.vendor_id,
+                    device.device_id,
+                    device.class_code,
+                    device.subclass
+                );
+            }
+        }
+        ["blk", "list"] => {
+            for device in crate::block::list_block_devices() {
+                println!(
+                    "  id={} name={} backend={:?} sectors={} sector_size={} readonly={} driver_backed={}",
+                    device.id.as_u64(),
+                    device.name,
+                    device.backend,
+                    device.sector_count,
+                    device.sector_size,
+                    device.read_only,
+                    device.driver_backed
+                );
+            }
+        }
+        ["blk", "info", block_id] => match parse_block_id(block_id) {
+            Ok(id) => {
+                let found = crate::block::list_block_devices()
+                    .into_iter()
+                    .find(|device| device.id.as_u64() == id);
+                match found {
+                    Some(device) => println!(
+                        "Block {}: name={}, backend={:?}, sectors={}, sector_size={}, readonly={}, driver_backed={}",
+                        id,
+                        device.name,
+                        device.backend,
+                        device.sector_count,
+                        device.sector_size,
+                        device.read_only,
+                        device.driver_backed
+                    ),
+                    None => println!("Block device {} not found", id),
+                }
+            }
+            Err(err) => println!("Invalid block id ({}): {}", err, block_id),
         },
         ["sched", "show"] => {
             let config = crate::task::scheduler::runtime_config();
@@ -366,6 +434,14 @@ fn parse_pid(value: &str) -> Result<u64, &'static str> {
     Ok(pid)
 }
 
+fn parse_block_id(value: &str) -> Result<u64, &'static str> {
+    let id = value.parse::<u64>().map_err(|_| "not-a-number")?;
+    if id == 0 {
+        return Err("reserved-id");
+    }
+    Ok(id)
+}
+
 fn join_parts(parts: &[&str]) -> String {
     let mut out = String::new();
     for (index, part) in parts.iter().enumerate() {
@@ -394,6 +470,11 @@ mod tests {
     #[test_case]
     fn parse_pid_accepts_positive_ids() {
         assert_eq!(parse_pid("42"), Ok(42));
+    }
+
+    #[test_case]
+    fn parse_block_id_rejects_zero() {
+        assert_eq!(super::parse_block_id("0"), Err("reserved-id"));
     }
 
     #[test_case]

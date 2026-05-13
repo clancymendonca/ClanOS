@@ -67,6 +67,29 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         kernel::storage::is_mounted(),
         phase7_storage_ok
     );
+    let phase8_storage_ok = kernel::storage::phase8_smoke_check();
+    let device_summary = kernel::device::summary();
+    let (block_devices, driver_backed_blocks, backend) = kernel::block::summary();
+    println!(
+        "Phase8-Devices: total={}, pci={}, block={}, block_devices={}, driver_backed={}, storage_backend={}, storage_ok={}",
+        device_summary.total,
+        device_summary.pci,
+        device_summary.block,
+        block_devices,
+        driver_backed_blocks,
+        backend,
+        phase8_storage_ok
+    );
+    kernel::serial_println!(
+        "Phase8-Devices: total={}, pci={}, block={}, block_devices={}, driver_backed={}, storage_backend={}, storage_ok={}",
+        device_summary.total,
+        device_summary.pci,
+        device_summary.block,
+        block_devices,
+        driver_backed_blocks,
+        backend,
+        phase8_storage_ok
+    );
 
     // Display performance counters at startup.
     let counters = PerformanceCounters::read();

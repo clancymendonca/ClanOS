@@ -11,7 +11,7 @@ extern crate alloc;
 use bootloader::{entry_point, BootInfo};
 use core::{panic::PanicInfo, sync::atomic::Ordering};
 use kernel::{
-    allocator, hlt_loop, memory,
+    allocator, block, device, hlt_loop, memory,
     performance::{metrics::TICK_COUNTER, process_metrics},
     syscall,
     task::{process, scheduler},
@@ -180,5 +180,40 @@ fn phase7_storage_syscall_wrappers_cover_file_lifecycle() {
         syscall::storage_read_file("/syscall.txt")
             .expect("storage read syscall wrapper should succeed"),
         None
+    );
+}
+
+#[test_case]
+fn phase8_device_and_block_registries_initialize() {
+    device::init();
+    block::init();
+
+    let device_summary = device::summary();
+    assert!(device_summary.total > 0);
+    assert!(device_summary.block >= 1);
+
+    let blocks = block::list_block_devices();
+    assert!(!blocks.is_empty());
+    assert!(blocks.iter().any(|entry| entry.driver_backed));
+}
+
+#[test_case]
+fn phase8_storage_uses_driver_backed_block_manager() {
+    kernel::storage::init();
+    let info = kernel::storage::info().expect("storage info should be available");
+    assert!(info.mounted);
+    assert!(info.driver_backed);
+    assert_eq!(info.backend_name, "qemu-sim-block0");
+    assert!(kernel::storage::phase8_smoke_check());
+}
+
+#[test_case]
+fn phase8_device_syscalls_report_counts() {
+    kernel::storage::init();
+    assert!(syscall::invoke_raw(syscall::SyscallId::DeviceCount as u64, 0).unwrap() > 0);
+    assert!(syscall::invoke_raw(syscall::SyscallId::BlockDeviceCount as u64, 0).unwrap() > 0);
+    assert_eq!(
+        syscall::invoke_raw(syscall::SyscallId::DeviceCount as u64, 1),
+        Err(syscall::SyscallError::InvalidArgument)
     );
 }

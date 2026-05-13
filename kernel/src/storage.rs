@@ -23,8 +23,8 @@ const MAX_FILE_SIZE: usize = SECTOR_SIZE;
 const DIR_ENTRY_SIZE: usize = 64;
 
 lazy_static! {
-    static ref STORAGE: Mutex<SimpleFs<MemoryBlockDevice>> =
-        Mutex::new(SimpleFs::new(MemoryBlockDevice::new(DEFAULT_SECTOR_COUNT)));
+    static ref STORAGE: Mutex<SimpleFs<ManagedBlockDevice>> =
+        Mutex::new(SimpleFs::new(ManagedBlockDevice));
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -62,6 +62,8 @@ pub struct StorageInfo {
     pub free_slots: usize,
     pub capacity_bytes: usize,
     pub max_file_size: usize,
+    pub backend_name: &'static str,
+    pub driver_backed: bool,
 }
 
 pub trait BlockDevice {
@@ -114,6 +116,31 @@ impl BlockDevice for MemoryBlockDevice {
         let target = self.sectors.get_mut(sector).ok_or(StorageError::Io)?;
         target.copy_from_slice(buffer);
         Ok(())
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct ManagedBlockDevice;
+
+impl BlockDevice for ManagedBlockDevice {
+    fn sector_count(&self) -> usize {
+        crate::block::active_sector_count().unwrap_or(0)
+    }
+
+    fn read_sector(
+        &self,
+        sector: usize,
+        buffer: &mut [u8; SECTOR_SIZE],
+    ) -> Result<(), StorageError> {
+        crate::block::read_active_sector(sector, buffer).map_err(StorageError::from)
+    }
+
+    fn write_sector(
+        &mut self,
+        sector: usize,
+        buffer: &[u8; SECTOR_SIZE],
+    ) -> Result<(), StorageError> {
+        crate::block::write_active_sector(sector, buffer).map_err(StorageError::from)
     }
 }
 
@@ -223,6 +250,8 @@ impl<D: BlockDevice> SimpleFs<D> {
                 free_slots: MAX_FILES,
                 capacity_bytes: MAX_FILES * MAX_FILE_SIZE,
                 max_file_size: MAX_FILE_SIZE,
+                backend_name: "none",
+                driver_backed: false,
             });
         }
         let count = self.read_directory()?.iter().filter(|entry| entry.is_some()).count();
@@ -233,6 +262,8 @@ impl<D: BlockDevice> SimpleFs<D> {
             free_slots: MAX_FILES - count,
             capacity_bytes: MAX_FILES * MAX_FILE_SIZE,
             max_file_size: MAX_FILE_SIZE,
+            backend_name: "direct",
+            driver_backed: false,
         })
     }
 
@@ -353,6 +384,8 @@ impl<D: BlockDevice> SimpleFs<D> {
 }
 
 pub fn init() {
+    crate::device::init();
+    crate::block::init();
     let mut fs = STORAGE.lock();
     if fs.mount().is_err() {
         let _ = fs.format();
@@ -361,15 +394,28 @@ pub fn init() {
 }
 
 pub fn format() -> Result<(), StorageError> {
+    ensure_backend();
     let mut fs = STORAGE.lock();
     fs.format()?;
     seed_bootstrap_files(&mut fs)
 }
 
 pub fn remount() -> Result<(), StorageError> {
+    ensure_backend();
     let mut fs = STORAGE.lock();
     fs.unmount();
     fs.mount()
+}
+
+pub fn mount_block_device(raw_id: u64) -> Result<(), StorageError> {
+    ensure_backend();
+    crate::block::set_active(crate::block::BlockDeviceId::from_raw(raw_id))?;
+    let mut fs = STORAGE.lock();
+    fs.unmount();
+    if fs.mount().is_err() {
+        fs.format()?;
+    }
+    seed_bootstrap_files(&mut fs)
 }
 
 pub fn unmount() {
@@ -377,31 +423,50 @@ pub fn unmount() {
 }
 
 pub fn is_mounted() -> bool {
+    ensure_backend();
     STORAGE.lock().is_mounted()
 }
 
 pub fn list_files() -> Result<Vec<String>, StorageError> {
+    ensure_backend();
     STORAGE.lock().list_files()
 }
 
 pub fn read_file(path: &str) -> Result<Option<String>, StorageError> {
+    ensure_backend();
     STORAGE.lock().read_file(path)
 }
 
 pub fn create_file(path: &str) -> Result<(), StorageError> {
+    ensure_backend();
     STORAGE.lock().create_file(path)
 }
 
 pub fn write_file(path: &str, contents: &str) -> Result<(), StorageError> {
+    ensure_backend();
     STORAGE.lock().write_file(path, contents)
 }
 
 pub fn delete_file(path: &str) -> Result<(), StorageError> {
+    ensure_backend();
     STORAGE.lock().delete_file(path)
 }
 
 pub fn info() -> Result<StorageInfo, StorageError> {
-    STORAGE.lock().info()
+    ensure_backend();
+    let mut info = STORAGE.lock().info()?;
+    if let Ok(block) = crate::block::active_info() {
+        info.backend_name = crate::block::active_backend_name();
+        info.driver_backed = block.driver_backed;
+    }
+    Ok(info)
+}
+
+fn ensure_backend() {
+    if crate::block::active_info().is_err() {
+        crate::device::init();
+        crate::block::init();
+    }
 }
 
 pub fn phase7_smoke_check() -> bool {
@@ -413,6 +478,18 @@ pub fn phase7_smoke_check() -> bool {
         return false;
     }
     matches!(read_file(path), Ok(Some(contents)) if contents == "persistent-ok")
+}
+
+pub fn phase8_smoke_check() -> bool {
+    let Ok(info) = info() else {
+        return false;
+    };
+    let path = "/phase8-block.txt";
+    info.mounted
+        && info.driver_backed
+        && write_file(path, "driver-backed-ok").is_ok()
+        && remount().is_ok()
+        && matches!(read_file(path), Ok(Some(contents)) if contents == "driver-backed-ok")
 }
 
 fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), StorageError> {

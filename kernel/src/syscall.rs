@@ -11,6 +11,8 @@ pub enum SyscallId {
     StorageMounted = 4,
     StorageFileCount = 5,
     StorageFormat = 6,
+    DeviceCount = 7,
+    BlockDeviceCount = 8,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -64,6 +66,18 @@ pub fn invoke_raw(id: u64, arg0: u64) -> Result<u64, SyscallError> {
                 .map(|_| 0)
                 .map_err(|_| SyscallError::Storage)
         }
+        x if x == SyscallId::DeviceCount as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::device::summary().total as u64)
+        }
+        x if x == SyscallId::BlockDeviceCount as u64 => {
+            if arg0 != 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            Ok(crate::block::list_block_devices().len() as u64)
+        }
         _ => Err(SyscallError::InvalidSyscall),
     }
 }
@@ -82,6 +96,14 @@ pub fn storage_write_file(path: &str, contents: &str) -> Result<(), SyscallError
 
 pub fn storage_delete_file(path: &str) -> Result<(), SyscallError> {
     crate::storage::delete_file(path).map_err(|_| SyscallError::Storage)
+}
+
+pub fn device_summary() -> crate::device::DeviceSummary {
+    crate::device::summary()
+}
+
+pub fn block_devices() -> Vec<crate::block::BlockDeviceInfo> {
+    crate::block::list_block_devices()
 }
 
 #[cfg(test)]
@@ -105,6 +127,8 @@ mod tests {
         crate::storage::init();
         assert_eq!(invoke_raw(SyscallId::StorageMounted as u64, 0), Ok(1));
         assert!(invoke_raw(SyscallId::StorageFileCount as u64, 0).unwrap() > 0);
+        assert!(invoke_raw(SyscallId::DeviceCount as u64, 0).unwrap() > 0);
+        assert!(invoke_raw(SyscallId::BlockDeviceCount as u64, 0).unwrap() > 0);
     }
 
     #[test_case]
