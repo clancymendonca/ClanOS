@@ -197,6 +197,9 @@ impl ContextScheduler {
 
         self.switches = self.switches.saturating_add(1);
         self.last_switch_tick = now_tick;
+        // Cooperative switches always return to the kernel page table; user CR3 is
+        // activated only around bounded hardware user entry helpers (Phases 22-30).
+        let _ = crate::user_paging::restore_kernel_page_table();
         Some((current_ctx as *mut CpuContext, next_ctx as *const CpuContext))
     }
 

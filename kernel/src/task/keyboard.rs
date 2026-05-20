@@ -259,6 +259,12 @@ fn execute_console_command(command: &str) {
                             crate::task::process::ProcessLoadState::UserTrapped => "trapped",
                             crate::task::process::ProcessLoadState::UserSyscallReturned => "sysret",
                             crate::task::process::ProcessLoadState::UserElfExited => "elf-exit",
+                            crate::task::process::ProcessLoadState::HwPageTableReady => "hw-ptable",
+                            crate::task::process::ProcessLoadState::Cr3Activated => "cr3-active",
+                            crate::task::process::ProcessLoadState::UserEnteredHw => "hw-enter",
+                            crate::task::process::ProcessLoadState::UserHwTrapped => "hw-trap",
+                            crate::task::process::ProcessLoadState::UserHwSyscallReturned => "hw-syscall",
+                            crate::task::process::ProcessLoadState::UserHwElfExited => "hw-elf-exit",
                         })
                         .unwrap_or("-");
                     println!(
