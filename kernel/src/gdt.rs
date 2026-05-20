@@ -20,6 +20,12 @@ pub const DOUBLE_FAULT_IST_INDEX: u16 = 0;
 lazy_static! {
     static ref TSS: TaskStateSegment = {
         let mut tss = TaskStateSegment::new();
+        tss.privilege_stack_table[0] = {
+            const PRIV0_STACK_SIZE: usize = 4096 * 8;
+            static mut PRIV0_STACK: [u8; PRIV0_STACK_SIZE] = [0; PRIV0_STACK_SIZE];
+            let stack_start = VirtAddr::from_ptr(&raw const PRIV0_STACK);
+            stack_start + PRIV0_STACK_SIZE as u64
+        };
         tss.interrupt_stack_table[DOUBLE_FAULT_IST_INDEX as usize] = {
             const STACK_SIZE: usize = 4096 * 5;
             static mut STACK: [u8; STACK_SIZE] = [0; STACK_SIZE];
@@ -80,4 +86,12 @@ pub fn user_selectors() -> UserSelectors {
         code: GDT.1.user_code_selector,
         data: GDT.1.user_data_selector,
     }
+}
+
+pub fn kernel_code_selector() -> SegmentSelector {
+    GDT.1.code_selector
+}
+
+pub fn kernel_data_selector() -> SegmentSelector {
+    GDT.1.user_data_selector
 }

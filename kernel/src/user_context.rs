@@ -57,7 +57,7 @@ pub fn build_user_context(
         page_table_id: page_table.id,
         entry: UserEntryFrame {
             rip: entry_point,
-            rsp: DEFAULT_USER_STACK_TOP,
+            rsp: DEFAULT_USER_STACK_TOP.saturating_sub(16),
             rflags: USER_RFLAGS,
             code_selector: selectors.code.0,
             stack_selector: selectors.data.0,

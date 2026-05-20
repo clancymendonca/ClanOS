@@ -59,6 +59,7 @@ lazy_static! {
         idt.device_not_available.set_handler_fn(device_not_available_handler);
         idt.alignment_check.set_handler_fn(alignment_check_handler);
         idt.segment_not_present.set_handler_fn(segment_not_present_handler);
+        idt[usize::from(USER_TRAP_VECTOR)].set_handler_fn(user_trap_handler);
 
         // Hardware IRQs.
         idt[InterruptIndex::Timer.as_usize()].set_handler_fn(timer_interrupt_handler);
@@ -76,14 +77,21 @@ pub fn init_idt() {
 
 // ───────────────────────── exception handlers ────────────────────────────────
 
-extern "x86-interrupt" fn breakpoint_handler(stack_frame: InterruptStackFrame) {
+extern "x86-interrupt" fn breakpoint_handler(mut stack_frame: InterruptStackFrame) {
+    if crate::user_entry::handle_user_fault(&mut stack_frame, false) {
+        return;
+    }
     println!("EXCEPTION: BREAKPOINT\n{:#?}", stack_frame);
 }
 
 extern "x86-interrupt" fn page_fault_handler(
-    stack_frame: InterruptStackFrame,
+    mut stack_frame: InterruptStackFrame,
     error_code: PageFaultErrorCode,
 ) {
+    if crate::user_entry::user_bringup_active() {
+        let _ = crate::user_entry::handle_user_fault(&mut stack_frame, false);
+        return;
+    }
     use x86_64::registers::control::Cr2;
     println!("EXCEPTION: PAGE FAULT");
     println!("Accessed Address: {:?}", Cr2::read());
@@ -100,9 +108,13 @@ extern "x86-interrupt" fn double_fault_handler(
 }
 
 extern "x86-interrupt" fn general_protection_fault_handler(
-    stack_frame: InterruptStackFrame,
+    mut stack_frame: InterruptStackFrame,
     error_code: u64,
 ) {
+    let _ = crate::user_paging::restore_kernel_page_table();
+    if crate::user_entry::handle_user_fault(&mut stack_frame, false) {
+        return;
+    }
     panic!(
         "EXCEPTION: GENERAL PROTECTION FAULT (error: {})\n{:#?}",
         error_code, stack_frame
@@ -110,9 +122,12 @@ extern "x86-interrupt" fn general_protection_fault_handler(
 }
 
 extern "x86-interrupt" fn stack_segment_fault_handler(
-    stack_frame: InterruptStackFrame,
+    mut stack_frame: InterruptStackFrame,
     error_code: u64,
 ) {
+    if crate::user_entry::handle_user_fault(&mut stack_frame, false) {
+        return;
+    }
     panic!(
         "EXCEPTION: STACK-SEGMENT FAULT (error: {})\n{:#?}",
         error_code, stack_frame
@@ -127,8 +142,18 @@ extern "x86-interrupt" fn bound_range_exceeded_handler(stack_frame: InterruptSta
     println!("EXCEPTION: BOUND RANGE EXCEEDED\n{:#?}", stack_frame);
 }
 
-extern "x86-interrupt" fn invalid_opcode_handler(stack_frame: InterruptStackFrame) {
+extern "x86-interrupt" fn invalid_opcode_handler(mut stack_frame: InterruptStackFrame) {
+    if crate::user_entry::handle_user_fault(&mut stack_frame, false) {
+        return;
+    }
     panic!("EXCEPTION: INVALID OPCODE\n{:#?}", stack_frame);
+}
+
+extern "x86-interrupt" fn user_trap_handler(mut stack_frame: InterruptStackFrame) {
+    if crate::user_entry::handle_user_fault(&mut stack_frame, true) {
+        return;
+    }
+    println!("EXCEPTION: USER TRAP VECTOR\n{:#?}", stack_frame);
 }
 
 extern "x86-interrupt" fn device_not_available_handler(stack_frame: InterruptStackFrame) {
