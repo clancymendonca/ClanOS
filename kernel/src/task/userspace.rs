@@ -11,7 +11,18 @@ pub fn run_program(name: &str, args: &[&str]) -> Result<String, &'static str> {
             return Err("permission denied");
         }
         Err(crate::task::program_loader::ProgramLoadError::UnsupportedExecution) => {
-            match crate::task::program_loader::execute_minimal_user_elf(credentials, name) {
+            if crate::task::program_loader::hw_user_elf_ready()
+                && crate::task::program_loader::ALLOWED_USER_ELFS.contains(&name)
+            {
+                match crate::task::program_loader::execute_allowlisted_user_elf(credentials, name) {
+                    Ok(execution) => {
+                        crate::task::program_loader::record_launch_success();
+                        return Ok(execution.output);
+                    }
+                    Err(_) => return Err("unsupported executable image"),
+                }
+            }
+            match crate::task::program_loader::execute_minimal_user_elf_descriptor(credentials, name) {
                 Ok(execution) => {
                     crate::task::program_loader::record_launch_success();
                     return Ok(execution.output);
