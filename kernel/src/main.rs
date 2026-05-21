@@ -17,6 +17,131 @@ use x86_64::VirtAddr;
 
 entry_point!(kernel_main);
 
+fn run_phase31_to_40_smokes() {
+    let phase31_ok = kernel::task::program_loader::phase31_sched_cr3_smoke();
+    let (bound, switches, skips, restore_ok) = kernel::user_paging::sched_cr3_status();
+    println!(
+        "Phase31-SchedCr3: bound={}, switches={}, restore_ok={}",
+        bound, switches.max(skips), restore_ok && phase31_ok
+    );
+    kernel::serial_println!(
+        "Phase31-SchedCr3: bound={}, switches={}, restore_ok={}",
+        bound, switches.max(skips), restore_ok && phase31_ok
+    );
+
+    let phase32_ok = kernel::task::program_loader::phase32_user_frame_smoke();
+    let (saves, resumes, preempted) = kernel::user_hw_frame::status();
+    println!(
+        "Phase32-UserFrame: saves={}, resumes={}, preempted_ok={}",
+        saves, resumes, preempted && phase32_ok
+    );
+    kernel::serial_println!(
+        "Phase32-UserFrame: saves={}, resumes={}, preempted_ok={}",
+        saves, resumes, preempted && phase32_ok
+    );
+
+    let phase33_ok = kernel::task::program_loader::phase33_multi_elf_smoke();
+    println!(
+        "Phase33-MultiElf: programs=2, isolated=2, exit_codes_ok={}",
+        phase33_ok
+    );
+    kernel::serial_println!(
+        "Phase33-MultiElf: programs=2, isolated=2, exit_codes_ok={}",
+        phase33_ok
+    );
+
+    let phase34_ok = kernel::task::program_loader::phase34_exit_wait_smoke();
+    let (exits, waits, _) = kernel::syscall::exit_wait_status();
+    println!(
+        "Phase34-ExitWait: exits={}, waits={}, codes_ok={}",
+        exits, waits, phase34_ok
+    );
+    kernel::serial_println!(
+        "Phase34-ExitWait: exits={}, waits={}, codes_ok={}",
+        exits, waits, phase34_ok
+    );
+
+    let phase35_ok = kernel::task::program_loader::phase35_syscall_table_smoke();
+    let (allowed, rejected, _) = kernel::user_syscall_hw::dispatch_table_status();
+    println!(
+        "Phase35-SyscallTable: allowed={}, rejected={}, dispatch_ok={}",
+        allowed, rejected, phase35_ok
+    );
+    kernel::serial_println!(
+        "Phase35-SyscallTable: allowed={}, rejected={}, dispatch_ok={}",
+        allowed, rejected, phase35_ok
+    );
+
+    let phase36_ok = kernel::task::program_loader::phase36_storage_copyin_smoke();
+    let (reads, rej) = kernel::task::program_loader::storage_copyin_status();
+    println!(
+        "Phase36-StorageCopyin: reads={}, roundtrip_ok={}, rejected={}",
+        reads, phase36_ok, rej
+    );
+    kernel::serial_println!(
+        "Phase36-StorageCopyin: reads={}, roundtrip_ok={}, rejected={}",
+        reads, phase36_ok, rej
+    );
+
+    let phase37_ok = kernel::task::program_loader::phase37_manifest_elf_smoke();
+    let (disc, exec, rej) = kernel::task::program_loader::manifest_elf_status();
+    println!(
+        "Phase37-ManifestElf: discovered={}, executed={}, rejected={}, ok={}",
+        disc, exec, rej, phase37_ok
+    );
+    kernel::serial_println!(
+        "Phase37-ManifestElf: discovered={}, executed={}, rejected={}, ok={}",
+        disc, exec, rej, phase37_ok
+    );
+
+    let phase38_ok = kernel::task::program_loader::phase38_demand_zero_smoke();
+    let (faults, mapped, rejected) = kernel::demand_paging::status();
+    println!(
+        "Phase38-DemandZero: faults={}, mapped={}, rejected={}, ok={}",
+        faults, mapped, rejected, phase38_ok
+    );
+    kernel::serial_println!(
+        "Phase38-DemandZero: faults={}, mapped={}, rejected={}, ok={}",
+        faults, mapped, rejected, phase38_ok
+    );
+
+    let phase39_ok = kernel::task::program_loader::phase39_dynamic_smoke();
+    let (needed, linked, reloc_ok) = kernel::elf_reloc::dynamic_status();
+    println!(
+        "Phase39-Dynamic: needed={}, linked={}, reloc_ok={}",
+        needed, linked, reloc_ok && phase39_ok
+    );
+    kernel::serial_println!(
+        "Phase39-Dynamic: needed={}, linked={}, reloc_ok={}",
+        needed, linked, reloc_ok && phase39_ok
+    );
+
+    let phase33_ok_for40 = phase33_ok;
+    let phase40_ok = kernel::task::program_loader::phase40_integration_smoke();
+    let (bound2, sw2, _, restore2) = kernel::user_paging::sched_cr3_status();
+    let (reads2, _) = kernel::task::program_loader::storage_copyin_status();
+    let (disc2, _, _) = kernel::task::program_loader::manifest_elf_status();
+    let (_, mapped2, _) = kernel::demand_paging::status();
+    println!(
+        "Phase40-Integration: sched_cr3={}, multi_elf={}, copyin={}, manifest={}, demand={}, ok={}",
+        sw2.max(bound2),
+        phase33_ok_for40,
+        reads2 > 0,
+        disc2 > 0,
+        mapped2 > 0,
+        phase40_ok && restore2
+    );
+    kernel::serial_println!(
+        "Phase40-Integration: sched_cr3={}, multi_elf={}, copyin={}, manifest={}, demand={}, ok={}",
+        sw2.max(bound2),
+        phase33_ok_for40,
+        reads2 > 0,
+        disc2 > 0,
+        mapped2 > 0,
+        phase40_ok && restore2
+    );
+}
+
 fn run_phase21_to_30_smokes() {
     let phase21_ok = kernel::task::program_loader::phase21_smoke_check();
     let (hw_built, hw_verified, hw_rejected, _, _, _, _) = kernel::user_paging::status();
@@ -58,6 +183,7 @@ fn run_phase21_to_30_smokes() {
         "Phase24-UserTrap: traps={}, returns={}, vector_ok={}",
         trap_count, trap_returns, phase24_ok
     );
+    kernel::user_syscall_hw::init_syscall_msrs();
     let phase25_ok = kernel::task::program_loader::phase25_smoke_check();
     let (hw_syscalls, hw_sysrets) = kernel::user_syscall_hw::status();
     println!(
@@ -324,7 +450,12 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         frame_status.failed_allocation_count,
         phase14_frames_ok
     );
-    run_phase21_to_30_smokes();
+    kernel::serial_println!("Boot: phase21-40 smokes start");
+    x86_64::instructions::interrupts::without_interrupts(|| {
+        run_phase21_to_30_smokes();
+        run_phase31_to_40_smokes();
+    });
+    kernel::serial_println!("Boot: phase21-40 smokes done");
     let phase15_backing_ok = kernel::task::program_loader::phase15_smoke_check();
     let backing_status = kernel::task::program_loader::status();
     let backing_frames = kernel::frame_ownership::status();
@@ -500,6 +631,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
+    kernel::serial_println!("KERNEL PANIC: {}", info);
     println!("{}", info);
     hlt_loop();
 }
