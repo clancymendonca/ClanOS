@@ -41,6 +41,8 @@ pub mod user_memory;
 pub mod user_paging;
 pub mod user_syscall;
 pub mod user_syscall_hw;
+pub mod user_hw_frame;
+pub mod demand_paging;
 pub mod vga_buffer;
 
 use core::panic::PanicInfo;
@@ -108,9 +110,33 @@ pub fn hlt_loop() -> ! {
 }
 
 #[cfg(test)]
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+use bootloader::{entry_point, BootInfo};
+#[cfg(test)]
+use x86_64::VirtAddr;
+
+#[cfg(test)]
+entry_point!(test_kernel_main);
+
+#[cfg(test)]
+fn test_kernel_main(boot_info: &'static BootInfo) -> ! {
     init();
+    let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
+    user_paging::init(phys_mem_offset);
+    let mut mapper = unsafe { memory::init(phys_mem_offset) };
+    let mut frame_allocator =
+        unsafe { memory::BootInfoFrameAllocator::init(&boot_info.memory_map) };
+    let heap_frames = frame_allocator.allocated_frame_count();
+    allocator::init_heap(&mut mapper, &mut frame_allocator).expect("heap initialisation failed");
+    let _ = frame_ownership::init_from_memory_map(
+        &boot_info.memory_map,
+        frame_allocator.allocated_frame_count(),
+    );
+    unsafe {
+        user_paging::set_boot_frame_allocator(
+            &boot_info.memory_map,
+            heap_frames + frame_ownership::MAX_TRACKED_FRAMES,
+        );
+    }
     test_main();
     hlt_loop();
 }

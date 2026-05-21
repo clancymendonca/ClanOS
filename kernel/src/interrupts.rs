@@ -88,6 +88,9 @@ extern "x86-interrupt" fn page_fault_handler(
     mut stack_frame: InterruptStackFrame,
     error_code: PageFaultErrorCode,
 ) {
+    if crate::demand_paging::handle_page_fault(&stack_frame, error_code) {
+        return;
+    }
     if crate::user_entry::user_bringup_active() {
         let _ = crate::user_entry::handle_user_fault(&mut stack_frame, false);
         return;
