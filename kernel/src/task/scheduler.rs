@@ -91,6 +91,7 @@ struct ContextTask {
     name: &'static str,
     runnable: RunnableContext,
     metrics: TaskMetrics,
+    bound_cr3: Option<u64>,
 }
 
 struct ContextScheduler {
@@ -126,6 +127,7 @@ impl ContextScheduler {
                 preemption_attempts: 0,
                 preemption_successes: 0,
             },
+            bound_cr3: None,
         });
         self.ready_queue.push_back(id);
         id
@@ -181,6 +183,8 @@ impl ContextScheduler {
         // Record context switch on next task
         self.tasks[next].metrics.switches = self.tasks[next].metrics.switches.saturating_add(1);
 
+        let next_cr3 = self.tasks[next].bound_cr3;
+
         let (current_ctx, next_ctx) = if current < next {
             let (left, right) = self.tasks.split_at_mut(next);
             (
@@ -197,10 +201,17 @@ impl ContextScheduler {
 
         self.switches = self.switches.saturating_add(1);
         self.last_switch_tick = now_tick;
-        // Cooperative switches always return to the kernel page table; user CR3 is
-        // activated only around bounded hardware user entry helpers (Phases 22-30).
-        let _ = crate::user_paging::restore_kernel_page_table();
+        crate::user_paging::apply_scheduler_cr3_for_next(next_cr3);
         Some((current_ctx as *mut CpuContext, next_ctx as *const CpuContext))
+    }
+
+    fn bind_cr3(&mut self, task_id: usize, cr3: u64) -> bool {
+        if task_id >= self.tasks.len() {
+            return false;
+        }
+        self.tasks[task_id].bound_cr3 = Some(cr3);
+        crate::user_paging::record_sched_cr3_bound();
+        true
     }
 
     fn update_cpu_ticks(&mut self, ticks: u64) {
@@ -506,6 +517,10 @@ pub fn record_reschedule_point() {
 
 pub fn spawn_context_task(name: &'static str, entry: extern "C" fn() -> !) -> usize {
     lock_context_scheduler().spawn(name, entry)
+}
+
+pub fn bind_context_task_cr3(task_id: usize, cr3: u64) -> bool {
+    lock_context_scheduler().bind_cr3(task_id, cr3)
 }
 
 pub fn set_context_switching_enabled(enabled: bool) {

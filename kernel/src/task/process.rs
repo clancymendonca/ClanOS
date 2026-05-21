@@ -82,6 +82,12 @@ pub enum ProcessLoadState {
     UserHwTrapped,
     UserHwSyscallReturned,
     UserHwElfExited,
+    SchedCr3Bound,
+    UserFrameSaved,
+    ConcurrentElfReady,
+    UserHwExitedSched,
+    ManifestElfDiscovered,
+    DynamicLinked,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -132,6 +138,10 @@ pub struct Process {
     image: Option<ProcessImageMetadata>,
     /// Optional executable load-plan metadata for Phase 12 preparation records.
     load: Option<ProcessLoadMetadata>,
+    /// Hardware user page table CR3 (Phase 31+).
+    cr3_phys: Option<u64>,
+    /// Exit status waited on by parent (Phase 34+).
+    wait_status: Option<i32>,
 }
 
 impl Process {
@@ -159,6 +169,8 @@ impl Process {
             owner,
             image: None,
             load: None,
+            cr3_phys: None,
+            wait_status: None,
         }
     }
 
@@ -241,6 +253,22 @@ impl Process {
 
     pub fn set_load(&mut self, load: ProcessLoadMetadata) {
         self.load = Some(load);
+    }
+
+    pub fn cr3_phys(&self) -> Option<u64> {
+        self.cr3_phys
+    }
+
+    pub fn set_cr3_phys(&mut self, cr3: u64) {
+        self.cr3_phys = Some(cr3);
+    }
+
+    pub fn wait_status(&self) -> Option<i32> {
+        self.wait_status
+    }
+
+    pub fn set_wait_status(&mut self, code: i32) {
+        self.wait_status = Some(code);
     }
 }
 
@@ -382,6 +410,28 @@ impl ProcessRegistry {
         } else {
             false
         }
+    }
+
+    pub fn set_cr3_phys(&mut self, pid: ProcessId, cr3: u64) -> bool {
+        if let Some(process) = self.processes.get_mut(&pid) {
+            process.set_cr3_phys(cr3);
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn set_wait_status(&mut self, pid: ProcessId, code: i32) -> bool {
+        if let Some(process) = self.processes.get_mut(&pid) {
+            process.set_wait_status(code);
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn wait_status_of(&self, pid: ProcessId) -> Option<i32> {
+        self.processes.get(&pid).and_then(|p| p.wait_status())
     }
 
     /// Get total process count.
@@ -610,6 +660,18 @@ pub fn set_process_affinity(pid: ProcessId, affinity: ProcessCpuAffinity) -> boo
 
 pub fn process_affinity(pid: ProcessId) -> Option<ProcessCpuAffinity> {
     PROCESS_REGISTRY.lock().affinity_of(pid)
+}
+
+pub fn set_process_cr3(pid: ProcessId, cr3: u64) -> bool {
+    PROCESS_REGISTRY.lock().set_cr3_phys(pid, cr3)
+}
+
+pub fn set_process_wait_status(pid: ProcessId, code: i32) -> bool {
+    PROCESS_REGISTRY.lock().set_wait_status(pid, code)
+}
+
+pub fn process_wait_status(pid: ProcessId) -> Option<i32> {
+    PROCESS_REGISTRY.lock().wait_status_of(pid)
 }
 
 #[cfg(test)]

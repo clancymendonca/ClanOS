@@ -30,6 +30,10 @@ static CR3_RESTORES: AtomicU64 = AtomicU64::new(0);
 static CR3_SWITCHES: AtomicU64 = AtomicU64::new(0);
 static CR3_ISOLATION_CHECKS: AtomicU64 = AtomicU64::new(0);
 static BRINGUP_USER_CR3: AtomicU64 = AtomicU64::new(0);
+static SCHED_CR3_SWITCHES: AtomicU64 = AtomicU64::new(0);
+static SCHED_CR3_SKIPS: AtomicU64 = AtomicU64::new(0);
+static SCHED_CR3_BOUND: AtomicU64 = AtomicU64::new(0);
+static SCHED_CR3_RESTORE_OK: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct HwPageTableHandle {
@@ -91,6 +95,48 @@ pub fn status() -> (u64, u64, u64, u64, u64, u64, u64) {
         CR3_SWITCHES.load(Ordering::Relaxed),
         CR3_ISOLATION_CHECKS.load(Ordering::Relaxed),
     )
+}
+
+pub fn sched_cr3_status() -> (u64, u64, u64, bool) {
+    (
+        SCHED_CR3_BOUND.load(Ordering::Relaxed),
+        SCHED_CR3_SWITCHES.load(Ordering::Relaxed),
+        SCHED_CR3_SKIPS.load(Ordering::Relaxed),
+        SCHED_CR3_RESTORE_OK.load(Ordering::Relaxed) != 0,
+    )
+}
+
+/// Activate the next context task's user CR3 during preemptive scheduling (Phase 31).
+pub fn apply_scheduler_cr3_for_next(next_cr3: Option<u64>) {
+    let _ = restore_kernel_page_table();
+    match next_cr3 {
+        Some(cr3) if cr3 != 0 => {
+            if activate_for_process(cr3).is_ok() {
+                SCHED_CR3_SWITCHES.fetch_add(1, Ordering::Relaxed);
+            }
+        }
+        _ => {
+            SCHED_CR3_SKIPS.fetch_add(1, Ordering::Relaxed);
+        }
+    }
+}
+
+pub fn record_sched_cr3_bound() {
+    SCHED_CR3_BOUND.fetch_add(1, Ordering::Relaxed);
+}
+
+pub fn sched_cr3_switch_smoke(first: u64, second: u64) -> bool {
+    x86_64::instructions::interrupts::without_interrupts(|| {
+        apply_scheduler_cr3_for_next(Some(first));
+        let t1 = verify_active_translation(0x400000);
+        apply_scheduler_cr3_for_next(Some(second));
+        let t2 = verify_active_translation(0x400000);
+        let restore_ok = restore_kernel_page_table().is_ok();
+        if restore_ok {
+            SCHED_CR3_RESTORE_OK.store(1, Ordering::Relaxed);
+        }
+        first != second && t1.is_some() && t2.is_some() && restore_ok
+    })
 }
 
 pub fn write_phys_bytes(phys: u64, offset: usize, bytes: &[u8]) {
@@ -207,10 +253,12 @@ pub fn with_user_page_table<R>(
     handle: &HwPageTableHandle,
     f: impl FnOnce() -> R,
 ) -> Result<R, UserPagingError> {
-    x86_64::instructions::interrupts::without_interrupts(|| activate_user_page_table_inner(handle))?;
-    let result = f();
-    x86_64::instructions::interrupts::without_interrupts(|| restore_kernel_page_table_inner())?;
-    Ok(result)
+    x86_64::instructions::interrupts::without_interrupts(|| {
+        activate_user_page_table_inner(handle)?;
+        let result = f();
+        restore_kernel_page_table_inner()?;
+        Ok(result)
+    })
 }
 
 fn activate_user_page_table_inner(handle: &HwPageTableHandle) -> Result<(), UserPagingError> {
@@ -245,6 +293,10 @@ fn restore_kernel_page_table_inner() -> Result<(), UserPagingError> {
     *ACTIVE_USER_CR3.lock() = None;
     CR3_RESTORES.fetch_add(1, Ordering::Relaxed);
     Ok(())
+}
+
+pub fn active_user_cr3() -> Option<u64> {
+    *ACTIVE_USER_CR3.lock()
 }
 
 pub fn verify_active_translation(virtual_address: u64) -> Option<u64> {
@@ -328,6 +380,34 @@ unsafe fn mapper_for_phys(pml4_phys: u64) -> OffsetPageTable<'static> {
 
 pub fn translate_hw_page(pml4_phys: u64, virtual_address: u64) -> Option<u64> {
     translate_hw(pml4_phys, VirtAddr::new(virtual_address)).map(|a| a.as_u64())
+}
+
+/// Map a demand-zero user page in an active user address space (Phase 38).
+pub fn map_demand_zero_page(cr3_phys: u64, virtual_address: u64) -> Result<(), UserPagingError> {
+    x86_64::instructions::interrupts::without_interrupts(|| {
+        let mut frame_alloc = OwnershipFrameAllocator::default();
+        let mut mapper = unsafe { mapper_for_phys(cr3_phys) };
+        let page = Page::<Size4KiB>::containing_address(VirtAddr::new(virtual_address));
+        let frame = if let Some(frame) = frame_alloc.allocate_frame() {
+            frame
+        } else {
+            let owned = crate::frame_ownership::allocate_frame(crate::frame_ownership::FrameOwner::PageTable)
+                .map_err(|_| UserPagingError::FrameUnavailable)?;
+            PhysFrame::from_start_address(PhysAddr::new(owned.start_address))
+                .map_err(|_| UserPagingError::FrameUnavailable)?
+        };
+        let flags = PageTableFlags::PRESENT
+            | PageTableFlags::WRITABLE
+            | PageTableFlags::USER_ACCESSIBLE
+            | PageTableFlags::NO_EXECUTE;
+        unsafe {
+            mapper
+                .map_to(page, frame, flags, &mut frame_alloc)
+                .map_err(|_| UserPagingError::MapFailed)?
+                .flush();
+        }
+        Ok(())
+    })
 }
 
 fn translate_hw(pml4_phys: u64, addr: VirtAddr) -> Option<PhysAddr> {
