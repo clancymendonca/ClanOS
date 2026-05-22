@@ -44,3 +44,21 @@ Phase16-PageTables: tables=..., rejected=..., pages=..., translate_ok=true, cr3_
 ## Safety Boundary
 
 Phase 16 validates translation through descriptor lookup only. It does not install hardware page tables, switch CR3, enter Ring 3, or execute ELF code. Phase 17 adds entry-frame descriptors, but still does not perform the privilege transition.
+
+## Hardware Page Tables (Phases 21–22)
+
+Phase 21 builds real x86_64 tables from inactive descriptors. Phase 22 activates user CR3 for translation checks without executing user code.
+
+## Per-Process CR3 (Phases 30–31)
+
+Phase 30 verifies distinct CR3 values across processes. Phase 31 binds CR3 on preemptive scheduler context switch ([SCHEDULER.md](SCHEDULER.md)).
+
+## W^X Policy (Phase 48)
+
+`user_paging` rejects user mappings that combine writable and executable page flags. Demand paging paths must not install W+X pages ([DEMAND_PAGING.md](DEMAND_PAGING.md)).
+
+Boot smoke:
+
+```text
+Phase48-WxPolicy: attempts=..., rejected=..., ok=true
+```

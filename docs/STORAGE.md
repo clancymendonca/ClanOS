@@ -58,8 +58,8 @@ Primary kernel APIs live in `kernel/src/storage.rs`:
 ## Validation
 
 ```bash
-python scripts/phase7_storage_check.py --timeout 20
-python scripts/validation_matrix.py --soak-duration 20 --latency-duration 20
+python scripts/phase7_storage_check.py --timeout 180
+python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --boot-wait 90 --smoke-timeout 180
 ```
 
 The kernel emits:
@@ -74,10 +74,17 @@ By default, runtime storage uses `ManagedBlockDevice`, which delegates sector I/
 
 `MemoryBlockDevice` remains available for focused filesystem tests.
 
+## Phases 36, 45–47
+
+- Phase 36 — `ReadFileProbe` / `WriteFileProbe` syscalls copy through validated user buffers.
+- Phases 45–46 — FD table maps open files to storage indices (`OpenFile`, `CloseFile`, `ReadFd`, `WriteFd`). See [FILE_DESCRIPTORS.md](FILE_DESCRIPTORS.md).
+- Phase 47 — file-backed demand paging reads filesystem pages on user `#PF`. See [DEMAND_PAGING.md](DEMAND_PAGING.md).
+
+File owner/mode metadata and checked APIs were introduced in Phase 10 ([SECURITY.md](SECURITY.md)).
+
 ## Deferred Work
 
 - Real AHCI/NVMe/virtio block drivers
 - FAT/ext-style filesystem compatibility
 - Journaling and crash consistency
-- File permissions and ownership
-- Raw ELF/binary executable images from storage
+- Per-process FD namespaces and mmap-style file mapping

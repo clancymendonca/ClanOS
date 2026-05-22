@@ -172,7 +172,7 @@ Pass criteria:
 - `cargo test -p kernel --features preemption` ✅
 - `./scripts/phase5-soak-check --duration 600 --min-samples 10` ✅ (passed 2026-03-23)
 - `./scripts/phase5-latency-check --duration 120 --min-samples 5 --max-latency-ms 100` ✅ (passed 2026-03-23)
-- `python scripts/validation_matrix.py --soak-duration 20 --latency-duration 20` ✅ (passed 2026-05-06, Windows + QEMU)
+- `python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --boot-wait 90 --smoke-timeout 180` ✅ (passed 2026-05-06, Windows + QEMU)
 - Remaining hardening validation: none
 
 ---

@@ -37,4 +37,12 @@ Phase20-UserElf: executions=..., exits=..., rejected=..., hello_ok=true
 
 ## Safety Boundary
 
-Phase 20 is a minimal MVP for the seeded hello image. It does not support arbitrary ELF execution, dynamic linking, relocation, demand paging, or broad process isolation.
+Phase 20 is a minimal MVP for the seeded hello image.
+
+Later phases extend the same pipeline:
+
+- Phases 28–29 — hardware hello and allowlisted `hello` / `exit42`
+- Phase 37 — manifest-discovered ELF images including `tickprobe`
+- Phase 43 — `trust=system` execution without name allowlist (see [SECURITY.md](SECURITY.md))
+
+Arbitrary unsigned user ELFs, full dynamic linking, and production isolation remain deferred. See [SHARED_LIBRARIES.md](SHARED_LIBRARIES.md) and [USER_PAGE_TABLES.md](USER_PAGE_TABLES.md).

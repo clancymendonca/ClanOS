@@ -41,3 +41,25 @@ Phase19-SyscallReturn: syscalls=..., returns=..., rejected=..., abi_ok=true, ret
 ## Safety Boundary
 
 Phase 19 validates syscall entry/return metadata. It does not yet execute CPU `syscall`/`sysret` instructions or run arbitrary ELF syscall instructions. Phase 20 runs the seeded hello path through the guarded pipeline only.
+
+## Hardware Syscall Table (Phases 25–46)
+
+Phase 25 enables real `syscall`/`sysret`. Phase 35 registers an allowlist in `user_syscall_hw::ALLOWED_HW_SYSCALLS`. Later phases add:
+
+| ID | Name | Phase |
+|---:|------|-------|
+| 1 | `GetTickCount` | 25 |
+| 60 | `UserCopyProbe` | 26 |
+| 61 | `ExitProcess` | 34 |
+| 62 | `WaitProcess` | 34 |
+| 63 | `ReadFileProbe` | 36 |
+| 64 | `WriteFileProbe` | 36 |
+| 65 | `ReadPathProbe` | 44 |
+| 66 | `OpenFile` | 45 |
+| 67 | `CloseFile` | 45 |
+| 68 | `ReadFd` | 46 |
+| 69 | `WriteFd` | 46 |
+
+Arguments for FD and path syscalls use `rsi` / `rdx` in the hardware entry stub. See [FILE_DESCRIPTORS.md](FILE_DESCRIPTORS.md).
+
+Boot smokes include `Phase35-SyscallTable`, `Phase36-StorageCopyin`, `Phase44-UserPath`, `Phase45-FileFd`, and `Phase46-FdIO`.

@@ -336,6 +336,8 @@ User ELF MVP deep dive: `docs/USER_ELF_MVP.md`
 
 Checklist: `docs/phase-21-checklist.md`
 
+Status: ✅ Complete (validated 2026-05-22)
+
 ### Phase 22 — Controlled CR3 Activation
 
 * activate and restore user CR3 without execution
@@ -343,6 +345,8 @@ Checklist: `docs/phase-21-checklist.md`
 * blocked `Cr3Activated` process metadata
 
 Checklist: `docs/phase-22-checklist.md`
+
+Status: ✅ Complete (validated 2026-05-22)
 
 ### Phase 23 — Real iretq User Entry
 
@@ -352,12 +356,16 @@ Checklist: `docs/phase-22-checklist.md`
 
 Checklist: `docs/phase-23-checklist.md`
 
+Status: ✅ Complete (validated 2026-05-22)
+
 ### Phase 24 — Hardware User Trap Return
 
 * IDT vector `0x80` handler for cooperative user return
 * blocked `UserHwTrapped` process metadata
 
 Checklist: `docs/phase-24-checklist.md`
+
+Status: ✅ Complete (validated 2026-05-22)
 
 ### Phase 25 — CPU syscall / sysret Path
 
@@ -367,12 +375,16 @@ Checklist: `docs/phase-24-checklist.md`
 
 Checklist: `docs/phase-25-checklist.md`
 
+Status: ✅ Complete (validated 2026-05-22)
+
 ### Phase 26 — Validated User Copyin
 
 * bounded `copy_from_user` / `copy_to_user`
 * copy-probe syscall round-trip
 
 Checklist: `docs/phase-26-checklist.md`
+
+Status: ✅ Complete (validated 2026-05-22)
 
 ### Phase 27 — Static ELF Relocations
 
@@ -381,12 +393,16 @@ Checklist: `docs/phase-26-checklist.md`
 
 Checklist: `docs/phase-27-checklist.md`
 
+Status: ✅ Complete (validated 2026-05-22)
+
 ### Phase 28 — Hardware Hello Execution
 
 * `run hello` through hardware Ring 3 + syscall path
 * blocked `UserHwElfExited` process metadata
 
 Checklist: `docs/phase-28-checklist.md`
+
+Status: ✅ Complete (validated 2026-05-22)
 
 ### Phase 29 — Allowlisted ELF Programs
 
@@ -395,12 +411,16 @@ Checklist: `docs/phase-28-checklist.md`
 
 Checklist: `docs/phase-29-checklist.md`
 
+Status: ✅ Complete (validated 2026-05-22)
+
 ### Phase 30 — Per-Process CR3 Switching
 
 * save/restore distinct user CR3 values
 * isolation verification across switches
 
 Checklist: `docs/phase-30-checklist.md`
+
+Status: ✅ Complete (validated 2026-05-22)
 
 ### Phase 31 — Scheduler CR3 Binding
 
@@ -409,12 +429,18 @@ Checklist: `docs/phase-30-checklist.md`
 
 Checklist: `docs/phase-31-checklist.md`
 
+Status: ✅ Complete (validated 2026-05-22)
+
+Scheduler deep dive: `docs/SCHEDULER.md`
+
 ### Phase 32 — User Trap Frame Persistence
 
 * saved `UserHwFrame` across scheduler yield
 * `Phase32-UserFrame` boot smoke
 
 Checklist: `docs/phase-32-checklist.md`
+
+Status: ✅ Complete (validated 2026-05-22)
 
 ### Phase 33 — Concurrent Allowlisted ELFs
 
@@ -423,12 +449,16 @@ Checklist: `docs/phase-32-checklist.md`
 
 Checklist: `docs/phase-33-checklist.md`
 
+Status: ✅ Complete (validated 2026-05-22)
+
 ### Phase 34 — Exit and Wait Syscalls
 
 * `ExitProcess` / `WaitProcess` syscalls
 * `Phase34-ExitWait` boot smoke
 
 Checklist: `docs/phase-34-checklist.md`
+
+Status: ✅ Complete (validated 2026-05-22)
 
 ### Phase 35 — Hardware Syscall Dispatch Table
 
@@ -437,12 +467,18 @@ Checklist: `docs/phase-34-checklist.md`
 
 Checklist: `docs/phase-35-checklist.md`
 
+Status: ✅ Complete (validated 2026-05-22)
+
+User syscall deep dive: `docs/USER_SYSCALLS.md`
+
 ### Phase 36 — Storage Syscalls With Copyin
 
 * storage probe syscalls with validated user copies
 * `Phase36-StorageCopyin` boot smoke
 
 Checklist: `docs/phase-36-checklist.md`
+
+Status: ✅ Complete (validated 2026-05-22)
 
 ### Phase 37 — Manifest-Discovered ELF Load
 
@@ -451,12 +487,18 @@ Checklist: `docs/phase-36-checklist.md`
 
 Checklist: `docs/phase-37-checklist.md`
 
+Status: ✅ Complete (validated 2026-05-22)
+
 ### Phase 38 — Demand-Zero Page Growth
 
 * user `#PF` handler and demand-zero mapping
 * `Phase38-DemandZero` boot smoke
 
 Checklist: `docs/phase-38-checklist.md`
+
+Status: ✅ Complete (validated 2026-05-22)
+
+Demand paging deep dive: `docs/DEMAND_PAGING.md`
 
 ### Phase 39 — Dynamic Linking Groundwork
 
@@ -465,12 +507,16 @@ Checklist: `docs/phase-38-checklist.md`
 
 Checklist: `docs/phase-39-checklist.md`
 
+Status: ✅ Complete (validated 2026-05-22)
+
 ### Phase 40 — Integration Milestone
 
 * end-to-end validation of phases 31–39
 * `Phase40-Integration` boot smoke
 
 Checklist: `docs/phase-40-checklist.md`
+
+Status: ✅ Complete (validated 2026-05-22)
 
 ### Phase 41 — Shared Library Mapping
 
@@ -479,12 +525,18 @@ Checklist: `docs/phase-40-checklist.md`
 
 Checklist: `docs/phase-41-checklist.md`
 
+Status: ✅ Complete (validated 2026-05-22)
+
+Shared library deep dive: `docs/SHARED_LIBRARIES.md`
+
 ### Phase 42 — Dynamic Import Relocations
 
 * `R_X86_64_GLOB_DAT` imports against mapped shared library
 * `Phase42-DynReloc` boot smoke
 
 Checklist: `docs/phase-42-checklist.md`
+
+Status: ✅ Complete (validated 2026-05-22)
 
 ### Phase 43 — Trust-Gated ELF Execution
 
@@ -493,12 +545,16 @@ Checklist: `docs/phase-42-checklist.md`
 
 Checklist: `docs/phase-43-checklist.md`
 
+Status: ✅ Complete (validated 2026-05-22)
+
 ### Phase 44 — User Path Copyin
 
 * `ReadPathProbe` syscall with validated user paths
 * `Phase44-UserPath` boot smoke
 
 Checklist: `docs/phase-44-checklist.md`
+
+Status: ✅ Complete (validated 2026-05-22)
 
 ### Phase 45 — File Descriptor Table
 
@@ -507,12 +563,18 @@ Checklist: `docs/phase-44-checklist.md`
 
 Checklist: `docs/phase-45-checklist.md`
 
+Status: ✅ Complete (validated 2026-05-22)
+
+File I/O deep dive: `docs/FILE_DESCRIPTORS.md`
+
 ### Phase 46 — FD Read/Write
 
 * `ReadFd` / `WriteFd` with validated user buffers
 * `Phase46-FdIO` boot smoke
 
 Checklist: `docs/phase-46-checklist.md`
+
+Status: ✅ Complete (validated 2026-05-22)
 
 ### Phase 47 — File-Backed Demand Paging
 
@@ -521,12 +583,16 @@ Checklist: `docs/phase-46-checklist.md`
 
 Checklist: `docs/phase-47-checklist.md`
 
+Status: ✅ Complete (validated 2026-05-22)
+
 ### Phase 48 — W^X Mapping Policy
 
 * reject writable+executable user page flags
 * `Phase48-WxPolicy` boot smoke
 
 Checklist: `docs/phase-48-checklist.md`
+
+Status: ✅ Complete (validated 2026-05-22)
 
 ### Phase 49 — SMP Groundwork
 
@@ -535,12 +601,24 @@ Checklist: `docs/phase-48-checklist.md`
 
 Checklist: `docs/phase-49-checklist.md`
 
+Status: ✅ Complete (validated 2026-05-22)
+
+SMP deep dive: `docs/SMP.md`
+
 ### Phase 50 — Integration Milestone (41–49)
 
 * end-to-end validation of phases 41–49
 * `Phase50-Integration` boot smoke
 
 Checklist: `docs/phase-50-checklist.md`
+
+Status: ✅ Complete (validated 2026-05-22)
+
+---
+
+# Documentation
+
+Full index of checklists, deep-dive guides, and validation commands: [`docs/INDEX.md`](docs/INDEX.md)
 
 ---
 
@@ -549,31 +627,42 @@ Checklist: `docs/phase-50-checklist.md`
 ```
 AresOS
 ├── Cargo.toml                 workspace manifest
+├── docs/                      phase checklists + deep-dive guides (see INDEX.md)
+├── scripts/                   QEMU smoke checks + validation_matrix.py
 ├── kernel/
 │   ├── Cargo.toml             kernel crate manifest
 │   ├── x86_64-unknown-none.json
 │   ├── src/
-│   │   ├── main.rs            kernel entry point
-│   │   ├── device.rs          device registry + PCI discovery skeleton
-│   │   ├── ring3_trampoline.rs controlled user-entry trap records
+│   │   ├── main.rs            kernel entry + phase boot smokes
+│   │   ├── lib.rs             modules, init (GDT, IDT, SMP)
+│   │   ├── storage.rs         simple persistent filesystem
+│   │   ├── security.rs        identity + permission policy
+│   │   ├── syscall.rs         syscall IDs + dispatch
+│   │   ├── device.rs          device registry + PCI skeleton
 │   │   ├── block.rs           block-device manager
-│   │   ├── security.rs        identity + permission policy primitives
-│   │   ├── exec_image.rs      executable image parser and validation
-│   │   ├── frame_backing.rs   frame-backed executable image records
-│   │   ├── frame_ownership.rs persistent frame ownership bookkeeping
-│   │   ├── address_space.rs   descriptor-only process address spaces
+│   │   ├── exec_image.rs      ELF64 image validation
+│   │   ├── elf_reloc.rs       static + GLOB_DAT relocations
+│   │   ├── shared_loader.rs   shared library mapping (phase 41)
 │   │   ├── load_plan.rs       executable load-plan accounting
-│   │   ├── mapping_stub.rs    deterministic executable mapping stubs
+│   │   ├── mapping_stub.rs    mapping-stub records
+│   │   ├── frame_ownership.rs frame ownership registry
+│   │   ├── frame_backing.rs   frame-backed image pages
+│   │   ├── user_memory.rs     inactive page-table descriptors
+│   │   ├── user_paging.rs     hardware page tables, CR3, W^X
+│   │   ├── demand_paging.rs   demand-zero + file-backed #PF
 │   │   ├── user_context.rs    user entry-frame descriptors
-│   │   ├── user_memory.rs     inactive user page-table descriptors
-│   │   ├── user_syscall.rs    user syscall ABI descriptors
-│   │   ├── lib.rs             shared kernel modules
-│   │   ├── interrupts.rs      IDT + IRQ handlers
-│   │   ├── memory.rs          paging + frame allocator
-│   │   ├── allocator.rs       heap allocator
-│   │   ├── task/              async executor + keyboard
+│   │   ├── user_entry.rs      Ring 3 / iretq / syscall entry
+│   │   ├── user_syscall.rs    syscall ABI + copy helpers
+│   │   ├── user_syscall_hw.rs hardware syscall/sysret path
+│   │   ├── user_copy.rs       validated user copies
+│   │   ├── user_path.rs       bounded user path copyin
+│   │   ├── fd_table.rs        bring-up file descriptor table
+│   │   ├── smp.rs             CPU detect + parked APs
+│   │   ├── ring3_trampoline.rs controlled user-entry traps
+│   │   ├── task/              scheduler, loader, keyboard shell
 │   │   └── performance/       metrics + profiler
-│   └── tests/                 boot/integration tests
+│   └── tests/
+│       └── preemption_integration.rs
 └── .cargo/config.toml         target + runner configuration
 ```
 
@@ -650,157 +739,170 @@ Phase 6 smoke check:
 Phase 7 persistent storage check:
 
 ```
-./scripts/phase7-storage-check --timeout 20
+./scripts/phase7-storage-check --timeout 180
 ```
 
 Phase 8 device/block check:
 
 ```
-./scripts/phase8-device-check --timeout 20
+./scripts/phase8-device-check --timeout 180
 ```
 
 Phase 9 stored program loader check:
 
 ```
-./scripts/phase9-loader-check --timeout 20
+./scripts/phase9-loader-check --timeout 180
 ```
 
 Phase 10 security policy check:
 
 ```
-./scripts/phase10-security-check --timeout 20
+./scripts/phase10-security-check --timeout 180
 ```
 
 Phase 11 executable image check:
 
 ```
-./scripts/phase11-image-check --timeout 20
+./scripts/phase11-image-check --timeout 180
 ```
 
 Phase 12 executable load-plan check:
 
 ```
-./scripts/phase12-load-plan-check --timeout 20
+./scripts/phase12-load-plan-check --timeout 180
 ```
 
 Phase 13 mapping-stub check:
 
 ```
-./scripts/phase13-mapping-stub-check --timeout 20
+./scripts/phase13-mapping-stub-check --timeout 180
 ```
 
 Phase 14 frame ownership check:
 
 ```
-./scripts/phase14-frame-check --timeout 20
+./scripts/phase14-frame-check --timeout 180
 ```
 
 Phase 15 frame-backed image check:
 
 ```
-./scripts/phase15-frame-backing-check --timeout 20
+./scripts/phase15-frame-backing-check --timeout 180
 ```
 
 Phase 16 inactive page-table check:
 
 ```
-./scripts/phase16-page-table-check --timeout 20
+./scripts/phase16-page-table-check --timeout 180
 ```
 
 Phase 17 user-context check:
 
 ```
-./scripts/phase17-user-context-check --timeout 20
+./scripts/phase17-user-context-check --timeout 180
 ```
 
 Phase 18 controlled Ring 3 check:
 
 ```
-./scripts/phase18-ring3-check --timeout 20
+./scripts/phase18-ring3-check --timeout 180
 ```
 
 Phase 19 syscall return check:
 
 ```
-./scripts/phase19-syscall-return-check --timeout 20
+./scripts/phase19-syscall-return-check --timeout 180
 ```
 
 Phase 20 user ELF check:
 
 ```
-./scripts/phase20-user-elf-check --timeout 20
+./scripts/phase20-user-elf-check --timeout 180
 ```
 
 Phase 21 hardware page-table check:
 
 ```
-python scripts/phase21_hw_page_table_check.py --timeout 20
+python scripts/phase21_hw_page_table_check.py --timeout 180
 ```
 
 Phase 22 CR3 activation check:
 
 ```
-python scripts/phase22_cr3_check.py --timeout 20
+python scripts/phase22_cr3_check.py --timeout 180
 ```
 
 Phase 23 iretq entry check:
 
 ```
-python scripts/phase23_iretq_check.py --timeout 20
+python scripts/phase23_iretq_check.py --timeout 180
 ```
 
 Phase 24 user trap check:
 
 ```
-python scripts/phase24_user_trap_check.py --timeout 20
+python scripts/phase24_user_trap_check.py --timeout 180
 ```
 
 Phase 25 hardware syscall check:
 
 ```
-python scripts/phase25_syscall_hw_check.py --timeout 20
+python scripts/phase25_syscall_hw_check.py --timeout 180
 ```
 
 Phase 26 user copyin check:
 
 ```
-python scripts/phase26_copyin_check.py --timeout 20
+python scripts/phase26_copyin_check.py --timeout 180
 ```
 
 Phase 27 relocation check:
 
 ```
-python scripts/phase27_reloc_check.py --timeout 20
+python scripts/phase27_reloc_check.py --timeout 180
 ```
 
 Phase 28 hardware hello check:
 
 ```
-python scripts/phase28_hw_hello_check.py --timeout 20
+python scripts/phase28_hw_hello_check.py --timeout 180
 ```
 
 Phase 29 allowlist check:
 
 ```
-python scripts/phase29_allowlist_check.py --timeout 20
+python scripts/phase29_allowlist_check.py --timeout 180
 ```
 
 Phase 30 CR3 switch check:
 
 ```
-python scripts/phase30_cr3_switch_check.py --timeout 20
+python scripts/phase30_cr3_switch_check.py --timeout 180
 ```
 
-Full validation matrix (QEMU-backed):
+Phases 31–50 QEMU checks (same pattern; example):
 
 ```
-python scripts/validation_matrix.py --soak-duration 20 --latency-duration 20
+python scripts/phase41_shared_lib_check.py --timeout 180
+python scripts/phase50_integration_check.py --timeout 180
+```
+
+Full validation matrix (QEMU-backed; run alone on Windows, ~2+ hours):
+
+```
+python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --boot-wait 90 --smoke-timeout 180
+```
+
+Resume from a specific check:
+
+```
+python scripts/validation_matrix.py --from-check phase41-shared-lib-check --smoke-timeout 180
 ```
 
 Run tests (unit + integration under QEMU):
 
 ```
-cargo test -p kernel
+cargo test -p kernel --features preemption --test preemption_integration
 ```
 
 Run Phase 4 wrapper-mode preemption soak check:

@@ -63,8 +63,8 @@ Phase8-Devices: total=..., pci=..., block=..., block_devices=..., driver_backed=
 ## Validation
 
 ```bash
-python scripts/phase8_device_check.py --timeout 20
-python scripts/validation_matrix.py --soak-duration 20 --latency-duration 20
+python scripts/phase8_device_check.py --timeout 180
+python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --boot-wait 90 --smoke-timeout 180
 ```
 
 ## Deferred Work

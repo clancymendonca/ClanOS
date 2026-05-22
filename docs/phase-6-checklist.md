@@ -39,5 +39,5 @@
 ```bash
 cargo check -p kernel
 ./scripts/phase6-smoke-check
-python scripts/validation_matrix.py --soak-duration 20 --latency-duration 20
+python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --boot-wait 90 --smoke-timeout 180
 ```

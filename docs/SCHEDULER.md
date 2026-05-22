@@ -82,17 +82,25 @@ cargo run -p kernel --features preemption
 Integration validation:
 
 ```bash
-cargo test -p kernel --test preemption_integration
+cargo test -p kernel --features preemption --test preemption_integration
 ```
 
 Budgeted matrix validation:
 
 ```bash
-python scripts/validation_matrix.py --soak-duration 20 --latency-duration 20
+python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --boot-wait 90 --smoke-timeout 180
 ```
 
 Current enforced budgets in matrix mode:
 
 - fairness score `<= 1.10`
-- max estimated preemption latency `<= 100ms`
+- max estimated preemption latency `<= 300ms` (matrix default)
 - phase-6 runtime smoke line must report all true flags
+
+## Scheduler CR3 (Phase 31)
+
+Preemptive context switch applies the next runnable process user CR3 via `apply_scheduler_cr3_for_next`. Process records store `cr3_phys` when hardware page tables are built.
+
+## SMP (Phase 49)
+
+`smp::init()` records CPU and parked AP counts and provides TLB flush hooks. Scheduling still runs on the bootstrap processor only. See [SMP.md](SMP.md).

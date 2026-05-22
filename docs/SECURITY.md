@@ -73,3 +73,23 @@ Phase 11 adds descriptor-only address spaces and ELF64 validation, but still doe
 Phase 12 adds load-plan and reservation accounting for validated images. It still does not allocate executable user frames, mutate process page tables, switch CR3, enter Ring 3, or jump to stored ELF entry points.
 
 Phase 13 adds deterministic mapping stubs for prepared images. These stubs record owner credentials, frame tokens, mapped pages, copy bytes, and zero-fill bytes, but they remain policy and accounting records rather than hardware-enforced user mappings.
+
+## Trust-Gated Execution (Phase 43)
+
+Hardware ELF launch still requires an allowlisted program name (`hello`, `exit42`, `tickprobe`) for `trust=user` manifests. Programs with `trust=system` may run through `execute_trusted_manifest_elf` without appearing on the name allowlist.
+
+The seed manifest `/bin/systrust` references `/bin/tickprobe.elf` with `trust=system` and is used by `Phase43-TrustExec` smoke tests.
+
+Boot smoke:
+
+```text
+Phase43-TrustExec: trusted=..., allowlist_bypass=..., ok=true
+```
+
+Validation:
+
+```bash
+python scripts/phase43_trust_exec_check.py --timeout 180
+```
+
+Deferred: cryptographic signatures, capability tokens, and per-user trust policies beyond static manifest fields.

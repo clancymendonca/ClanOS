@@ -11,7 +11,7 @@
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
 - [x] `python scripts/phase50_integration_check.py --timeout 180`
-- [x] `python scripts/validation_matrix.py --from-check phase41-shared-lib-check` (optional full matrix)
+- [x] `python scripts/validation_matrix.py` (full matrix PASS, 2026-05-22)
 
 ## Deferred
 

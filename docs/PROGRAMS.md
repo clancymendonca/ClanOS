@@ -96,14 +96,18 @@ Phase11-Images: images=..., valid=..., rejected=..., exec_blocked_ok=true
 ## Validation
 
 ```bash
-python scripts/phase9_loader_check.py --timeout 20
-python scripts/validation_matrix.py --soak-duration 20 --latency-duration 20
+python scripts/phase9_loader_check.py --timeout 180
+python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --boot-wait 90 --smoke-timeout 180
 ```
+
+## Phases 37–43 — Hardware Load and Trust
+
+- Phase 37 discovers `elf64-image` manifests and runs allowlisted hardware paths including `tickprobe`.
+- Phases 41–42 map `libc_stub` at `0x700000` and apply `GLOB_DAT` import relocs (see [SHARED_LIBRARIES.md](SHARED_LIBRARIES.md)).
+- Phase 43 runs `trust=system` manifests without name allowlist membership (see [SECURITY.md](SECURITY.md)).
 
 ## Deferred Work
 
-- ELF relocation
-- Loading raw binary code into executable mapped memory
-- User/kernel privilege separation for executable code
-- Demand paging and memory-mapped executable files
-- Program signatures
+- Arbitrary unsigned ELF execution for user-supplied binaries
+- Program signatures and revocable trust roots
+- Per-process library namespaces and multiple `DT_NEEDED` dependencies

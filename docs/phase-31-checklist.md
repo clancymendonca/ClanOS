@@ -11,7 +11,7 @@
 
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/phase31_sched_cr3_check.py --timeout 120`
+- [x] `python scripts/phase31_sched_cr3_check.py --timeout 180`
 
 ## Deferred
 
