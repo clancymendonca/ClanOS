@@ -46,6 +46,8 @@ pub mod demand_paging;
 pub mod shared_loader;
 pub mod user_path;
 pub mod fd_table;
+pub mod mmap;
+pub mod image_digest;
 pub mod smp;
 pub mod vga_buffer;
 

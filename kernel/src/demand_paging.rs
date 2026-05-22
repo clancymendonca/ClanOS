@@ -12,7 +12,7 @@ static FILE_REJECTED: AtomicU64 = AtomicU64::new(0);
 
 const USER_GROW_BASE: u64 = 0x401000;
 const USER_GROW_LIMIT: u64 = 0x500000;
-const FILE_DEMAND_BASE: u64 = 0x500000;
+pub const FILE_DEMAND_BASE: u64 = 0x500000;
 const FILE_DEMAND_LIMIT: u64 = 0x510000;
 
 static FILE_BACKED_PATH: spin::Mutex<Option<&'static str>> = spin::Mutex::new(None);
@@ -75,7 +75,7 @@ pub fn handle_page_fault(
     }
 }
 
-fn handle_file_backed_fault(cr3: u64, fault_addr: u64) -> bool {
+pub fn handle_file_backed_fault(cr3: u64, fault_addr: u64) -> bool {
     FILE_FAULTS.fetch_add(1, Ordering::Relaxed);
     let path = match *FILE_BACKED_PATH.lock() {
         Some(path) => path,
