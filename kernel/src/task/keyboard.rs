@@ -271,6 +271,15 @@ fn execute_console_command(command: &str) {
                             crate::task::process::ProcessLoadState::UserHwExitedSched => "hw-exit-sched",
                             crate::task::process::ProcessLoadState::ManifestElfDiscovered => "manifest-elf",
                             crate::task::process::ProcessLoadState::DynamicLinked => "dynamic",
+                            crate::task::process::ProcessLoadState::SharedLibMapped => "shared-lib",
+                            crate::task::process::ProcessLoadState::DynRelocApplied => "dyn-reloc",
+                            crate::task::process::ProcessLoadState::TrustExecReady => "trust-exec",
+                            crate::task::process::ProcessLoadState::UserPathReady => "user-path",
+                            crate::task::process::ProcessLoadState::FileFdReady => "file-fd",
+                            crate::task::process::ProcessLoadState::FdIoReady => "fd-io",
+                            crate::task::process::ProcessLoadState::FileDemandReady => "file-demand",
+                            crate::task::process::ProcessLoadState::WxPolicyReady => "wx-policy",
+                            crate::task::process::ProcessLoadState::SmpReady => "smp",
                         })
                         .unwrap_or("-");
                     println!(

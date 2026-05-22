@@ -142,6 +142,139 @@ fn run_phase31_to_40_smokes() {
     );
 }
 
+fn run_phase41_to_50_smokes() {
+    let phase41_ok = kernel::task::program_loader::phase41_shared_lib_smoke();
+    let (loaded, pages, _) = kernel::shared_loader::status();
+    println!(
+        "Phase41-SharedLib: loaded={}, pages={}, ok={}",
+        loaded, pages, phase41_ok
+    );
+    kernel::serial_println!(
+        "Phase41-SharedLib: loaded={}, pages={}, ok={}",
+        loaded, pages, phase41_ok
+    );
+
+    let phase42_ok = kernel::task::program_loader::phase42_dyn_reloc_smoke();
+    let (imports, applied) = kernel::elf_reloc::import_status();
+    println!(
+        "Phase42-DynReloc: imports={}, applied={}, ok={}",
+        imports, applied, phase42_ok
+    );
+    kernel::serial_println!(
+        "Phase42-DynReloc: imports={}, applied={}, ok={}",
+        imports, applied, phase42_ok
+    );
+
+    let phase43_ok = kernel::task::program_loader::phase43_trust_exec_smoke();
+    let (trust_ok, trust_rej) = kernel::task::program_loader::trust_exec_status();
+    println!(
+        "Phase43-TrustExec: executed={}, rejected={}, ok={}",
+        trust_ok, trust_rej, phase43_ok
+    );
+    kernel::serial_println!(
+        "Phase43-TrustExec: executed={}, rejected={}, ok={}",
+        trust_ok, trust_rej, phase43_ok
+    );
+
+    let phase44_ok = kernel::task::program_loader::phase44_user_path_smoke();
+    let (reads, path_rej) = kernel::user_path::status();
+    println!(
+        "Phase44-UserPath: reads={}, rejected={}, ok={}",
+        reads, path_rej, phase44_ok
+    );
+    kernel::serial_println!(
+        "Phase44-UserPath: reads={}, rejected={}, ok={}",
+        reads, path_rej, phase44_ok
+    );
+
+    let phase45_ok = kernel::task::program_loader::phase45_file_fd_smoke();
+    let (opens, closes, _, _, _) = kernel::fd_table::status();
+    println!(
+        "Phase45-FileFd: opens={}, closes={}, ok={}",
+        opens, closes, phase45_ok
+    );
+    kernel::serial_println!(
+        "Phase45-FileFd: opens={}, closes={}, ok={}",
+        opens, closes, phase45_ok
+    );
+
+    let phase46_ok = kernel::task::program_loader::phase46_fd_io_smoke();
+    let (_, _, fd_reads, fd_writes, _) = kernel::fd_table::status();
+    println!(
+        "Phase46-FdIO: reads={}, writes={}, ok={}",
+        fd_reads, fd_writes, phase46_ok
+    );
+    kernel::serial_println!(
+        "Phase46-FdIO: reads={}, writes={}, ok={}",
+        fd_reads, fd_writes, phase46_ok
+    );
+
+    let phase47_ok = kernel::task::program_loader::phase47_file_demand_smoke();
+    let (faults, file_loaded, file_rej) = kernel::demand_paging::file_status();
+    println!(
+        "Phase47-FileDemand: faults={}, loaded={}, rejected={}, ok={}",
+        faults, file_loaded, file_rej, phase47_ok
+    );
+    kernel::serial_println!(
+        "Phase47-FileDemand: faults={}, loaded={}, rejected={}, ok={}",
+        faults, file_loaded, file_rej, phase47_ok
+    );
+
+    let phase48_ok = kernel::task::program_loader::phase48_wx_policy_smoke();
+    let (wx_checked, wx_rejected) = kernel::user_paging::wx_status();
+    println!(
+        "Phase48-WxPolicy: checked={}, rejected={}, ok={}",
+        wx_checked, wx_rejected, phase48_ok
+    );
+    kernel::serial_println!(
+        "Phase48-WxPolicy: checked={}, rejected={}, ok={}",
+        wx_checked, wx_rejected, phase48_ok
+    );
+
+    let phase49_ok = kernel::task::program_loader::phase49_smp_smoke();
+    let (cpus, aps, flush_ok) = kernel::smp::status();
+    println!(
+        "Phase49-Smp: cpus={}, aps={}, flush_ok={}",
+        cpus, aps, flush_ok > 0 && phase49_ok
+    );
+    kernel::serial_println!(
+        "Phase49-Smp: cpus={}, aps={}, flush_ok={}",
+        cpus, aps, flush_ok > 0 && phase49_ok
+    );
+
+    let phase50_ok = kernel::task::program_loader::phase50_integration_smoke();
+    let (loaded2, _, _) = kernel::shared_loader::status();
+    let (_, applied2) = kernel::elf_reloc::import_status();
+    let (t_ok, t_rej) = kernel::task::program_loader::trust_exec_status();
+    let (p_reads, _) = kernel::user_path::status();
+    let (o2, _, r2, _, _) = kernel::fd_table::status();
+    let (_, f_loaded, _) = kernel::demand_paging::file_status();
+    let (_, wx_rej2) = kernel::user_paging::wx_status();
+    let (cpus2, _, flush2) = kernel::smp::status();
+    println!(
+        "Phase50-Integration: shared={}, trust={}, path={}, fd={}, file={}, wx={}, smp={}, ok={}",
+        loaded2 > 0 && applied2 > 0,
+        t_ok > 0 && t_rej > 0,
+        p_reads > 0,
+        o2 > 0 && r2 > 0,
+        f_loaded > 0,
+        wx_rej2 > 0,
+        cpus2 >= 1 && flush2 > 0,
+        phase50_ok
+    );
+    kernel::serial_println!(
+        "Phase50-Integration: shared={}, trust={}, path={}, fd={}, file={}, wx={}, smp={}, ok={}",
+        loaded2 > 0 && applied2 > 0,
+        t_ok > 0 && t_rej > 0,
+        p_reads > 0,
+        o2 > 0 && r2 > 0,
+        f_loaded > 0,
+        wx_rej2 > 0,
+        cpus2 >= 1 && flush2 > 0,
+        phase50_ok
+    );
+}
+
 fn run_phase21_to_30_smokes() {
     let phase21_ok = kernel::task::program_loader::phase21_smoke_check();
     let (hw_built, hw_verified, hw_rejected, _, _, _, _) = kernel::user_paging::status();
@@ -450,12 +583,13 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         frame_status.failed_allocation_count,
         phase14_frames_ok
     );
-    kernel::serial_println!("Boot: phase21-40 smokes start");
+    kernel::serial_println!("Boot: phase21-50 smokes start");
     x86_64::instructions::interrupts::without_interrupts(|| {
         run_phase21_to_30_smokes();
         run_phase31_to_40_smokes();
+        run_phase41_to_50_smokes();
     });
-    kernel::serial_println!("Boot: phase21-40 smokes done");
+    kernel::serial_println!("Boot: phase21-50 smokes done");
     let phase15_backing_ok = kernel::task::program_loader::phase15_smoke_check();
     let backing_status = kernel::task::program_loader::status();
     let backing_frames = kernel::frame_ownership::status();
