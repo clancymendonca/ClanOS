@@ -472,6 +472,76 @@ Checklist: `docs/phase-39-checklist.md`
 
 Checklist: `docs/phase-40-checklist.md`
 
+### Phase 41 — Shared Library Mapping
+
+* map `libc_stub` dependency at `0x700000` when `DT_NEEDED` is present
+* `Phase41-SharedLib` boot smoke
+
+Checklist: `docs/phase-41-checklist.md`
+
+### Phase 42 — Dynamic Import Relocations
+
+* `R_X86_64_GLOB_DAT` imports against mapped shared library
+* `Phase42-DynReloc` boot smoke
+
+Checklist: `docs/phase-42-checklist.md`
+
+### Phase 43 — Trust-Gated ELF Execution
+
+* run `trust=system` manifests without name allowlist (`systrust` fixture)
+* `Phase43-TrustExec` boot smoke
+
+Checklist: `docs/phase-43-checklist.md`
+
+### Phase 44 — User Path Copyin
+
+* `ReadPathProbe` syscall with validated user paths
+* `Phase44-UserPath` boot smoke
+
+Checklist: `docs/phase-44-checklist.md`
+
+### Phase 45 — File Descriptor Table
+
+* `OpenFile` / `CloseFile` syscalls with bring-up FD table
+* `Phase45-FileFd` boot smoke
+
+Checklist: `docs/phase-45-checklist.md`
+
+### Phase 46 — FD Read/Write
+
+* `ReadFd` / `WriteFd` with validated user buffers
+* `Phase46-FdIO` boot smoke
+
+Checklist: `docs/phase-46-checklist.md`
+
+### Phase 47 — File-Backed Demand Paging
+
+* demand-map file pages from storage on user `#PF`
+* `Phase47-FileDemand` boot smoke
+
+Checklist: `docs/phase-47-checklist.md`
+
+### Phase 48 — W^X Mapping Policy
+
+* reject writable+executable user page flags
+* `Phase48-WxPolicy` boot smoke
+
+Checklist: `docs/phase-48-checklist.md`
+
+### Phase 49 — SMP Groundwork
+
+* CPU count detection, AP accounting, TLB flush hooks
+* `Phase49-Smp` boot smoke
+
+Checklist: `docs/phase-49-checklist.md`
+
+### Phase 50 — Integration Milestone (41–49)
+
+* end-to-end validation of phases 41–49
+* `Phase50-Integration` boot smoke
+
+Checklist: `docs/phase-50-checklist.md`
+
 ---
 
 # Project Structure
