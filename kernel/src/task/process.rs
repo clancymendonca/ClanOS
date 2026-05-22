@@ -88,6 +88,15 @@ pub enum ProcessLoadState {
     UserHwExitedSched,
     ManifestElfDiscovered,
     DynamicLinked,
+    SharedLibMapped,
+    DynRelocApplied,
+    TrustExecReady,
+    UserPathReady,
+    FileFdReady,
+    FdIoReady,
+    FileDemandReady,
+    WxPolicyReady,
+    SmpReady,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

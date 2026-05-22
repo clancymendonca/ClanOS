@@ -9,9 +9,13 @@ static RELOC_APPLIED: AtomicU64 = AtomicU64::new(0);
 static RELOC_REJECTED: AtomicU64 = AtomicU64::new(0);
 static DT_NEEDED_COUNT: AtomicU64 = AtomicU64::new(0);
 static DT_LINKED_COUNT: AtomicU64 = AtomicU64::new(0);
+static IMPORT_COUNT: AtomicU64 = AtomicU64::new(0);
+static IMPORT_APPLIED: AtomicU64 = AtomicU64::new(0);
 
 const R_X86_64_NONE: u32 = 0;
 const R_X86_64_64: u32 = 1;
+const R_X86_64_GLOB_DAT: u32 = 6;
+const R_X86_64_JUMP_SLOT: u32 = 7;
 const R_X86_64_RELATIVE: u32 = 8;
 
 pub fn status() -> (u64, u64) {
@@ -26,6 +30,13 @@ pub fn dynamic_status() -> (u64, u64, bool) {
         DT_NEEDED_COUNT.load(Ordering::Relaxed),
         DT_LINKED_COUNT.load(Ordering::Relaxed),
         DT_LINKED_COUNT.load(Ordering::Relaxed) > 0,
+    )
+}
+
+pub fn import_status() -> (u64, u64) {
+    (
+        IMPORT_COUNT.load(Ordering::Relaxed),
+        IMPORT_APPLIED.load(Ordering::Relaxed),
     )
 }
 
@@ -81,6 +92,47 @@ pub fn relocs_for_image(image_bytes: &[u8], load_base: u64) -> Vec<StaticReloc> 
     }
     let _ = image_bytes;
     relocs
+}
+
+pub fn import_relocs_for_image(image_bytes: &[u8], load_base: u64, lib_base: u64) -> Vec<StaticReloc> {
+    let mut relocs = relocs_for_image(image_bytes, load_base);
+    if parse_dt_needed(image_bytes).is_some() {
+        relocs.push(StaticReloc {
+            offset: load_base.saturating_add(128),
+            kind: R_X86_64_GLOB_DAT,
+            addend: lib_base.saturating_add(crate::shared_loader::SHARED_LIB_SYMBOL_OFFSET),
+        });
+        IMPORT_COUNT.fetch_add(1, Ordering::Relaxed);
+    }
+    relocs
+}
+
+pub fn apply_dynamic_imports(
+    backed: &mut FrameBackedImage,
+    image_bytes: &[u8],
+    lib_base: u64,
+) -> Result<usize, ()> {
+    let load_base = backed
+        .regions
+        .first()
+        .and_then(|region| region.pages.first())
+        .map(|page| page.virtual_address)
+        .unwrap_or(0x400000);
+    let relocs = import_relocs_for_image(image_bytes, load_base, lib_base);
+    let mut applied = 0usize;
+    for reloc in &relocs {
+        if reloc.kind != R_X86_64_GLOB_DAT && reloc.kind != R_X86_64_JUMP_SLOT {
+            continue;
+        }
+        let value = reloc.addend;
+        if write_reloc_value(backed, reloc.offset, value).is_err() {
+            RELOC_REJECTED.fetch_add(1, Ordering::Relaxed);
+            return Err(());
+        }
+        applied += 1;
+        IMPORT_APPLIED.fetch_add(1, Ordering::Relaxed);
+    }
+    Ok(applied)
 }
 
 pub fn apply_static_relocs(

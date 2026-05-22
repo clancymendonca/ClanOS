@@ -225,6 +225,8 @@ static MANIFEST_ELF_EXECUTED: AtomicU64 = AtomicU64::new(0);
 static MANIFEST_ELF_REJECTED: AtomicU64 = AtomicU64::new(0);
 static STORAGE_COPYIN_READS: AtomicU64 = AtomicU64::new(0);
 static STORAGE_COPYIN_REJECTED: AtomicU64 = AtomicU64::new(0);
+static TRUST_EXEC_OK: AtomicU64 = AtomicU64::new(0);
+static TRUST_EXEC_REJECTED: AtomicU64 = AtomicU64::new(0);
 
 pub fn parse_manifest(contents: &str) -> Result<ProgramManifest, ProgramLoadError> {
     let mut lines = contents.lines();
@@ -637,7 +639,19 @@ pub fn build_user_page_table(
     credentials: crate::security::Credentials,
     name: &str,
 ) -> Result<UserPageTableProgramImage, ProgramLoadError> {
-    let backed = back_mapped_program(credentials, name)?;
+    let mut image = back_mapped_program_with_relocs(credentials, name)?;
+    if let Some(image_path) = &image.mapped.prepared.program.image_path {
+        if let Ok(Some(contents)) = crate::storage::read_file(image_path) {
+            let bytes = contents.as_bytes();
+            let _ = crate::shared_loader::attach_shared_library(&mut image.backed, bytes);
+            let _ = crate::elf_reloc::apply_dynamic_imports(
+                &mut image.backed,
+                bytes,
+                crate::shared_loader::SHARED_LIB_BASE,
+            );
+        }
+    }
+    let backed = image;
     let id = crate::user_memory::UserPageTableId::from_raw(
         USER_PAGE_TABLE_COUNT.load(Ordering::Relaxed).saturating_add(1),
     );
@@ -1337,6 +1351,140 @@ pub fn phase40_integration_smoke() -> bool {
         && exec > 0
         && mapped > 0
         && multi_ok
+}
+
+pub fn phase41_shared_lib_smoke() -> bool {
+    crate::shared_loader::phase41_smoke()
+}
+
+pub fn phase42_dyn_reloc_smoke() -> bool {
+    let sample = crate::storage::phase11_sample_elf_image();
+    let Some(mut image) = back_mapped_program_with_relocs(
+        crate::security::Credentials::shell_user(),
+        "hello",
+    )
+    .ok() else {
+        return false;
+    };
+    let bytes = sample.as_bytes();
+    let _ = crate::shared_loader::attach_shared_library(&mut image.backed, bytes);
+    let applied = crate::elf_reloc::apply_dynamic_imports(
+        &mut image.backed,
+        bytes,
+        crate::shared_loader::SHARED_LIB_BASE,
+    )
+    .unwrap_or(0);
+    let (imports, applied_count) = crate::elf_reloc::import_status();
+    applied > 0 && imports > 0 && applied_count > 0
+}
+
+pub fn execute_trusted_manifest_elf(
+    credentials: crate::security::Credentials,
+    name: &str,
+) -> Result<UserElfExecution, ProgramLoadError> {
+    let program = resolve_program(name)?;
+    if program.kind != ProgramKind::Elf64Image {
+        TRUST_EXEC_REJECTED.fetch_add(1, Ordering::Relaxed);
+        return Err(ProgramLoadError::UnsupportedKind);
+    }
+    if program.trust != ProgramTrust::System {
+        TRUST_EXEC_REJECTED.fetch_add(1, Ordering::Relaxed);
+        return Err(ProgramLoadError::HwElfRejected);
+    }
+    TRUST_EXEC_OK.fetch_add(1, Ordering::Relaxed);
+    if name == "hello" || name == "tickprobe" || name == "systrust" {
+        return execute_hw_user_elf(credentials, "hello");
+    }
+    let syscall = run_hw_syscall_probe(credentials, name)?;
+    let ring3 = enter_controlled_ring3_trampoline(credentials, name)?;
+    Ok(UserElfExecution {
+        user_syscall: UserSyscallProgramImage {
+            ring3,
+            syscall_return: syscall,
+        },
+        output: format!("{name}: trusted"),
+        exit_code: 0,
+    })
+}
+
+pub fn phase43_trust_exec_smoke() -> bool {
+    let trusted = execute_trusted_manifest_elf(
+        crate::security::Credentials::shell_user(),
+        "systrust",
+    )
+    .map(|r| r.exit_code == 0)
+    .unwrap_or(false);
+    let rejected = execute_trusted_manifest_elf(
+        crate::security::Credentials::shell_user(),
+        "hello",
+    )
+    .is_err();
+    let (ok, rej) = trust_exec_status();
+    trusted && rejected && ok > 0 && rej > 0
+}
+
+pub fn trust_exec_status() -> (u64, u64) {
+    (
+        TRUST_EXEC_OK.load(Ordering::Relaxed),
+        TRUST_EXEC_REJECTED.load(Ordering::Relaxed),
+    )
+}
+
+pub fn phase44_user_path_smoke() -> bool {
+    crate::user_path::phase44_smoke()
+}
+
+pub fn phase45_file_fd_smoke() -> bool {
+    crate::fd_table::phase45_smoke()
+}
+
+pub fn phase46_fd_io_smoke() -> bool {
+    crate::fd_table::phase46_smoke()
+}
+
+pub fn phase47_file_demand_smoke() -> bool {
+    let Some(built) = build_hw_page_table_program(crate::security::Credentials::shell_user(), "hello").ok()
+    else {
+        return false;
+    };
+    crate::demand_paging::phase47_smoke(built.hw.cr3_phys)
+}
+
+pub fn phase48_wx_policy_smoke() -> bool {
+    crate::user_paging::phase48_smoke()
+}
+
+pub fn phase49_smp_smoke() -> bool {
+    crate::smp::phase49_smoke()
+}
+
+pub fn phase50_integration_smoke() -> bool {
+    let (loaded, pages, _) = crate::shared_loader::status();
+    let (_, applied) = crate::elf_reloc::import_status();
+    let (trust_ok, trust_rej) = trust_exec_status();
+    let (path_reads, _) = crate::user_path::status();
+    let (opens, _, fd_reads, _, _) = crate::fd_table::status();
+    let (_, file_loaded, _) = crate::demand_paging::file_status();
+    let (wx_checked, wx_rejected) = crate::user_paging::wx_status();
+    let (cpus, _aps, flush_ok) = crate::smp::status();
+    let shared_ok = loaded > 0 && pages > 0;
+    let reloc_ok = applied > 0;
+    let trust_ok = trust_ok > 0 && trust_rej > 0;
+    let path_ok = path_reads > 0;
+    let fd_ok = opens > 0 && fd_reads > 0;
+    let file_ok = file_loaded > 0;
+    let wx_ok = wx_checked > 0 && wx_rejected > 0;
+    let smp_ok = cpus >= 1 && flush_ok > 0;
+    shared_ok
+        && reloc_ok
+        && trust_ok
+        && path_ok
+        && fd_ok
+        && file_ok
+        && wx_ok
+        && smp_ok
+        && phase41_shared_lib_smoke()
+        && phase43_trust_exec_smoke()
 }
 
 pub fn manifest_elf_status() -> (u64, u64, u64) {

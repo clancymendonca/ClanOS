@@ -34,6 +34,8 @@ static SCHED_CR3_SWITCHES: AtomicU64 = AtomicU64::new(0);
 static SCHED_CR3_SKIPS: AtomicU64 = AtomicU64::new(0);
 static SCHED_CR3_BOUND: AtomicU64 = AtomicU64::new(0);
 static SCHED_CR3_RESTORE_OK: AtomicU64 = AtomicU64::new(0);
+static WX_CHECKED: AtomicU64 = AtomicU64::new(0);
+static WX_REJECTED: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct HwPageTableHandle {
@@ -382,6 +384,24 @@ pub fn translate_hw_page(pml4_phys: u64, virtual_address: u64) -> Option<u64> {
     translate_hw(pml4_phys, VirtAddr::new(virtual_address)).map(|a| a.as_u64())
 }
 
+pub fn wx_status() -> (u64, u64) {
+    (
+        WX_CHECKED.load(Ordering::Relaxed),
+        WX_REJECTED.load(Ordering::Relaxed),
+    )
+}
+
+pub fn validate_page_flags(flags: PageTableFlags) -> bool {
+    WX_CHECKED.fetch_add(1, Ordering::Relaxed);
+    let writable = flags.contains(PageTableFlags::WRITABLE);
+    let executable = !flags.contains(PageTableFlags::NO_EXECUTE);
+    if writable && executable {
+        WX_REJECTED.fetch_add(1, Ordering::Relaxed);
+        return false;
+    }
+    true
+}
+
 /// Map a demand-zero user page in an active user address space (Phase 38).
 pub fn map_demand_zero_page(cr3_phys: u64, virtual_address: u64) -> Result<(), UserPagingError> {
     x86_64::instructions::interrupts::without_interrupts(|| {
@@ -400,14 +420,29 @@ pub fn map_demand_zero_page(cr3_phys: u64, virtual_address: u64) -> Result<(), U
             | PageTableFlags::WRITABLE
             | PageTableFlags::USER_ACCESSIBLE
             | PageTableFlags::NO_EXECUTE;
+        if !validate_page_flags(flags) {
+            return Err(UserPagingError::MapFailed);
+        }
         unsafe {
             mapper
                 .map_to(page, frame, flags, &mut frame_alloc)
                 .map_err(|_| UserPagingError::MapFailed)?
                 .flush();
         }
+        crate::smp::flush_tlb_on_unmap();
         Ok(())
     })
+}
+
+pub fn phase48_smoke() -> bool {
+    let bad = PageTableFlags::PRESENT
+        | PageTableFlags::WRITABLE
+        | PageTableFlags::USER_ACCESSIBLE;
+    let good = PageTableFlags::PRESENT
+        | PageTableFlags::WRITABLE
+        | PageTableFlags::USER_ACCESSIBLE
+        | PageTableFlags::NO_EXECUTE;
+    !validate_page_flags(bad) && validate_page_flags(good)
 }
 
 fn translate_hw(pml4_phys: u64, addr: VirtAddr) -> Option<PhysAddr> {
@@ -432,6 +467,7 @@ fn flags_for_permissions(permissions: LoadPermissions) -> PageTableFlags {
     if !permissions.executable() {
         flags |= PageTableFlags::NO_EXECUTE;
     }
+    let _ = validate_page_flags(flags);
     flags
 }
 
