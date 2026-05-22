@@ -13,6 +13,29 @@ PHASE6_SMOKE_RE = re.compile(
 )
 
 
+def is_objcopy_lock_error(output: str) -> bool:
+    lowered = output.lower()
+    return "llvm-objcopy" in lowered and "permission denied" in lowered
+
+
+def run_command_with_retries(
+    cmd: list[str], timeout: int | None = None, max_attempts: int = 4
+) -> tuple[int, str]:
+    last_code, last_output = 0, ""
+    for attempt in range(1, max_attempts + 1):
+        last_code, last_output = run_command(cmd, timeout=timeout)
+        if last_code == 0 or not is_objcopy_lock_error(last_output):
+            return last_code, last_output
+        if attempt < max_attempts:
+            print(
+                f"Retry {attempt}/{max_attempts - 1}: llvm-objcopy lock; "
+                "waiting 12s before retry..."
+            )
+            cleanup_qemu_processes()
+            time.sleep(12)
+    return last_code, last_output
+
+
 def run_command(cmd: list[str], timeout: int | None = None) -> tuple[int, str]:
     process = subprocess.Popen(
         cmd,
@@ -62,7 +85,7 @@ def main() -> int:
     parser.add_argument("--latency-duration", type=int, default=60)
     parser.add_argument("--max-latency-ms", type=int, default=300)
     parser.add_argument("--max-fairness-score", type=float, default=1.10)
-    parser.add_argument("--smoke-timeout", type=int, default=120)
+    parser.add_argument("--smoke-timeout", type=int, default=180)
     parser.add_argument("--boot-wait", type=int, default=150, help="Seconds to wait for Phase5 telemetry after boot")
     parser.add_argument(
         "--from-check",
@@ -334,6 +357,56 @@ def main() -> int:
             None,
         ),
         (
+            "phase41-shared-lib-check",
+            ["python", "scripts/phase41_shared_lib_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase42-dyn-reloc-check",
+            ["python", "scripts/phase42_dyn_reloc_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase43-trust-exec-check",
+            ["python", "scripts/phase43_trust_exec_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase44-user-path-check",
+            ["python", "scripts/phase44_user_path_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase45-file-fd-check",
+            ["python", "scripts/phase45_file_fd_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase46-fd-io-check",
+            ["python", "scripts/phase46_fd_io_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase47-file-demand-check",
+            ["python", "scripts/phase47_file_demand_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase48-wx-policy-check",
+            ["python", "scripts/phase48_wx_policy_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase49-smp-check",
+            ["python", "scripts/phase49_smp_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase50-integration-check",
+            ["python", "scripts/phase50_integration_check.py", "--timeout", str(max(args.smoke_timeout, 180))],
+            None,
+        ),
+        (
             "phase5-soak-check",
             [
                 "python",
@@ -388,10 +461,15 @@ def main() -> int:
         print(f"\n=== {name} ===")
         print("Command:", " ".join(cmd))
         start = time.time()
-        code, output = run_command(cmd, timeout=timeout)
+        code, output = run_command_with_retries(cmd, timeout=timeout)
         elapsed = time.time() - start
         print(output[-4000:])
         cleanup_qemu_processes()
+        if name == "preemption-integration" and os.name == "nt":
+            print("Waiting for bootimage artifacts to unlock (Windows)...")
+            time.sleep(20)
+        elif os.name == "nt":
+            time.sleep(5)
 
         if name == "phase6-smoke-qemu":
             smoke_ok = check_phase6_smoke_output(output)
