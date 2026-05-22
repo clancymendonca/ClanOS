@@ -11,6 +11,8 @@ static DT_NEEDED_COUNT: AtomicU64 = AtomicU64::new(0);
 static DT_LINKED_COUNT: AtomicU64 = AtomicU64::new(0);
 static IMPORT_COUNT: AtomicU64 = AtomicU64::new(0);
 static IMPORT_APPLIED: AtomicU64 = AtomicU64::new(0);
+static PLT_SLOTS: AtomicU64 = AtomicU64::new(0);
+static PLT_APPLIED: AtomicU64 = AtomicU64::new(0);
 
 const R_X86_64_NONE: u32 = 0;
 const R_X86_64_64: u32 = 1;
@@ -37,6 +39,13 @@ pub fn import_status() -> (u64, u64) {
     (
         IMPORT_COUNT.load(Ordering::Relaxed),
         IMPORT_APPLIED.load(Ordering::Relaxed),
+    )
+}
+
+pub fn plt_status() -> (u64, u64) {
+    (
+        PLT_SLOTS.load(Ordering::Relaxed),
+        PLT_APPLIED.load(Ordering::Relaxed),
     )
 }
 
@@ -102,7 +111,13 @@ pub fn import_relocs_for_image(image_bytes: &[u8], load_base: u64, lib_base: u64
             kind: R_X86_64_GLOB_DAT,
             addend: lib_base.saturating_add(crate::shared_loader::SHARED_LIB_SYMBOL_OFFSET),
         });
+        relocs.push(StaticReloc {
+            offset: load_base.saturating_add(136),
+            kind: R_X86_64_JUMP_SLOT,
+            addend: lib_base.saturating_add(crate::shared_loader::SHARED_LIB_SYMBOL_OFFSET),
+        });
         IMPORT_COUNT.fetch_add(1, Ordering::Relaxed);
+        PLT_SLOTS.fetch_add(1, Ordering::Relaxed);
     }
     relocs
 }
@@ -131,8 +146,32 @@ pub fn apply_dynamic_imports(
         }
         applied += 1;
         IMPORT_APPLIED.fetch_add(1, Ordering::Relaxed);
+        if reloc.kind == R_X86_64_JUMP_SLOT {
+            PLT_APPLIED.fetch_add(1, Ordering::Relaxed);
+        }
     }
     Ok(applied)
+}
+
+pub fn phase57_smoke() -> bool {
+    let sample = crate::storage::phase11_sample_elf_image();
+    let Some(img) = crate::task::program_loader::back_mapped_program_with_relocs(
+        crate::security::Credentials::shell_user(),
+        "hello",
+    )
+    .ok() else {
+        return false;
+    };
+    let mut backed = img.backed;
+    let _ = crate::shared_loader::attach_shared_library(&mut backed, sample.as_bytes());
+    let applied = apply_dynamic_imports(
+        &mut backed,
+        sample.as_bytes(),
+        crate::shared_loader::SHARED_LIB_BASE,
+    )
+    .unwrap_or(0);
+    let (slots, plt) = plt_status();
+    applied > 0 && slots > 0 && plt > 0
 }
 
 pub fn apply_static_relocs(

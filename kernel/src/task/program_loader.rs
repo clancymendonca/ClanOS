@@ -29,6 +29,7 @@ pub struct ProgramManifest {
     pub requires_execute: bool,
     pub trust: ProgramTrust,
     pub owner: String,
+    pub digest_hex: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -242,6 +243,7 @@ pub fn parse_manifest(contents: &str) -> Result<ProgramManifest, ProgramLoadErro
     let mut requires_execute = true;
     let mut trust = ProgramTrust::User;
     let mut owner = String::from("user");
+    let mut digest_hex: Option<String> = None;
 
     for line in lines {
         if line.trim().is_empty() {
@@ -264,6 +266,10 @@ pub fn parse_manifest(contents: &str) -> Result<ProgramManifest, ProgramLoadErro
             "trust" if value == "user" => trust = ProgramTrust::User,
             "trust" => return Err(ProgramLoadError::UnsupportedTrust),
             "owner" => owner = value.to_string(),
+            "digest" if value.starts_with("sha256:") => {
+                digest_hex = Some(value.trim_start_matches("sha256:").to_string());
+            }
+            "digest" => return Err(ProgramLoadError::InvalidField),
             _ => return Err(ProgramLoadError::InvalidField),
         }
     }
@@ -282,6 +288,7 @@ pub fn parse_manifest(contents: &str) -> Result<ProgramManifest, ProgramLoadErro
         requires_execute,
         trust,
         owner,
+        digest_hex,
     })
 }
 
@@ -1391,6 +1398,21 @@ pub fn execute_trusted_manifest_elf(
         TRUST_EXEC_REJECTED.fetch_add(1, Ordering::Relaxed);
         return Err(ProgramLoadError::HwElfRejected);
     }
+    if let Some(manifest) = crate::storage::read_file(&program.source_path).ok().flatten() {
+        if let Some(manifest_parsed) = parse_manifest(&manifest).ok() {
+            if let (Some(digest), Some(image_path)) =
+                (manifest_parsed.digest_hex.as_ref(), program.image_path.as_ref())
+            {
+                let elf = crate::storage::read_file(image_path).ok().flatten();
+                if let Some(elf) = elf {
+                    if !crate::image_digest::verify_digest_hex(elf.as_bytes(), digest) {
+                        TRUST_EXEC_REJECTED.fetch_add(1, Ordering::Relaxed);
+                        return Err(ProgramLoadError::HwElfRejected);
+                    }
+                }
+            }
+        }
+    }
     TRUST_EXEC_OK.fetch_add(1, Ordering::Relaxed);
     if name == "hello" || name == "tickprobe" || name == "systrust" {
         return execute_hw_user_elf(credentials, "hello");
@@ -1485,6 +1507,84 @@ pub fn phase50_integration_smoke() -> bool {
         && smp_ok
         && phase41_shared_lib_smoke()
         && phase43_trust_exec_smoke()
+}
+
+pub fn phase51_proc_fd_smoke() -> bool {
+    crate::fd_table::phase51_smoke()
+}
+
+pub fn phase52_fd_dup_smoke() -> bool {
+    crate::fd_table::phase52_smoke()
+}
+
+pub fn phase53_mprotect_smoke() -> bool {
+    crate::user_paging::phase53_smoke()
+}
+
+pub fn phase54_mmap_smoke() -> bool {
+    crate::mmap::phase54_smoke()
+}
+
+pub fn phase55_write_path_smoke() -> bool {
+    crate::user_path::phase55_smoke()
+}
+
+pub fn phase56_multi_shlib_smoke() -> bool {
+    crate::shared_loader::phase56_smoke()
+}
+
+pub fn phase57_plt_reloc_smoke() -> bool {
+    crate::elf_reloc::phase57_smoke()
+}
+
+pub fn phase58_digest_trust_smoke() -> bool {
+    let Some(elf) = crate::storage::read_file("/bin/hello.elf").ok().flatten() else {
+        return false;
+    };
+    let digest = crate::image_digest::sha256_hex(elf.as_bytes());
+    let good = crate::image_digest::verify_digest_hex(elf.as_bytes(), &digest);
+    let bad = !crate::image_digest::verify_digest_hex(elf.as_bytes(), "00");
+    let (verified, rejected) = crate::image_digest::status();
+    good && bad && verified > 0 && rejected > 0
+}
+
+pub fn phase59_runqueue_smoke() -> bool {
+    crate::smp::phase59_smoke()
+}
+
+pub fn phase60_integration_smoke() -> bool {
+    let procfd = crate::fd_table::proc_fd_isolated();
+    let (dups, relative) = crate::fd_table::dup_status();
+    let (mp_applied, mp_rejected, guard) = crate::user_paging::mprotect_status();
+    let (anon, file_mmap, mmap_rej) = crate::mmap::status();
+    let (writes, reads) = crate::user_path::write_status();
+    let (sh_loaded, sh_pages, _) = crate::shared_loader::status();
+    let (plt_slots, plt_applied) = crate::elf_reloc::plt_status();
+    let (digest_ok, digest_rej) = crate::image_digest::status();
+    let (cpus, runq_enq, _) = (
+        crate::smp::status().0,
+        crate::smp::runqueue_status().0,
+        (),
+    );
+    procfd
+        && dups > 0
+        && relative > 0
+        && mp_applied > 0
+        && mp_rejected > 0
+        && guard > 0
+        && anon > 0
+        && file_mmap > 0
+        && mmap_rej > 0
+        && writes > 0
+        && reads > 0
+        && sh_loaded >= 2
+        && sh_pages >= 2
+        && plt_slots > 0
+        && plt_applied > 0
+        && digest_ok > 0
+        && digest_rej > 0
+        && cpus >= 2
+        && runq_enq > 0
 }
 
 pub fn manifest_elf_status() -> (u64, u64, u64) {

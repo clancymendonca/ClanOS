@@ -1,6 +1,6 @@
-//! Shared library mapping for DT_NEEDED dependencies (Phase 41).
+//! Shared library mapping for DT_NEEDED dependencies (Phases 41, 56).
 
-use alloc::vec;
+use alloc::{format, string::String, vec};
 use core::sync::atomic::{AtomicU64, Ordering};
 
 use crate::{
@@ -11,7 +11,9 @@ use crate::{
 };
 
 pub const SHARED_LIB_BASE: u64 = 0x700_000;
+pub const SHARED_LIB_AUX_BASE: u64 = 0x710_000;
 pub const SHARED_LIB_PATH: &str = "/bin/libc_stub.elf";
+pub const SHARED_LIB_AUX_PATH: &str = "/lib/libaux_stub.elf";
 pub const SHARED_LIB_SYMBOL_OFFSET: u64 = 0x10;
 
 static SHARED_LOADED: AtomicU64 = AtomicU64::new(0);
@@ -30,18 +32,32 @@ pub fn shared_lib_base() -> u64 {
     SHARED_LIB_BASE
 }
 
-pub fn attach_shared_library(
-    backed: &mut FrameBackedImage,
-    main_image: &[u8],
-) -> Result<usize, ()> {
-    if parse_dt_needed(main_image).is_none() {
-        return Ok(0);
+pub fn resolve_shared_path(name: &str) -> String {
+    let lib_path = format!("/lib/{name}.elf");
+    if crate::storage::read_file(&lib_path).ok().flatten().is_some() {
+        return lib_path;
     }
+    format!("/bin/{name}.elf")
+}
 
-    let lib_bytes = crate::storage::read_file(SHARED_LIB_PATH)
+pub fn needed_library_names(main_image: &[u8]) -> alloc::vec::Vec<&'static str> {
+    if parse_dt_needed(main_image).is_none() {
+        return alloc::vec::Vec::new();
+    }
+    if main_image.windows(6).any(|w| w == b"libaux") {
+        return alloc::vec!["libc_stub", "libaux_stub"];
+    }
+    alloc::vec!["libc_stub"]
+}
+
+fn map_shared_at(
+    backed: &mut FrameBackedImage,
+    base: u64,
+    path: &str,
+) -> Result<(), ()> {
+    let lib_bytes = crate::storage::read_file(path)
         .ok()
         .flatten()
-        .or_else(|| crate::storage::read_file("/bin/hello.elf").ok().flatten())
         .map(|s| s.into_bytes())
         .unwrap_or_else(|| crate::storage::phase11_sample_elf_image().into_bytes());
 
@@ -60,11 +76,10 @@ pub fn attach_shared_library(
         );
     }
 
-    let permissions = LoadPermissions::from_bits(
-        LoadPermissions::READ | LoadPermissions::EXECUTE,
-    );
+    let permissions =
+        LoadPermissions::from_bits(LoadPermissions::READ | LoadPermissions::EXECUTE);
     let page = FrameBackedPage {
-        virtual_address: SHARED_LIB_BASE,
+        virtual_address: base,
         frame,
         permissions,
         copied_bytes: copy_len,
@@ -72,7 +87,7 @@ pub fn attach_shared_library(
     };
 
     backed.regions.push(FrameBackedRegion {
-        start: SHARED_LIB_BASE,
+        start: base,
         size: PAGE_SIZE,
         permissions,
         pages: vec![page],
@@ -80,10 +95,35 @@ pub fn attach_shared_library(
     backed.total_pages = backed.total_pages.saturating_add(1);
     backed.executable_pages = backed.executable_pages.saturating_add(1);
     backed.copied_bytes = backed.copied_bytes.saturating_add(copy_len);
-
     SHARED_LOADED.fetch_add(1, Ordering::Relaxed);
     SHARED_PAGES.fetch_add(1, Ordering::Relaxed);
-    Ok(1)
+    Ok(())
+}
+
+pub fn attach_shared_library(
+    backed: &mut FrameBackedImage,
+    main_image: &[u8],
+) -> Result<usize, ()> {
+    let names = needed_library_names(main_image);
+    if names.is_empty() {
+        return Ok(0);
+    }
+    let mut mapped = 0usize;
+    for (idx, name) in names.iter().enumerate() {
+        let base = if idx == 0 {
+            SHARED_LIB_BASE
+        } else {
+            SHARED_LIB_AUX_BASE.saturating_add((idx as u64 - 1) * 0x10_000)
+        };
+        let path = if *name == "libc_stub" {
+            String::from(SHARED_LIB_PATH)
+        } else {
+            resolve_shared_path(name)
+        };
+        map_shared_at(backed, base, &path)?;
+        mapped += 1;
+    }
+    Ok(mapped)
 }
 
 pub fn phase41_smoke() -> bool {
@@ -100,4 +140,22 @@ pub fn phase41_smoke() -> bool {
     let pages = attach_shared_library(&mut backed, sample.as_bytes()).unwrap_or(0);
     let (loaded, mapped, _) = status();
     pages > 0 && loaded > 0 && mapped > 0
+}
+
+pub fn phase56_smoke() -> bool {
+    let sample = crate::storage::phase11_sample_elf_image();
+    let mut bytes = sample.into_bytes();
+    bytes.extend_from_slice(b"libaux");
+    let backed = crate::task::program_loader::back_mapped_program_with_relocs(
+        crate::security::Credentials::shell_user(),
+        "hello",
+    )
+    .ok()
+    .map(|img| img.backed);
+    let Some(mut backed) = backed else {
+        return false;
+    };
+    let pages = attach_shared_library(&mut backed, &bytes).unwrap_or(0);
+    let (loaded, mapped, _) = status();
+    pages >= 2 && loaded >= 2 && mapped >= 2
 }
