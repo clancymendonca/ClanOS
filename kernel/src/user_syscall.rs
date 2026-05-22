@@ -12,6 +12,8 @@ static LAST_HW_ID: AtomicU64 = AtomicU64::new(0);
 pub struct UserRegisterFrame {
     pub syscall_id: u64,
     pub arg0: u64,
+    pub arg1: u64,
+    pub arg2: u64,
     pub return_value: u64,
     pub error: Option<SyscallError>,
 }
@@ -61,7 +63,7 @@ pub fn dispatch_from_user(
     if frame.syscall_id == SyscallId::UserCopyProbe as u64 {
         return dispatch_copy_probe(frame);
     }
-    match syscall::invoke_raw(frame.syscall_id, frame.arg0) {
+    match syscall::invoke_with_args(frame.syscall_id, frame.arg0, frame.arg1, frame.arg2) {
         Ok(value) => {
             frame.return_value = value;
             frame.error = None;
@@ -84,6 +86,8 @@ pub fn tick_probe_frame() -> UserRegisterFrame {
     UserRegisterFrame {
         syscall_id: SyscallId::GetTickCount as u64,
         arg0: 0,
+        arg1: 0,
+        arg2: 0,
         return_value: 0,
         error: None,
     }

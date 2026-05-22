@@ -69,6 +69,11 @@ pub enum SyscallId {
     WaitProcess = 62,
     ReadFileProbe = 63,
     WriteFileProbe = 64,
+    ReadPathProbe = 65,
+    OpenFile = 66,
+    CloseFile = 67,
+    ReadFd = 68,
+    WriteFd = 69,
 }
 
 static LAST_EXIT_CODE: core::sync::atomic::AtomicU64 =
@@ -86,6 +91,10 @@ pub enum SyscallError {
 }
 
 pub fn invoke_raw(id: u64, arg0: u64) -> Result<u64, SyscallError> {
+    invoke_with_args(id, arg0, 0, 0)
+}
+
+pub fn invoke_with_args(id: u64, arg0: u64, arg1: u64, arg2: u64) -> Result<u64, SyscallError> {
     match id {
         x if x == SyscallId::GetTickCount as u64 => {
             if arg0 != 0 {
@@ -428,6 +437,39 @@ pub fn invoke_raw(id: u64, arg0: u64) -> Result<u64, SyscallError> {
             }
             crate::task::program_loader::storage_write_probe(arg0)
                 .map(|n| n as u64)
+                .map_err(|_| SyscallError::InvalidArgument)
+        }
+        x if x == SyscallId::ReadPathProbe as u64 => {
+            if arg0 == 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            let user_buf = if arg1 == 0 {
+                crate::user_context::DEFAULT_USER_STACK_TOP.saturating_sub(128)
+            } else {
+                arg1
+            };
+            crate::user_path::read_path_probe(arg0, user_buf)
+                .map_err(|_| SyscallError::InvalidArgument)
+        }
+        x if x == SyscallId::OpenFile as u64 => {
+            if arg0 == 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            crate::fd_table::open_file_user_path(arg0)
+                .map(u64::from)
+                .map_err(|_| SyscallError::InvalidArgument)
+        }
+        x if x == SyscallId::CloseFile as u64 => {
+            crate::fd_table::close_file(arg0 as u32)
+                .map(|_| 0)
+                .map_err(|_| SyscallError::InvalidArgument)
+        }
+        x if x == SyscallId::ReadFd as u64 => {
+            crate::fd_table::read_fd(arg0 as u32, arg1, arg2)
+                .map_err(|_| SyscallError::InvalidArgument)
+        }
+        x if x == SyscallId::WriteFd as u64 => {
+            crate::fd_table::write_fd(arg0 as u32, arg1, arg2)
                 .map_err(|_| SyscallError::InvalidArgument)
         }
         _ => Err(SyscallError::InvalidSyscall),

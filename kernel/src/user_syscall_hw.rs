@@ -29,6 +29,11 @@ pub const ALLOWED_HW_SYSCALLS: &[SyscallId] = &[
     SyscallId::WaitProcess,
     SyscallId::ReadFileProbe,
     SyscallId::WriteFileProbe,
+    SyscallId::ReadPathProbe,
+    SyscallId::OpenFile,
+    SyscallId::CloseFile,
+    SyscallId::ReadFd,
+    SyscallId::WriteFd,
 ];
 
 pub fn status() -> (u64, u64) {
@@ -104,7 +109,7 @@ pub fn run_hw_tick_syscall(
 
 extern "C" fn syscall_entry_trampoline() {
     let _ = crate::user_paging::restore_kernel_page_table();
-    let (syscall_id, arg0) = unsafe { read_syscall_args() };
+    let (syscall_id, arg0, arg1, arg2) = unsafe { read_syscall_args() };
     if !is_allowed_hw_syscall(syscall_id) {
         HW_SYSCALL_REJECTED.fetch_add(1, Ordering::Relaxed);
         user_syscall::store_hw_syscall_return(UserSyscallReturn {
@@ -124,6 +129,8 @@ extern "C" fn syscall_entry_trampoline() {
     let frame = UserRegisterFrame {
         syscall_id,
         arg0,
+        arg1,
+        arg2,
         return_value: 0,
         error: None,
     };
@@ -143,15 +150,21 @@ extern "C" fn syscall_entry_trampoline() {
     }
 }
 
-unsafe fn read_syscall_args() -> (u64, u64) {
+unsafe fn read_syscall_args() -> (u64, u64, u64, u64) {
     let id: u64;
     let arg0: u64;
+    let arg1: u64;
+    let arg2: u64;
     core::arch::asm!(
         "mov {0}, rax",
         "mov {1}, rdi",
+        "mov {2}, rsi",
+        "mov {3}, rdx",
         out(reg) id,
         out(reg) arg0,
+        out(reg) arg1,
+        out(reg) arg2,
         options(nomem, nostack)
     );
-    (id, arg0)
+    (id, arg0, arg1, arg2)
 }
