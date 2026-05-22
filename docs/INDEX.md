@@ -2,7 +2,7 @@
 
 Central index for phase checklists, deep-dive guides, and validation commands. The public roadmap lives in the root [README](../README.md).
 
-## Phase Checklists (1–50)
+## Phase Checklists (1–60)
 
 | Phase | Topic | Checklist |
 |------:|-------|-----------|
@@ -56,6 +56,16 @@ Central index for phase checklists, deep-dive guides, and validation commands. T
 | 48 | W^X mapping policy | [phase-48-checklist.md](phase-48-checklist.md) |
 | 49 | SMP groundwork | [phase-49-checklist.md](phase-49-checklist.md) |
 | 50 | Integration (41–49) | [phase-50-checklist.md](phase-50-checklist.md) |
+| 51 | Per-process FD tables | [phase-51-checklist.md](phase-51-checklist.md) |
+| 52 | Dup FD and CWD-relative open | [phase-52-checklist.md](phase-52-checklist.md) |
+| 53 | mprotect and guard pages | [phase-53-checklist.md](phase-53-checklist.md) |
+| 54 | mmap bring-up | [phase-54-checklist.md](phase-54-checklist.md) |
+| 55 | User write path | [phase-55-checklist.md](phase-55-checklist.md) |
+| 56 | Multiple shared libraries | [phase-56-checklist.md](phase-56-checklist.md) |
+| 57 | PLT JUMP_SLOT relocs | [phase-57-checklist.md](phase-57-checklist.md) |
+| 58 | Manifest digest trust | [phase-58-checklist.md](phase-58-checklist.md) |
+| 59 | Per-CPU runqueue skeleton | [phase-59-checklist.md](phase-59-checklist.md) |
+| 60 | Integration (51–59) | [phase-60-checklist.md](phase-60-checklist.md) |
 
 ## Deep-Dive Guides
 
@@ -79,7 +89,7 @@ Central index for phase checklists, deep-dive guides, and validation commands. T
 | [SHARED_LIBRARIES.md](SHARED_LIBRARIES.md) | 39, 41–42 |
 | [DEMAND_PAGING.md](DEMAND_PAGING.md) | 38, 47 |
 | [FILE_DESCRIPTORS.md](FILE_DESCRIPTORS.md) | 45–46 |
-| [SMP.md](SMP.md) | 49 |
+| [SMP.md](SMP.md) | 49, 59 |
 | [context-lab.md](context-lab.md) | 4 (isolated lab) |
 
 ## Validation

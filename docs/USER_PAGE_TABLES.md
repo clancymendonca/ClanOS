@@ -62,3 +62,13 @@ Boot smoke:
 ```text
 Phase48-WxPolicy: attempts=..., rejected=..., ok=true
 ```
+
+## mprotect (Phase 53)
+
+`Mprotect` allows toggling writable vs read-only on non-executable user pages. Requests that would create writable+executable mappings are rejected. A guard page below the default stack is left unmapped; `probe_stack_guard` records guard probes during smoke.
+
+Boot smoke:
+
+```text
+Phase53-Mprotect: applied=..., rejected=..., guard_faults=..., ok=true
+```

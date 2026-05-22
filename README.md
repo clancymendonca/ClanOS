@@ -614,6 +614,75 @@ Checklist: `docs/phase-50-checklist.md`
 
 Status: ✅ Complete (validated 2026-05-22)
 
+### Phase 51 — Per-Process FD Tables
+
+* FD tables stored on `Process`; `current_process_id` from CR3
+* `Phase51-ProcFd` boot smoke
+
+Checklist: `docs/phase-51-checklist.md`
+
+### Phase 52 — Dup FD and CWD-Relative Open
+
+* `DupFd` syscall; per-process `cwd`; relative `OpenFile`
+* `Phase52-FdDup` boot smoke
+
+Checklist: `docs/phase-52-checklist.md`
+
+### Phase 53 — mprotect and Guard Pages
+
+* `Mprotect` syscall within W^X; stack guard probe
+* `Phase53-Mprotect` boot smoke
+
+Checklist: `docs/phase-53-checklist.md`
+
+### Phase 54 — mmap Bring-Up
+
+* anonymous RW at `0x600000`; read-only file mmap
+* `Phase54-Mmap` boot smoke
+
+Checklist: `docs/phase-54-checklist.md`
+
+### Phase 55 — User Write Path
+
+* `WritePathProbe` syscall; storage round-trip smoke
+* `Phase55-WritePath` boot smoke
+
+Checklist: `docs/phase-55-checklist.md`
+
+### Phase 56 — Multiple Shared Libraries
+
+* `/lib/*.elf` search; `libc_stub` + `libaux_stub` mapping
+* `Phase56-MultiShlib` boot smoke
+
+Checklist: `docs/phase-56-checklist.md`
+
+### Phase 57 — PLT JUMP_SLOT Relocations
+
+* `R_X86_64_JUMP_SLOT` binding; `Phase57-PltReloc` boot smoke
+
+Checklist: `docs/phase-57-checklist.md`
+
+### Phase 58 — Manifest Digest Trust
+
+* `digest=sha256:` manifest field; SHA-256 verification
+* `Phase58-DigestTrust` boot smoke
+
+Checklist: `docs/phase-58-checklist.md`
+
+### Phase 59 — Per-CPU Runqueue Skeleton
+
+* BSP runqueue accounting on preempt; APs remain parked
+* `Phase59-Runqueues` boot smoke
+
+Checklist: `docs/phase-59-checklist.md`
+
+### Phase 60 — Integration Milestone (51–59)
+
+* cumulative validation of phases 51–59
+* `Phase60-Integration` boot smoke
+
+Checklist: `docs/phase-60-checklist.md`
+
 ---
 
 # Documentation
@@ -656,8 +725,10 @@ AresOS
 │   │   ├── user_syscall_hw.rs hardware syscall/sysret path
 │   │   ├── user_copy.rs       validated user copies
 │   │   ├── user_path.rs       bounded user path copyin
-│   │   ├── fd_table.rs        bring-up file descriptor table
-│   │   ├── smp.rs             CPU detect + parked APs
+│   │   ├── fd_table.rs        per-process file descriptor table
+│   │   ├── mmap.rs            mmap bring-up (Phase 54)
+│   │   ├── image_digest.rs    SHA-256 manifest digests (Phase 58)
+│   │   ├── smp.rs             CPU detect, TLB hooks, runqueues
 │   │   ├── ring3_trampoline.rs controlled user-entry traps
 │   │   ├── task/              scheduler, loader, keyboard shell
 │   │   └── performance/       metrics + profiler

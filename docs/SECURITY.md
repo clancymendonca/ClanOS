@@ -92,4 +92,14 @@ Validation:
 python scripts/phase43_trust_exec_check.py --timeout 180
 ```
 
+## Manifest Digest (Phase 58)
+
+Manifests may include `digest=sha256:<hex>` over the referenced ELF bytes. `execute_trusted_manifest_elf` verifies the digest before running `trust=system` programs. This is integrity checking only, not a public-key signature chain.
+
+Boot smoke:
+
+```text
+Phase58-DigestTrust: verified=..., rejected=..., ok=true
+```
+
 Deferred: cryptographic signatures, capability tokens, and per-user trust policies beyond static manifest fields.
