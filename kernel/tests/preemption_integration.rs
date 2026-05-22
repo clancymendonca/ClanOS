@@ -1265,3 +1265,61 @@ fn phase50_integration_smoke_works() {
     kernel::storage::format().expect("format should seed image manifests");
     assert!(kernel::task::program_loader::phase50_integration_smoke());
 }
+
+#[test_case]
+fn phase51_proc_fd_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase51_proc_fd_smoke());
+}
+
+#[test_case]
+fn phase52_fd_dup_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase52_fd_dup_smoke());
+}
+
+#[test_case]
+fn phase53_mprotect_smoke_works() {
+    assert!(kernel::task::program_loader::phase53_mprotect_smoke());
+}
+
+#[test_case]
+fn phase54_mmap_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase54_mmap_smoke());
+}
+
+#[test_case]
+fn phase55_write_path_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase55_write_path_smoke());
+}
+
+#[test_case]
+fn phase56_multi_shlib_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase56_multi_shlib_smoke());
+}
+
+#[test_case]
+fn phase57_plt_reloc_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase57_plt_reloc_smoke());
+}
+
+#[test_case]
+fn phase58_digest_trust_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase58_digest_trust_smoke());
+}
+
+#[test_case]
+fn phase59_runqueue_smoke_works() {
+    assert!(kernel::task::program_loader::phase59_runqueue_smoke());
+}
+
+#[test_case]
+fn phase60_integration_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase60_integration_smoke());
+}
