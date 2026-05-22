@@ -280,6 +280,15 @@ fn execute_console_command(command: &str) {
                             crate::task::process::ProcessLoadState::FileDemandReady => "file-demand",
                             crate::task::process::ProcessLoadState::WxPolicyReady => "wx-policy",
                             crate::task::process::ProcessLoadState::SmpReady => "smp",
+                            crate::task::process::ProcessLoadState::ProcFdReady => "proc-fd",
+                            crate::task::process::ProcessLoadState::FdDupReady => "fd-dup",
+                            crate::task::process::ProcessLoadState::MprotectReady => "mprotect",
+                            crate::task::process::ProcessLoadState::MmapReady => "mmap",
+                            crate::task::process::ProcessLoadState::WritePathReady => "write-path",
+                            crate::task::process::ProcessLoadState::MultiShlibReady => "multi-shlib",
+                            crate::task::process::ProcessLoadState::PltRelocReady => "plt-reloc",
+                            crate::task::process::ProcessLoadState::DigestTrustReady => "digest-trust",
+                            crate::task::process::ProcessLoadState::RunqueueReady => "runqueue",
                         })
                         .unwrap_or("-");
                     println!(

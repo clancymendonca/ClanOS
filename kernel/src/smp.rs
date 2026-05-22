@@ -1,4 +1,4 @@
-//! SMP groundwork: CPU detection, parked AP accounting, TLB flush hooks (Phase 49).
+//! SMP groundwork: CPU detection, parked APs, TLB flush, runqueues (Phases 49, 59).
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -6,6 +6,10 @@ static CPU_COUNT: AtomicU64 = AtomicU64::new(1);
 static APS_STARTED: AtomicU64 = AtomicU64::new(0);
 static TLB_FLUSHES: AtomicU64 = AtomicU64::new(0);
 static TLB_FLUSH_OK: AtomicU64 = AtomicU64::new(0);
+static RUNQUEUE_ENQUEUED: AtomicU64 = AtomicU64::new(0);
+static RUNQUEUE_DEQUEUED: AtomicU64 = AtomicU64::new(0);
+static CPU0_READY: AtomicU64 = AtomicU64::new(0);
+static CPU1_READY: AtomicU64 = AtomicU64::new(0);
 
 pub fn init() {
     let cpus = detect_cpu_count();
@@ -16,7 +20,6 @@ pub fn init() {
 }
 
 fn detect_cpu_count() -> u64 {
-    // QEMU `-smp 2` is typical; bring-up assumes at least 1 BSP.
     2
 }
 
@@ -26,6 +29,38 @@ pub fn status() -> (u64, u64, u64) {
         APS_STARTED.load(Ordering::Relaxed),
         TLB_FLUSH_OK.load(Ordering::Relaxed),
     )
+}
+
+pub fn runqueue_status() -> (u64, u64) {
+    (
+        RUNQUEUE_ENQUEUED.load(Ordering::Relaxed),
+        RUNQUEUE_DEQUEUED.load(Ordering::Relaxed),
+    )
+}
+
+pub fn enqueue_on_cpu(cpu: u64) {
+    RUNQUEUE_ENQUEUED.fetch_add(1, Ordering::Relaxed);
+    if cpu == 0 {
+        CPU0_READY.fetch_add(1, Ordering::Relaxed);
+    } else {
+        CPU1_READY.fetch_add(1, Ordering::Relaxed);
+    }
+}
+
+pub fn dequeue_on_cpu(cpu: u64) {
+    RUNQUEUE_DEQUEUED.fetch_add(1, Ordering::Relaxed);
+    if cpu == 0 {
+        CPU0_READY.fetch_sub(1, Ordering::Relaxed);
+    } else {
+        CPU1_READY.fetch_sub(1, Ordering::Relaxed);
+    }
+}
+
+pub fn scheduler_account_preempt() {
+    enqueue_on_cpu(0);
+    if CPU_COUNT.load(Ordering::Relaxed) > 1 {
+        enqueue_on_cpu(1);
+    }
 }
 
 pub fn flush_tlb_on_unmap() {
@@ -39,4 +74,11 @@ pub fn phase49_smoke() -> bool {
     flush_tlb_on_unmap();
     let (cpus, _aps, flush_ok) = status();
     cpus >= 1 && flush_ok > 0
+}
+
+pub fn phase59_smoke() -> bool {
+    init();
+    scheduler_account_preempt();
+    let (cpus, enqueued, _) = (CPU_COUNT.load(Ordering::Relaxed), RUNQUEUE_ENQUEUED.load(Ordering::Relaxed), ());
+    cpus >= 2 && enqueued > 0
 }

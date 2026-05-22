@@ -275,6 +275,142 @@ fn run_phase41_to_50_smokes() {
     );
 }
 
+fn run_phase51_to_60_smokes() {
+    let phase51_ok = kernel::task::program_loader::phase51_proc_fd_smoke();
+    println!(
+        "Phase51-ProcFd: isolated={}, opens={}, ok={}",
+        kernel::fd_table::proc_fd_isolated(),
+        kernel::fd_table::status().0,
+        phase51_ok
+    );
+    kernel::serial_println!(
+        "Phase51-ProcFd: isolated={}, opens={}, ok={}",
+        kernel::fd_table::proc_fd_isolated(),
+        kernel::fd_table::status().0,
+        phase51_ok
+    );
+
+    let phase52_ok = kernel::task::program_loader::phase52_fd_dup_smoke();
+    let (dups, relative) = kernel::fd_table::dup_status();
+    println!(
+        "Phase52-FdDup: dups={}, relative={}, ok={}",
+        dups, relative, phase52_ok
+    );
+    kernel::serial_println!(
+        "Phase52-FdDup: dups={}, relative={}, ok={}",
+        dups, relative, phase52_ok
+    );
+
+    let phase53_ok = kernel::task::program_loader::phase53_mprotect_smoke();
+    let (applied, rejected, guard) = kernel::user_paging::mprotect_status();
+    println!(
+        "Phase53-Mprotect: applied={}, rejected={}, guard_faults={}, ok={}",
+        applied, rejected, guard, phase53_ok
+    );
+    kernel::serial_println!(
+        "Phase53-Mprotect: applied={}, rejected={}, guard_faults={}, ok={}",
+        applied, rejected, guard, phase53_ok
+    );
+
+    let phase54_ok = kernel::task::program_loader::phase54_mmap_smoke();
+    let (anon, file, rej) = kernel::mmap::status();
+    println!(
+        "Phase54-Mmap: anon_pages={}, file_pages={}, rejected={}, ok={}",
+        anon, file, rej, phase54_ok
+    );
+    kernel::serial_println!(
+        "Phase54-Mmap: anon_pages={}, file_pages={}, rejected={}, ok={}",
+        anon, file, rej, phase54_ok
+    );
+
+    let phase55_ok = kernel::task::program_loader::phase55_write_path_smoke();
+    let (writes, verified) = kernel::user_path::write_status();
+    println!(
+        "Phase55-WritePath: writes={}, verified={}, ok={}",
+        writes, verified, phase55_ok
+    );
+    kernel::serial_println!(
+        "Phase55-WritePath: writes={}, verified={}, ok={}",
+        writes, verified, phase55_ok
+    );
+
+    let phase56_ok = kernel::task::program_loader::phase56_multi_shlib_smoke();
+    let (loaded, pages, _) = kernel::shared_loader::status();
+    println!(
+        "Phase56-MultiShlib: loaded={}, pages={}, ok={}",
+        loaded, pages, phase56_ok
+    );
+    kernel::serial_println!(
+        "Phase56-MultiShlib: loaded={}, pages={}, ok={}",
+        loaded, pages, phase56_ok
+    );
+
+    let phase57_ok = kernel::task::program_loader::phase57_plt_reloc_smoke();
+    let (slots, plt_applied) = kernel::elf_reloc::plt_status();
+    println!(
+        "Phase57-PltReloc: slots={}, applied={}, ok={}",
+        slots, plt_applied, phase57_ok
+    );
+    kernel::serial_println!(
+        "Phase57-PltReloc: slots={}, applied={}, ok={}",
+        slots, plt_applied, phase57_ok
+    );
+
+    let phase58_ok = kernel::task::program_loader::phase58_digest_trust_smoke();
+    let (verified, rejected) = kernel::image_digest::status();
+    println!(
+        "Phase58-DigestTrust: verified={}, rejected={}, ok={}",
+        verified, rejected, phase58_ok
+    );
+    kernel::serial_println!(
+        "Phase58-DigestTrust: verified={}, rejected={}, ok={}",
+        verified, rejected, phase58_ok
+    );
+
+    let phase59_ok = kernel::task::program_loader::phase59_runqueue_smoke();
+    let (cpus, enqueued, _) = (
+        kernel::smp::status().0,
+        kernel::smp::runqueue_status().0,
+        (),
+    );
+    println!(
+        "Phase59-Runqueues: cpus={}, enqueued={}, ok={}",
+        cpus, enqueued, phase59_ok
+    );
+    kernel::serial_println!(
+        "Phase59-Runqueues: cpus={}, enqueued={}, ok={}",
+        cpus, enqueued, phase59_ok
+    );
+
+    let phase60_ok = kernel::task::program_loader::phase60_integration_smoke();
+    println!(
+        "Phase60-Integration: procfd={}, dup={}, mprotect={}, mmap={}, writepath={}, multishlib={}, plt={}, digest={}, runq={}, ok={}",
+        phase51_ok,
+        phase52_ok,
+        phase53_ok,
+        phase54_ok,
+        phase55_ok,
+        phase56_ok,
+        phase57_ok,
+        phase58_ok,
+        phase59_ok,
+        phase60_ok,
+    );
+    kernel::serial_println!(
+        "Phase60-Integration: procfd={}, dup={}, mprotect={}, mmap={}, writepath={}, multishlib={}, plt={}, digest={}, runq={}, ok={}",
+        phase51_ok,
+        phase52_ok,
+        phase53_ok,
+        phase54_ok,
+        phase55_ok,
+        phase56_ok,
+        phase57_ok,
+        phase58_ok,
+        phase59_ok,
+        phase60_ok,
+    );
+}
+
 fn run_phase21_to_30_smokes() {
     let phase21_ok = kernel::task::program_loader::phase21_smoke_check();
     let (hw_built, hw_verified, hw_rejected, _, _, _, _) = kernel::user_paging::status();
@@ -588,6 +724,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         run_phase21_to_30_smokes();
         run_phase31_to_40_smokes();
         run_phase41_to_50_smokes();
+        run_phase51_to_60_smokes();
     });
     kernel::serial_println!("Boot: phase21-50 smokes done");
     let phase15_backing_ok = kernel::task::program_loader::phase15_smoke_check();

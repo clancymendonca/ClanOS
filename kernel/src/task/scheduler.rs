@@ -201,6 +201,7 @@ impl ContextScheduler {
 
         self.switches = self.switches.saturating_add(1);
         self.last_switch_tick = now_tick;
+        crate::smp::scheduler_account_preempt();
         crate::user_paging::apply_scheduler_cr3_for_next(next_cr3);
         Some((current_ctx as *mut CpuContext, next_ctx as *const CpuContext))
     }
