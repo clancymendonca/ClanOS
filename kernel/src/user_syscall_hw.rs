@@ -34,6 +34,10 @@ pub const ALLOWED_HW_SYSCALLS: &[SyscallId] = &[
     SyscallId::CloseFile,
     SyscallId::ReadFd,
     SyscallId::WriteFd,
+    SyscallId::DupFd,
+    SyscallId::Mprotect,
+    SyscallId::Mmap,
+    SyscallId::WritePathProbe,
 ];
 
 pub fn status() -> (u64, u64) {

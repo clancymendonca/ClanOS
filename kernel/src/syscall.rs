@@ -74,6 +74,10 @@ pub enum SyscallId {
     CloseFile = 67,
     ReadFd = 68,
     WriteFd = 69,
+    DupFd = 70,
+    Mprotect = 71,
+    Mmap = 72,
+    WritePathProbe = 73,
 }
 
 static LAST_EXIT_CODE: core::sync::atomic::AtomicU64 =
@@ -470,6 +474,27 @@ pub fn invoke_with_args(id: u64, arg0: u64, arg1: u64, arg2: u64) -> Result<u64,
         }
         x if x == SyscallId::WriteFd as u64 => {
             crate::fd_table::write_fd(arg0 as u32, arg1, arg2)
+                .map_err(|_| SyscallError::InvalidArgument)
+        }
+        x if x == SyscallId::DupFd as u64 => {
+            crate::fd_table::dup_fd(arg0 as u32)
+                .map(u64::from)
+                .map_err(|_| SyscallError::InvalidArgument)
+        }
+        x if x == SyscallId::Mprotect as u64 => {
+            crate::user_paging::mprotect_user_page(arg0, arg1)
+                .map(|_| 0)
+                .map_err(|_| SyscallError::InvalidArgument)
+        }
+        x if x == SyscallId::Mmap as u64 => {
+            crate::mmap::mmap_syscall(arg0, arg1, arg2)
+                .map_err(|_| SyscallError::InvalidArgument)
+        }
+        x if x == SyscallId::WritePathProbe as u64 => {
+            if arg0 == 0 || arg1 == 0 {
+                return Err(SyscallError::InvalidArgument);
+            }
+            crate::user_path::write_path_probe(arg0, arg1)
                 .map_err(|_| SyscallError::InvalidArgument)
         }
         _ => Err(SyscallError::InvalidSyscall),

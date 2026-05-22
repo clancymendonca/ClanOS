@@ -16,9 +16,9 @@ const MAGIC: &[u8; 8] = b"ARESFS1\0";
 const VERSION: u32 = 1;
 const HEADER_SECTOR: usize = 0;
 const DIRECTORY_START_SECTOR: usize = 1;
-const DIRECTORY_SECTORS: usize = 2;
+const DIRECTORY_SECTORS: usize = 3;
 const DATA_START_SECTOR: usize = DIRECTORY_START_SECTOR + DIRECTORY_SECTORS;
-const MAX_FILES: usize = 16;
+const MAX_FILES: usize = 24;
 const MAX_PATH_LEN: usize = 48;
 const MAX_FILE_SIZE: usize = SECTOR_SIZE;
 const DIR_ENTRY_SIZE: usize = 64;
@@ -705,6 +705,9 @@ fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), Stor
             "/bin/systrust",
             "ares-exec-v1\nname=systrust\nkind=elf64-image\nentry=0x400000\nimage=/bin/tickprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=Trust-gated ELF fixture",
         ),
+        ("/bin/libc_stub.elf", sample_elf.as_str()),
+        ("/lib/libaux_stub.elf", sample_elf.as_str()),
+        ("/tmp/phase52-smoke.txt", "relative-open"),
     ] {
         let owner = if path.starts_with("/bin/") {
             Credentials::admin().user
@@ -721,7 +724,7 @@ fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), Stor
 }
 
 fn default_mode_for_path(path: &str) -> FileMode {
-    if path.starts_with("/bin/") {
+    if path.starts_with("/bin/") || path.starts_with("/lib/") {
         FileMode::system_executable()
     } else if path == "/README.txt" {
         FileMode::read_only()

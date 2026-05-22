@@ -36,6 +36,9 @@ static SCHED_CR3_BOUND: AtomicU64 = AtomicU64::new(0);
 static SCHED_CR3_RESTORE_OK: AtomicU64 = AtomicU64::new(0);
 static WX_CHECKED: AtomicU64 = AtomicU64::new(0);
 static WX_REJECTED: AtomicU64 = AtomicU64::new(0);
+static MPROTECT_APPLIED: AtomicU64 = AtomicU64::new(0);
+static MPROTECT_REJECTED: AtomicU64 = AtomicU64::new(0);
+static GUARD_FAULTS: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct HwPageTableHandle {
@@ -285,6 +288,7 @@ pub fn activate_bringup_user_cr3() -> Result<(), UserPagingError> {
 }
 
 fn restore_kernel_page_table_inner() -> Result<(), UserPagingError> {
+    crate::task::process::set_current_process_id(None);
     let Some(backup) = KERNEL_CR3.lock().take() else {
         *ACTIVE_USER_CR3.lock() = None;
         return Ok(());
@@ -321,6 +325,9 @@ pub fn activate_for_process(cr3_phys: u64) -> Result<(), UserPagingError> {
         }
         *ACTIVE_USER_CR3.lock() = Some(cr3_phys);
         CR3_SWITCHES.fetch_add(1, Ordering::Relaxed);
+        if let Some(pid) = crate::task::process::process_for_cr3(cr3_phys) {
+            crate::task::process::set_current_process_id(Some(pid));
+        }
         Ok(())
     })
 }
@@ -443,6 +450,102 @@ pub fn phase48_smoke() -> bool {
         | PageTableFlags::USER_ACCESSIBLE
         | PageTableFlags::NO_EXECUTE;
     !validate_page_flags(bad) && validate_page_flags(good)
+}
+
+pub fn mprotect_status() -> (u64, u64, u64) {
+    (
+        MPROTECT_APPLIED.load(Ordering::Relaxed),
+        MPROTECT_REJECTED.load(Ordering::Relaxed),
+        GUARD_FAULTS.load(Ordering::Relaxed),
+    )
+}
+
+pub fn stack_guard_address() -> u64 {
+    use crate::user_context::{DEFAULT_USER_STACK_SIZE, DEFAULT_USER_STACK_TOP};
+    let stack_bottom = DEFAULT_USER_STACK_TOP.saturating_sub(DEFAULT_USER_STACK_SIZE as u64);
+    stack_bottom.saturating_sub(4096)
+}
+
+pub fn probe_stack_guard(pml4_phys: u64) -> bool {
+    let guard = stack_guard_address();
+    if translate_hw_page(pml4_phys, guard).is_none() {
+        GUARD_FAULTS.fetch_add(1, Ordering::Relaxed);
+        return true;
+    }
+    false
+}
+
+pub fn mprotect_page(cr3_phys: u64, virtual_address: u64, make_writable: bool) -> Result<(), UserPagingError> {
+    x86_64::instructions::interrupts::without_interrupts(|| {
+        let page_base = virtual_address & !0xfff;
+        let offset = phys_mem_offset();
+        let frame = PhysFrame::from_start_address(PhysAddr::new(cr3_phys))
+            .map_err(|_| UserPagingError::MapFailed)?;
+        let indexes = [
+            VirtAddr::new(page_base).p4_index(),
+            VirtAddr::new(page_base).p3_index(),
+            VirtAddr::new(page_base).p2_index(),
+            VirtAddr::new(page_base).p1_index(),
+        ];
+        let mut current = frame;
+        for &index in &indexes[..3] {
+            let virt = offset + current.start_address().as_u64();
+            let table: &PageTable = unsafe { &*(virt.as_ptr()) };
+            current = table[index].frame().map_err(|_| UserPagingError::MapFailed)?;
+        }
+        let virt = offset + current.start_address().as_u64();
+        let table: &mut PageTable = unsafe { &mut *(virt.as_mut_ptr()) };
+        let entry = &mut table[indexes[3]];
+        if !entry.flags().contains(PageTableFlags::PRESENT) {
+            MPROTECT_REJECTED.fetch_add(1, Ordering::Relaxed);
+            return Err(UserPagingError::MapFailed);
+        }
+        let executable = !entry.flags().contains(PageTableFlags::NO_EXECUTE);
+        let mut new_flags = entry.flags();
+        if make_writable {
+            new_flags |= PageTableFlags::WRITABLE;
+        } else {
+            new_flags.remove(PageTableFlags::WRITABLE);
+        }
+        if executable && new_flags.contains(PageTableFlags::WRITABLE) {
+            MPROTECT_REJECTED.fetch_add(1, Ordering::Relaxed);
+            return Err(UserPagingError::MapFailed);
+        }
+        if !validate_page_flags(new_flags) {
+            MPROTECT_REJECTED.fetch_add(1, Ordering::Relaxed);
+            return Err(UserPagingError::MapFailed);
+        }
+        entry.set_flags(new_flags);
+        crate::smp::flush_tlb_on_unmap();
+        MPROTECT_APPLIED.fetch_add(1, Ordering::Relaxed);
+        Ok(())
+    })
+}
+
+pub fn mprotect_user_page(user_addr: u64, prot: u64) -> Result<(), ()> {
+    let cr3 = active_user_cr3().ok_or(())?;
+    let want_write = (prot & 2) != 0;
+    let want_exec = (prot & 4) != 0;
+    if want_exec && want_write {
+        MPROTECT_REJECTED.fetch_add(1, Ordering::Relaxed);
+        return Err(());
+    }
+    mprotect_page(cr3, user_addr, want_write).map_err(|_| ())
+}
+
+pub fn phase53_smoke() -> bool {
+    let Some(built) = crate::task::program_loader::build_hw_page_table_program(
+        crate::security::Credentials::shell_user(),
+        "hello",
+    )
+    .ok() else {
+        return false;
+    };
+    let guard_ok = probe_stack_guard(built.hw.cr3_phys);
+    let ro_ok = mprotect_page(built.hw.cr3_phys, 0x401000, false).is_ok();
+    let bad = mprotect_page(built.hw.cr3_phys, 0x400000, true).is_err();
+    let (applied, _rejected, guard) = mprotect_status();
+    guard_ok && ro_ok && bad && applied > 0 && guard > 0
 }
 
 fn translate_hw(pml4_phys: u64, addr: VirtAddr) -> Option<PhysAddr> {

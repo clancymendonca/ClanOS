@@ -5,10 +5,12 @@
 //! kernel stacks and state tracking.
 
 use alloc::collections::BTreeMap;
+use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use crate::fd_table::{FdSlotStorage, MAX_FDS};
 use crate::performance::process_metrics::{self, EventType, ProcessMetricsGlobal};
 use crate::security::Credentials;
-use core::sync::atomic::{AtomicUsize, Ordering};
+use core::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use lazy_static::lazy_static;
 use spin::Mutex;
 
@@ -97,6 +99,15 @@ pub enum ProcessLoadState {
     FileDemandReady,
     WxPolicyReady,
     SmpReady,
+    ProcFdReady,
+    FdDupReady,
+    MprotectReady,
+    MmapReady,
+    WritePathReady,
+    MultiShlibReady,
+    PltRelocReady,
+    DigestTrustReady,
+    RunqueueReady,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -151,6 +162,10 @@ pub struct Process {
     cr3_phys: Option<u64>,
     /// Exit status waited on by parent (Phase 34+).
     wait_status: Option<i32>,
+    /// Per-process file descriptors (Phase 51+).
+    fds: [Option<FdSlotStorage>; MAX_FDS],
+    /// Current working directory for relative opens (Phase 52+).
+    cwd: String,
 }
 
 impl Process {
@@ -180,7 +195,21 @@ impl Process {
             load: None,
             cr3_phys: None,
             wait_status: None,
+            fds: [const { None }; MAX_FDS],
+            cwd: String::from("/"),
         }
+    }
+
+    pub fn fds_mut(&mut self) -> &mut [Option<FdSlotStorage>; MAX_FDS] {
+        &mut self.fds
+    }
+
+    pub fn cwd(&self) -> &str {
+        &self.cwd
+    }
+
+    pub fn set_cwd(&mut self, cwd: String) {
+        self.cwd = cwd;
     }
 
     pub fn id(&self) -> ProcessId {
@@ -515,6 +544,79 @@ impl ProcessRegistry {
 
 lazy_static! {
     static ref PROCESS_REGISTRY: Mutex<ProcessRegistry> = Mutex::new(ProcessRegistry::new());
+}
+
+static CURRENT_PROCESS_ID: AtomicU64 = AtomicU64::new(0);
+static SMOKE_PROCESS_ID: AtomicU64 = AtomicU64::new(0);
+
+pub fn set_current_process_id(pid: Option<ProcessId>) {
+    CURRENT_PROCESS_ID.store(pid.map(|p| p.as_u64()).unwrap_or(0), Ordering::Relaxed);
+}
+
+pub fn current_process_id() -> Option<ProcessId> {
+    let raw = CURRENT_PROCESS_ID.load(Ordering::Relaxed);
+    if raw == 0 {
+        None
+    } else {
+        Some(ProcessId::from_raw(raw))
+    }
+}
+
+pub fn set_smoke_process_id(pid: Option<ProcessId>) {
+    SMOKE_PROCESS_ID.store(pid.map(|p| p.as_u64()).unwrap_or(0), Ordering::Relaxed);
+}
+
+pub fn smoke_process_id() -> Option<ProcessId> {
+    let raw = SMOKE_PROCESS_ID.load(Ordering::Relaxed);
+    if raw == 0 {
+        None
+    } else {
+        Some(ProcessId::from_raw(raw))
+    }
+}
+
+pub fn process_for_cr3(cr3: u64) -> Option<ProcessId> {
+    PROCESS_REGISTRY
+        .lock()
+        .processes
+        .iter()
+        .find(|(_, process)| process.cr3_phys() == Some(cr3))
+        .map(|(pid, _)| *pid)
+}
+
+pub fn with_process_mut<F, R>(pid: ProcessId, f: F) -> Option<R>
+where
+    F: FnOnce(&mut Process) -> R,
+{
+    let mut registry = PROCESS_REGISTRY.lock();
+    registry.processes.get_mut(&pid).map(|process| f(process))
+}
+
+pub fn process_owner(pid: ProcessId) -> Option<Credentials> {
+    PROCESS_REGISTRY
+        .lock()
+        .processes
+        .get(&pid)
+        .map(|process| process.owner())
+}
+
+pub fn process_cwd(pid: ProcessId) -> Option<String> {
+    PROCESS_REGISTRY
+        .lock()
+        .processes
+        .get(&pid)
+        .map(|process| process.cwd().to_string())
+}
+
+pub fn set_process_cwd(pid: ProcessId, cwd: &str) -> bool {
+    if !cwd.starts_with('/') || cwd.contains("..") {
+        return false;
+    }
+    with_process_mut(pid, |process| {
+        process.set_cwd(String::from(cwd));
+        true
+    })
+    .unwrap_or(false)
 }
 
 /// Public API: Create a new kernel process.
