@@ -407,6 +407,56 @@ def main() -> int:
             None,
         ),
         (
+            "phase51-proc-fd-check",
+            ["python", "scripts/phase51_proc_fd_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase52-fd-dup-check",
+            ["python", "scripts/phase52_fd_dup_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase53-mprotect-check",
+            ["python", "scripts/phase53_mprotect_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase54-mmap-check",
+            ["python", "scripts/phase54_mmap_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase55-write-path-check",
+            ["python", "scripts/phase55_write_path_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase56-multi-shlib-check",
+            ["python", "scripts/phase56_multi_shlib_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase57-plt-reloc-check",
+            ["python", "scripts/phase57_plt_reloc_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase58-digest-trust-check",
+            ["python", "scripts/phase58_digest_trust_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase59-runqueue-check",
+            ["python", "scripts/phase59_runqueue_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase60-integration-check",
+            ["python", "scripts/phase60_integration_check.py", "--timeout", str(max(args.smoke_timeout, 180))],
+            None,
+        ),
+        (
             "phase5-soak-check",
             [
                 "python",
