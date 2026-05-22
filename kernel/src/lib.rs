@@ -43,6 +43,10 @@ pub mod user_syscall;
 pub mod user_syscall_hw;
 pub mod user_hw_frame;
 pub mod demand_paging;
+pub mod shared_loader;
+pub mod user_path;
+pub mod fd_table;
+pub mod smp;
 pub mod vga_buffer;
 
 use core::panic::PanicInfo;
@@ -55,6 +59,7 @@ pub fn init() {
     interrupts::init_idt();
     unsafe { interrupts::PICS.lock().initialize() };
     x86_64::instructions::interrupts::enable();
+    smp::init();
 }
 
 // ────────────────────────────────── test harness ──────────────────────────────
