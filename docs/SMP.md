@@ -74,8 +74,49 @@ Boot smoke:
 Phase79-ApTrampoline: aps=..., idle_ticks=..., ok=true
 ```
 
+## LAPIC IPI Send Stub (Phase 89)
+
+`request_tlb_shootdown()` increments `LAPIC_IPI_SEND` for each logical IPI target (`cpus - 1`) in addition to the existing shootdown and ack counters. This is accounting only; no LAPIC ICR MMIO is programmed yet.
+
+Boot smoke:
+
+```text
+Phase89-IpiSend: sent=..., acked=..., ok=true
+```
+
+## Work-Stealing Stub (Phase 97)
+
+When the BSP runqueue is empty (`CPU0_READY == 0`) but CPU1 has work, `try_work_steal()` increments `WORK_STEAL_ATTEMPTS` and logically dequeues from CPU1 (`WORK_STEALS`). This is accounting only; tasks are not migrated.
+
+Boot smoke:
+
+```text
+Phase97-WorkSteal: steals=..., ok=true
+```
+
+## AP Runnable Enqueue Stub (Phase 98)
+
+`enqueue_ap_runnable()` enqueues on CPU1 when `CPU_COUNT > 1` and increments `AP_RUNNABLE_ENQUEUED`. Application processors remain parked; no AP scheduler loop or BSP `hlt` in `smp::init()`.
+
+Boot smoke:
+
+```text
+Phase98-ApRunnable: enqueued=..., ok=true
+```
+
+## LAPIC ICR Write Stub (Phase 99)
+
+`lapic_icr_send_stub()` records an ICR-low write in `LAPIC_ICR_WRITES` using a discard slot instead of programming real LAPIC MMIO at `0xfee0_0300` (which can hang QEMU bring-up tests). `request_tlb_shootdown()` still only bumps `LAPIC_IPI_SEND` counters.
+
+Boot smoke:
+
+```text
+Phase99-LapicIcr: writes=..., sent=..., ok=true
+```
+
 ## Deferred
 
-- LAPIC timer per CPU, IPI reschedule, and runnable work on APs
+- LAPIC timer per CPU, IPI reschedule, and real runnable work on APs
 - Real AP trampolines and ACPI MADT-driven AP startup
-- Work-stealing runqueues
+- Real LAPIC ICR low/high MMIO for inter-processor interrupts
+- Full work-stealing runqueues with task migration

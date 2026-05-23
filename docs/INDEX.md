@@ -86,6 +86,26 @@ Central index for phase checklists, deep-dive guides, and validation commands. T
 | 78 | IPI TLB shootdown stub | [phase-78-checklist.md](phase-78-checklist.md) |
 | 79 | AP idle trampoline entry | [phase-79-checklist.md](phase-79-checklist.md) |
 | 80 | Integration (71–79) | [phase-80-checklist.md](phase-80-checklist.md) |
+| 81 | Real HW `syscall`/`sysret` | [phase-81-checklist.md](phase-81-checklist.md) |
+| 82 | `getcwd` syscall | [phase-82-checklist.md](phase-82-checklist.md) |
+| 83 | `chdirprobe` ELF | [phase-83-checklist.md](phase-83-checklist.md) |
+| 84 | VMA in-region split | [phase-84-checklist.md](phase-84-checklist.md) |
+| 85 | Fork-lite CR3 duplicate | [phase-85-checklist.md](phase-85-checklist.md) |
+| 86 | `ExecLite` + close-on-exec | [phase-86-checklist.md](phase-86-checklist.md) |
+| 87 | `PipeLite` ring buffer | [phase-87-checklist.md](phase-87-checklist.md) |
+| 88 | Ring 3 PLT `#PF` lazy bind | [phase-88-checklist.md](phase-88-checklist.md) |
+| 89 | LAPIC IPI send stub | [phase-89-checklist.md](phase-89-checklist.md) |
+| 90 | Integration (81–89) | [phase-90-checklist.md](phase-90-checklist.md) |
+| 91 | Fork-lite COW break | [phase-91-checklist.md](phase-91-checklist.md) |
+| 92 | `PollLite` syscall | [phase-92-checklist.md](phase-92-checklist.md) |
+| 93 | Gap-aware `mmap` hint | [phase-93-checklist.md](phase-93-checklist.md) |
+| 94 | `ExecLite` argv from user | [phase-94-checklist.md](phase-94-checklist.md) |
+| 95 | `pipeprobe` HW pipe ELF | [phase-95-checklist.md](phase-95-checklist.md) |
+| 96 | VMA adjacent coalesce | [phase-96-checklist.md](phase-96-checklist.md) |
+| 97 | Work-stealing stub | [phase-97-checklist.md](phase-97-checklist.md) |
+| 98 | AP runnable enqueue stub | [phase-98-checklist.md](phase-98-checklist.md) |
+| 99 | LAPIC ICR write stub | [phase-99-checklist.md](phase-99-checklist.md) |
+| 100 | Integration (91–99) | [phase-100-checklist.md](phase-100-checklist.md) |
 
 ## Deep-Dive Guides
 

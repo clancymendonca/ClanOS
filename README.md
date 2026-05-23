@@ -823,6 +823,146 @@ Checklist: `docs/phase-79-checklist.md`
 
 Checklist: `docs/phase-80-checklist.md`
 
+### Phase 81 — Real HW `syscall` / `sysret`
+
+* `HW_SYSRET_REAL` counter; HW probe via `hw-sysret-probe` feature on QEMU boot
+* `Phase81-HwSysret` boot smoke
+
+Checklist: `docs/phase-81-checklist.md`
+
+### Phase 82 — `getcwd` Syscall
+
+* `GetCwd = 79` copies process cwd to user buffer
+* `Phase82-Getcwd` boot smoke
+
+Checklist: `docs/phase-82-checklist.md`
+
+### Phase 83 — `chdirprobe` User ELF
+
+* `/bin/chdirprobe` manifest; `Chdir` + `GetCwd` smoke
+* `Phase83-Chdirprobe` boot smoke
+
+Checklist: `docs/phase-83-checklist.md`
+
+### Phase 84 — VMA In-Region Split
+
+* middle `munmap` splits VMA registry (`VMA_SPLITS`)
+* `Phase84-VmaSplit` boot smoke
+
+Checklist: `docs/phase-84-checklist.md`
+
+### Phase 85 — Fork-Lite CR3 Duplicate
+
+* shallow `fork_duplicate_cr3` for fork-lite child
+* `Phase85-ForkDup` boot smoke
+
+Checklist: `docs/phase-85-checklist.md`
+
+### Phase 86 — `ExecLite` + Close-on-Exec
+
+* `ExecLite = 81` replaces image; sweeps `FD_CLOEXEC` fds
+* `Phase86-ExecLite` boot smoke
+
+Checklist: `docs/phase-86-checklist.md`
+
+### Phase 87 — `PipeLite` Anonymous Pipe
+
+* `Pipe = 80`; ring buffer; read/write on pipe fds
+* `Phase87-PipeLite` boot smoke
+
+Checklist: `docs/phase-87-checklist.md`
+
+### Phase 88 — Ring 3 PLT Fault Lazy Bind
+
+* `#PF` at PLT slot triggers lazy bind under smoke flag
+* `Phase88-Ring3PltFault` boot smoke
+
+Checklist: `docs/phase-88-checklist.md`
+
+### Phase 89 — LAPIC IPI Send Stub
+
+* `LAPIC_IPI_SEND` on TLB shootdown request
+* `Phase89-IpiSend` boot smoke
+
+Checklist: `docs/phase-89-checklist.md`
+
+### Phase 90 — Integration Milestone (81–89)
+
+* cumulative validation of phases 81–89 counters (no nested re-run)
+* `Phase90-Integration` boot smoke
+
+Checklist: `docs/phase-90-checklist.md`
+
+### Phase 91 — Fork-Lite COW Break
+
+* anon page COW break after `fork_lite`; parent/child write isolation smoke
+* `Phase91-ForkCow` boot smoke
+
+Checklist: `docs/phase-91-checklist.md`
+
+### Phase 92 — `PollLite` Syscall
+
+* `Poll = 82` single-fd readiness on pipe fds
+* `Phase92-PollLite` boot smoke
+
+Checklist: `docs/phase-92-checklist.md`
+
+### Phase 93 — Gap-Aware `mmap` Hint
+
+* `next_anon_hint` fills lowest gap before high-water bump
+* `Phase93-MmapGap` boot smoke
+
+Checklist: `docs/phase-93-checklist.md`
+
+### Phase 94 — `ExecLite` Argv from User
+
+* bounded argv copy from user pointer vector
+* `Phase94-ExecArgv` boot smoke
+
+Checklist: `docs/phase-94-checklist.md`
+
+### Phase 95 — `pipeprobe` Ring-3 HW ELF
+
+* `/bin/pipeprobe` seed; HW pipe + `Poll` path under `hw-sysret-probe`
+* `Phase95-PipeProbe` boot smoke
+
+Checklist: `docs/phase-95-checklist.md`
+
+### Phase 96 — VMA Adjacent Coalesce
+
+* merge adjacent anon VMAs on munmap boundary
+* `Phase96-VmaCoalesce` boot smoke
+
+Checklist: `docs/phase-96-checklist.md`
+
+### Phase 97 — Work-Stealing Stub
+
+* BSP steals from CPU1 runqueue counter when empty
+* `Phase97-WorkSteal` boot smoke
+
+Checklist: `docs/phase-97-checklist.md`
+
+### Phase 98 — AP Runnable Enqueue Stub
+
+* synthetic runnable enqueue on CPU1 without AP scheduler loop
+* `Phase98-ApRunnable` boot smoke
+
+Checklist: `docs/phase-98-checklist.md`
+
+### Phase 99 — LAPIC ICR Write Stub
+
+* discard-backed ICR-low write counter (no real MMIO in QEMU tests)
+* `Phase99-LapicIcr` boot smoke
+
+Checklist: `docs/phase-99-checklist.md`
+
+### Phase 100 — Integration Milestone (91–99)
+
+* cumulative validation of phases 91–99 counters (no nested re-run)
+* `Phase100-Integration` boot smoke
+
+Checklist: `docs/phase-100-checklist.md`
+
 ---
 
 # Documentation
