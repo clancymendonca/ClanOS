@@ -54,6 +54,26 @@ Boot smoke:
 Phase69-ApIdle: aps=..., idle_ticks=..., ok=true
 ```
 
+## IPI TLB Shootdown Stub (Phase 78)
+
+`request_tlb_shootdown()` records logical IPI send/ack counters (`ipi_shootdown_sent`, `ipi_shootdown_acked`) for all online CPUs, then flushes the BSP TLB. Munmap (phase 73) calls this helper after PTE changes.
+
+Boot smoke:
+
+```text
+Phase78-IpiTlb: cpus=..., ipis=..., ok=true
+```
+
+## AP Idle Trampoline (Phase 79)
+
+`ap_idle_trampoline()` is the minimal AP entry stub: it accounts `AP_TRAMPOLINE_ENTERED` and bumps `ap_idle_ticks`. A real `hlt` loop is deferred until ACPI AP startup exists (halting on the BSP during `smp::init()` would freeze QEMU bring-up).
+
+Boot smoke:
+
+```text
+Phase79-ApTrampoline: aps=..., idle_ticks=..., ok=true
+```
+
 ## Deferred
 
 - LAPIC timer per CPU, IPI reschedule, and runnable work on APs

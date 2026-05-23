@@ -753,6 +753,76 @@ Checklist: `docs/phase-69-checklist.md`
 
 Checklist: `docs/phase-70-checklist.md`
 
+### Phase 71 — HW `syscall` / `sysret` Return Path
+
+* hardware `syscall` stub with `sysret` back to user
+* `Phase71-Sysret` boot smoke
+
+Checklist: `docs/phase-71-checklist.md`
+
+### Phase 72 — Ring 3 `chdir` from User
+
+* `Chdir` syscall from Ring 3 HW path with user path pointer
+* `Phase72-Ring3Chdir` boot smoke
+
+Checklist: `docs/phase-72-checklist.md`
+
+### Phase 73 — `munmap` with Length (Partial Unmap)
+
+* `Munmap` `arg1` length; VMA truncate; TLB shootdown on unmap
+* `Phase73-MunmapLen` boot smoke
+
+Checklist: `docs/phase-73-checklist.md`
+
+### Phase 74 — `WaitLite` on Fork-Lite Child
+
+* `WaitLite = 78` waits for fork-lite child exit code
+* `Phase74-WaitLite` boot smoke
+
+Checklist: `docs/phase-74-checklist.md`
+
+### Phase 75 — `syscallprobe` User ELF Manifest
+
+* `/bin/syscallprobe` manifest; HW syscall probes
+* `Phase75-SyscallProbe` boot smoke
+
+Checklist: `docs/phase-75-checklist.md`
+
+### Phase 76 — `fcntl` `F_SETFD` / Close-on-Exec
+
+* per-FD flags with `FD_CLOEXEC`
+* `Phase76-Fcntl` boot smoke
+
+Checklist: `docs/phase-76-checklist.md`
+
+### Phase 77 — Ring 3 Lazy PLT First Call
+
+* lazy PLT bind under Ring 3 smoke flag
+* `Phase77-Ring3LazyPlt` boot smoke
+
+Checklist: `docs/phase-77-checklist.md`
+
+### Phase 78 — IPI TLB Shootdown Stub
+
+* logical IPI counters on `request_tlb_shootdown`
+* `Phase78-IpiTlb` boot smoke
+
+Checklist: `docs/phase-78-checklist.md`
+
+### Phase 79 — AP Idle Trampoline Entry
+
+* AP `hlt` trampoline entry accounting
+* `Phase79-ApTrampoline` boot smoke
+
+Checklist: `docs/phase-79-checklist.md`
+
+### Phase 80 — Integration Milestone (71–79)
+
+* cumulative validation of phases 71–79
+* `Phase80-Integration` boot smoke
+
+Checklist: `docs/phase-80-checklist.md`
+
 ---
 
 # Documentation

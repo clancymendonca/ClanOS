@@ -76,6 +76,16 @@ Central index for phase checklists, deep-dive guides, and validation commands. T
 | 68 | TLB shootdown accounting | [phase-68-checklist.md](phase-68-checklist.md) |
 | 69 | AP idle accounting | [phase-69-checklist.md](phase-69-checklist.md) |
 | 70 | Integration (61–69) | [phase-70-checklist.md](phase-70-checklist.md) |
+| 71 | HW syscall/sysret return | [phase-71-checklist.md](phase-71-checklist.md) |
+| 72 | Ring 3 chdir from user | [phase-72-checklist.md](phase-72-checklist.md) |
+| 73 | munmap with length | [phase-73-checklist.md](phase-73-checklist.md) |
+| 74 | WaitLite for fork-lite child | [phase-74-checklist.md](phase-74-checklist.md) |
+| 75 | syscallprobe ELF manifest | [phase-75-checklist.md](phase-75-checklist.md) |
+| 76 | fcntl F_SETFD / close-on-exec | [phase-76-checklist.md](phase-76-checklist.md) |
+| 77 | Ring 3 lazy PLT first call | [phase-77-checklist.md](phase-77-checklist.md) |
+| 78 | IPI TLB shootdown stub | [phase-78-checklist.md](phase-78-checklist.md) |
+| 79 | AP idle trampoline entry | [phase-79-checklist.md](phase-79-checklist.md) |
+| 80 | Integration (71–79) | [phase-80-checklist.md](phase-80-checklist.md) |
 
 ## Deep-Dive Guides
 
