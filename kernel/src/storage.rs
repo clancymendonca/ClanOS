@@ -16,9 +16,9 @@ const MAGIC: &[u8; 8] = b"ARESFS1\0";
 const VERSION: u32 = 1;
 const HEADER_SECTOR: usize = 0;
 const DIRECTORY_START_SECTOR: usize = 1;
-const DIRECTORY_SECTORS: usize = 3;
+const DIRECTORY_SECTORS: usize = 4;
 const DATA_START_SECTOR: usize = DIRECTORY_START_SECTOR + DIRECTORY_SECTORS;
-const MAX_FILES: usize = 24;
+const MAX_FILES: usize = 28;
 const MAX_PATH_LEN: usize = 48;
 const MAX_FILE_SIZE: usize = SECTOR_SIZE;
 const DIR_ENTRY_SIZE: usize = 64;
@@ -710,6 +710,16 @@ fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), Stor
             "ares-exec-v1\nname=syscallprobe\nkind=elf64-image\nentry=0x400000\nimage=/bin/syscallprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=HW syscall probe ELF fixture",
         ),
         ("/bin/syscallprobe.elf", sample_elf.as_str()),
+        (
+            "/bin/chdirprobe",
+            "ares-exec-v1\nname=chdirprobe\nkind=elf64-image\nentry=0x400000\nimage=/bin/chdirprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=HW chdir/getcwd probe ELF fixture",
+        ),
+        ("/bin/chdirprobe.elf", sample_elf.as_str()),
+        (
+            "/bin/pipeprobe",
+            "ares-exec-v1\nname=pipeprobe\nkind=elf64-image\nentry=0x400000\nimage=/bin/pipeprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=HW pipe probe ELF fixture",
+        ),
+        ("/bin/pipeprobe.elf", sample_elf.as_str()),
         ("/bin/libc_stub.elf", sample_elf.as_str()),
         ("/lib/libaux_stub.elf", sample_elf.as_str()),
         ("/tmp/phase52-smoke.txt", "relative-open"),

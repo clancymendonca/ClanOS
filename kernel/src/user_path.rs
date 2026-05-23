@@ -8,6 +8,8 @@ static PATH_REJECTED: AtomicU64 = AtomicU64::new(0);
 static PATH_NORMALIZED: AtomicU64 = AtomicU64::new(0);
 static CHDIR_COUNT: AtomicU64 = AtomicU64::new(0);
 static RING3_CHDIRS: AtomicU64 = AtomicU64::new(0);
+static GETCWD_READS: AtomicU64 = AtomicU64::new(0);
+static CHDIRPROBE_OK: AtomicU64 = AtomicU64::new(0);
 
 pub const MAX_USER_PATH_LEN: usize = 96;
 
@@ -30,6 +32,95 @@ pub fn chdir_status() -> (u64, u64) {
         PATH_NORMALIZED.load(Ordering::Relaxed),
         CHDIR_COUNT.load(Ordering::Relaxed),
     )
+}
+
+pub fn getcwd_status() -> u64 {
+    GETCWD_READS.load(Ordering::Relaxed)
+}
+
+pub fn chdirprobe_status() -> u64 {
+    CHDIRPROBE_OK.load(Ordering::Relaxed)
+}
+
+pub fn getcwd_to_user(user_buf: u64) -> Result<usize, ()> {
+    if user_buf == 0 {
+        PATH_REJECTED.fetch_add(1, Ordering::Relaxed);
+        return Err(());
+    }
+    let pid = crate::task::process::current_process_id()
+        .or_else(|| crate::task::process::smoke_process_id())
+        .ok_or(())?;
+    let cwd = crate::task::process::process_cwd(pid).ok_or(())?;
+    let bytes = cwd.as_bytes();
+    let len = core::cmp::min(bytes.len(), MAX_USER_PATH_LEN);
+    crate::user_copy::copy_to_user(&bytes[..len], user_buf).map_err(|_| {
+        PATH_REJECTED.fetch_add(1, Ordering::Relaxed);
+    })?;
+    let _ = crate::user_copy::copy_to_user(&[0u8], user_buf + len as u64);
+    GETCWD_READS.fetch_add(1, Ordering::Relaxed);
+    Ok(len)
+}
+
+pub fn phase82_smoke() -> bool {
+    let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
+    let creds = crate::security::Credentials::shell_user();
+    let Some(pid) = crate::task::process::create_kernel_process_as("getcwd-smoke", tick, creds) else {
+        return false;
+    };
+    crate::task::process::set_smoke_process_id(Some(pid));
+    let chdir_ok = crate::task::process::set_process_cwd(pid, "/tmp");
+    let Some(built) = crate::task::program_loader::build_hw_page_table_program(creds, "hello").ok()
+    else {
+        return false;
+    };
+    let user_buf = crate::user_context::DEFAULT_USER_STACK_TOP.saturating_sub(128);
+    let copy_ok = crate::user_paging::with_user_page_table(&built.hw, || {
+        getcwd_to_user(user_buf).ok()?;
+        Some(true)
+    })
+    .ok()
+    .flatten()
+    .is_some();
+    crate::task::process::set_smoke_process_id(None);
+    chdir_ok
+        && copy_ok
+        && crate::task::process::process_cwd(pid).as_deref() == Some("/tmp")
+        && getcwd_status() > 0
+}
+
+pub fn phase83_smoke() -> bool {
+    let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
+    let creds = crate::security::Credentials::shell_user();
+    let Some(pid) = crate::task::process::create_kernel_process_as("chdirprobe", tick, creds) else {
+        return false;
+    };
+    let Some(built) = crate::task::program_loader::build_hw_page_table_program(creds, "chdirprobe").ok()
+    else {
+        return false;
+    };
+    crate::task::process::set_smoke_process_id(Some(pid));
+    crate::task::process::set_current_process_id(Some(pid));
+    let user_path = crate::user_context::DEFAULT_USER_STACK_TOP.saturating_sub(128);
+    let user_buf = user_path.saturating_sub(64);
+    let ok = crate::user_paging::with_user_page_table(&built.hw, || {
+        for (i, byte) in b"/tmp".iter().enumerate() {
+            crate::user_copy::copy_to_user(core::slice::from_ref(byte), user_path + i as u64).ok()?;
+        }
+        let _ = crate::user_copy::copy_to_user(&[0u8], user_path + b"/tmp".len() as u64);
+        chdir_from_user(user_path).ok()?;
+        getcwd_to_user(user_buf).ok()?;
+        Some(crate::task::process::process_cwd(pid).as_deref() == Some("/tmp"))
+    })
+    .ok()
+    .flatten()
+    .unwrap_or(false);
+    crate::task::process::set_smoke_process_id(None);
+    crate::task::process::set_current_process_id(None);
+    if ok {
+        CHDIRPROBE_OK.fetch_add(1, Ordering::Relaxed);
+        RING3_CHDIRS.fetch_add(1, Ordering::Relaxed);
+    }
+    ok && chdirprobe_status() > 0 && getcwd_status() > 0
 }
 
 pub fn ring3_chdir_status() -> u64 {

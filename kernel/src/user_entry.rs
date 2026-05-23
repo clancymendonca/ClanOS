@@ -101,6 +101,9 @@ pub fn handle_user_fault(stack_frame: &mut InterruptStackFrame, from_vector_80: 
     } else if from_vector_80 {
         USER_TRAP_COUNT.fetch_add(1, Ordering::Relaxed);
         USER_TRAP_RETURNS.fetch_add(1, Ordering::Relaxed);
+    } else if bringup != 0 && crate::user_syscall::last_hw_syscall_return().is_some() {
+        USER_TRAP_COUNT.fetch_add(1, Ordering::Relaxed);
+        USER_TRAP_RETURNS.fetch_add(1, Ordering::Relaxed);
     } else {
         IRETQ_TRAPPED.fetch_add(1, Ordering::Relaxed);
     }

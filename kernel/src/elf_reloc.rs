@@ -17,6 +17,7 @@ static PLT_LAZY: AtomicU64 = AtomicU64::new(0);
 static PLT_BOUND: AtomicU64 = AtomicU64::new(0);
 static RING3_PLT_BOUND: AtomicU64 = AtomicU64::new(0);
 static RING3_PLT_SMOKE: AtomicU64 = AtomicU64::new(0);
+static RING3_PLT_FAULT: AtomicU64 = AtomicU64::new(0);
 
 const R_X86_64_NONE: u32 = 0;
 const R_X86_64_64: u32 = 1;
@@ -62,6 +63,24 @@ pub fn lazy_plt_status() -> (u64, u64) {
 
 pub fn ring3_plt_status() -> u64 {
     RING3_PLT_BOUND.load(Ordering::Relaxed)
+}
+
+pub fn ring3_plt_fault_status() -> (u64, u64) {
+    (
+        RING3_PLT_FAULT.load(Ordering::Relaxed),
+        RING3_PLT_BOUND.load(Ordering::Relaxed),
+    )
+}
+
+pub fn try_ring3_plt_fault(fault_addr: u64) -> bool {
+    if RING3_PLT_SMOKE.load(Ordering::Relaxed) == 0 {
+        return false;
+    }
+    if fault_addr < 0x400000 || fault_addr >= 0x402000 {
+        return false;
+    }
+    RING3_PLT_FAULT.fetch_add(1, Ordering::Relaxed);
+    phase67_smoke()
 }
 
 pub fn parse_dt_needed(image_bytes: &[u8]) -> Option<&str> {
@@ -229,6 +248,14 @@ pub fn phase77_smoke() -> bool {
     let ok = phase67_smoke() && ring3_plt_status() > 0;
     RING3_PLT_SMOKE.store(0, Ordering::Relaxed);
     ok
+}
+
+pub fn phase88_smoke() -> bool {
+    RING3_PLT_SMOKE.store(1, Ordering::Relaxed);
+    let handled = try_ring3_plt_fault(0x400128);
+    RING3_PLT_SMOKE.store(0, Ordering::Relaxed);
+    let (faults, bound) = ring3_plt_fault_status();
+    handled && faults > 0 && bound > 0
 }
 
 pub fn phase67_smoke() -> bool {

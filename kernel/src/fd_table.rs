@@ -73,6 +73,30 @@ fn resolve_path_for_process(pid: ProcessId, path: &str) -> Result<String, ()> {
     Ok(normalized)
 }
 
+pub fn open_pipe_for_process(pid: ProcessId, path: &str) -> Result<u32, ()> {
+    if !path.starts_with("/@pipe/") {
+        FD_REJECTED.fetch_add(1, Ordering::Relaxed);
+        return Err(());
+    }
+    match process::with_process_mut(pid, |process| {
+        for (idx, slot) in process.fds_mut().iter_mut().enumerate() {
+            if slot.is_none() {
+                *slot = Some(FdSlotStorage {
+                    path: String::from(path),
+                    flags: 0,
+                });
+                FD_OPENS.fetch_add(1, Ordering::Relaxed);
+                return Ok(idx as u32);
+            }
+        }
+        FD_REJECTED.fetch_add(1, Ordering::Relaxed);
+        Err(())
+    }) {
+        Some(Ok(fd)) => Ok(fd),
+        _ => Err(()),
+    }
+}
+
 pub fn open_file_for_process(pid: ProcessId, path: &str) -> Result<u32, ()> {
     let path = resolve_path_for_process(pid, path).map_err(|_| {
         FD_REJECTED.fetch_add(1, Ordering::Relaxed);
@@ -172,6 +196,13 @@ pub fn read_fd(fd: u32, user_buf: u64, max_len: u64) -> Result<u64, ()> {
     })
     .flatten()
     .ok_or(())?;
+    if let Some(pipe_id) = crate::pipe::pipe_id_from_path(&path) {
+        if !crate::pipe::is_pipe_read(&path) {
+            FD_REJECTED.fetch_add(1, Ordering::Relaxed);
+            return Err(());
+        }
+        return crate::pipe::read_pipe(pipe_id, user_buf, max_len);
+    }
     let creds = process::process_owner(pid).unwrap_or(crate::security::current_credentials());
     let contents = crate::storage::read_file_checked(creds, &path)
         .map_err(|_| {
@@ -212,6 +243,13 @@ pub fn write_fd(fd: u32, user_buf: u64, max_len: u64) -> Result<u64, ()> {
     })
     .flatten()
     .ok_or(())?;
+    if let Some(pipe_id) = crate::pipe::pipe_id_from_path(&path) {
+        if !crate::pipe::is_pipe_write(&path) {
+            FD_REJECTED.fetch_add(1, Ordering::Relaxed);
+            return Err(());
+        }
+        return crate::pipe::write_pipe(pipe_id, user_buf, max_len);
+    }
     if !path.starts_with("/tmp/") {
         FD_REJECTED.fetch_add(1, Ordering::Relaxed);
         return Err(());

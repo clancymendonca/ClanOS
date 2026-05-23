@@ -83,6 +83,10 @@ pub enum SyscallId {
     ForkLite = 76,
     Fcntl = 77,
     WaitLite = 78,
+    GetCwd = 79,
+    Pipe = 80,
+    ExecLite = 81,
+    Poll = 82,
 }
 
 static LAST_EXIT_CODE: core::sync::atomic::AtomicU64 =
@@ -536,6 +540,24 @@ pub fn invoke_with_args(id: u64, arg0: u64, arg1: u64, arg2: u64) -> Result<u64,
                 .ok_or(SyscallError::InvalidArgument)?;
             crate::task::process::wait_lite(parent, crate::task::process::ProcessId::from_raw(arg0))
                 .map(|code| code as u64)
+                .map_err(|_| SyscallError::InvalidArgument)
+        }
+        x if x == SyscallId::GetCwd as u64 => {
+            crate::user_path::getcwd_to_user(arg0)
+                .map(|n| n as u64)
+                .map_err(|_| SyscallError::InvalidArgument)
+        }
+        x if x == SyscallId::Pipe as u64 => {
+            crate::pipe::pipe_syscall(arg0, arg1)
+                .map_err(|_| SyscallError::InvalidArgument)
+        }
+        x if x == SyscallId::ExecLite as u64 => {
+            crate::task::process::exec_lite_with_argv(arg0, arg1)
+                .map(|_| 0)
+                .map_err(|_| SyscallError::InvalidArgument)
+        }
+        x if x == SyscallId::Poll as u64 => {
+            crate::pipe::poll_syscall(arg0, arg1)
                 .map_err(|_| SyscallError::InvalidArgument)
         }
         _ => Err(SyscallError::InvalidSyscall),

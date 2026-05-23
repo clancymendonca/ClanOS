@@ -163,6 +163,7 @@ pub fn munmap_range(cr3_phys: u64, addr: u64, len: u64) -> Result<(), ()> {
         } else if crate::vma::truncate_region(pid, base, span) {
             PARTIAL_MUNMAP.fetch_add(1, Ordering::Relaxed);
         }
+        let _ = crate::vma::coalesce_adjacent(pid);
     }
     crate::smp::request_tlb_shootdown();
     Ok(())

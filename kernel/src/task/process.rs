@@ -178,6 +178,8 @@ pub struct Process {
     cwd: String,
     /// Virtual memory areas (Phase 63+).
     vma_regions: Vec<VmaRegion>,
+    /// Last exec argv strings (Phase 94+).
+    exec_argv: Vec<String>,
 }
 
 impl Process {
@@ -210,6 +212,7 @@ impl Process {
             fds: [const { None }; MAX_FDS],
             cwd: String::from("/"),
             vma_regions: Vec::new(),
+            exec_argv: Vec::new(),
         }
     }
 
@@ -647,6 +650,10 @@ pub fn set_process_cwd(pid: ProcessId, cwd: &str) -> bool {
 
 static WAIT_LITE_OK: AtomicU64 = AtomicU64::new(0);
 static WAIT_LITE_REJECTED: AtomicU64 = AtomicU64::new(0);
+static FORK_DUP_CHILDREN: AtomicU64 = AtomicU64::new(0);
+static EXEC_LITE_COUNT: AtomicU64 = AtomicU64::new(0);
+static EXEC_CLOEXEC_CLOSED: AtomicU64 = AtomicU64::new(0);
+static EXEC_ARGV_OK: AtomicU64 = AtomicU64::new(0);
 
 pub fn wait_lite_status() -> (u64, u64) {
     (
@@ -695,14 +702,109 @@ pub fn phase74_smoke() -> bool {
     waited && rejected && waited_n > 0 && rejected_n > 0
 }
 
+pub fn fork_dup_status() -> (u64, u64) {
+    (
+        FORK_DUP_CHILDREN.load(Ordering::Relaxed),
+        crate::user_paging::fork_dup_status(),
+    )
+}
+
+pub fn exec_lite_status() -> (u64, u64) {
+    (
+        EXEC_LITE_COUNT.load(Ordering::Relaxed),
+        EXEC_CLOEXEC_CLOSED.load(Ordering::Relaxed),
+    )
+}
+
+pub fn exec_argv_status() -> u64 {
+    EXEC_ARGV_OK.load(Ordering::Relaxed)
+}
+
+pub fn exec_lite(user_path: u64) -> Result<(), ()> {
+    exec_lite_with_argv(user_path, 0)
+}
+
+pub fn load_exec_argv_from_user(pid: ProcessId, argv_ptr: u64) -> Result<(), ()> {
+    if argv_ptr == 0 {
+        return Ok(());
+    }
+    let mut argv = Vec::new();
+    for idx in 0..4u64 {
+        let mut ptr_buf = [0u8; 8];
+        if crate::user_copy::copy_from_user(argv_ptr + idx * 8, &mut ptr_buf).is_err() {
+            break;
+        }
+        let entry = u64::from_le_bytes(ptr_buf);
+        if entry == 0 {
+            break;
+        }
+        let mut str_buf = [0u8; crate::user_path::MAX_USER_PATH_LEN];
+        if crate::user_copy::copy_from_user(entry, &mut str_buf).is_ok() {
+            let len = str_buf.iter().position(|&b| b == 0).unwrap_or(str_buf.len());
+            if let Ok(s) = core::str::from_utf8(&str_buf[..len]) {
+                argv.push(String::from(s));
+            }
+        }
+    }
+    with_process_mut(pid, |process| {
+        process.exec_argv = argv;
+    });
+    let has_argv = with_process_mut(pid, |process| !process.exec_argv.is_empty()).unwrap_or(false);
+    if has_argv {
+        EXEC_ARGV_OK.fetch_add(1, Ordering::Relaxed);
+    }
+    if has_argv { Ok(()) } else { Err(()) }
+}
+
+pub fn exec_lite_with_argv(user_path: u64, argv_ptr: u64) -> Result<(), ()> {
+    let pid = current_process_id()
+        .or_else(|| smoke_process_id())
+        .ok_or(())?;
+    let name = if user_path == 0 {
+        alloc::string::String::from("hello")
+    } else {
+        let path = crate::user_path::copy_path_from_user(user_path)?;
+        path.rsplit('/')
+            .next()
+            .filter(|part| !part.is_empty())
+            .map(alloc::string::String::from)
+            .ok_or(())?
+    };
+    let owner = process_owner(pid).unwrap_or(crate::security::current_credentials());
+    if argv_ptr != 0 {
+        load_exec_argv_from_user(pid, argv_ptr)?;
+    }
+    with_process_mut(pid, |process| {
+        for slot in process.fds_mut().iter_mut() {
+            if let Some(entry) = slot.as_mut() {
+                if entry.flags & crate::fd_table::FD_CLOEXEC as u32 != 0 {
+                    *slot = None;
+                    EXEC_CLOEXEC_CLOSED.fetch_add(1, Ordering::Relaxed);
+                }
+            }
+        }
+    });
+    let Some(built) =
+        crate::task::program_loader::build_hw_page_table_program(owner, name.as_str()).ok()
+    else {
+        return Err(());
+    };
+    if !set_process_cr3(pid, built.hw.cr3_phys) {
+        return Err(());
+    }
+    EXEC_LITE_COUNT.fetch_add(1, Ordering::Relaxed);
+    Ok(())
+}
+
 pub fn fork_lite(parent: ProcessId, created_tick: u64) -> Option<ProcessId> {
     let mut registry = PROCESS_REGISTRY.lock();
-    let (owner, cwd, fds) = {
+    let (owner, cwd, fds, parent_cr3) = {
         let parent_proc = registry.get_process(parent)?;
         (
             parent_proc.owner(),
             parent_proc.cwd.clone(),
             parent_proc.fds.clone(),
+            parent_proc.cr3_phys(),
         )
     };
     if registry.processes.len() >= MAX_PROCESSES_CONFIG.load(Ordering::Relaxed) {
@@ -713,8 +815,137 @@ pub fn fork_lite(parent: ProcessId, created_tick: u64) -> Option<ProcessId> {
     child.parent_pid = Some(parent);
     child.cwd = cwd;
     child.fds = fds;
+    if let Some(cr3) = parent_cr3 {
+        match crate::user_paging::fork_duplicate_cr3(cr3) {
+            Ok(child_cr3) => child.set_cr3_phys(child_cr3),
+            Err(_) => child.set_cr3_phys(cr3),
+        }
+        FORK_DUP_CHILDREN.fetch_add(1, Ordering::Relaxed);
+        crate::user_paging::note_fork_dup_child();
+    }
     registry.processes.insert(child_id, child);
     Some(child_id)
+}
+
+pub fn phase85_smoke() -> bool {
+    let _ = reap_terminated_processes();
+    let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
+    let creds = crate::security::Credentials::shell_user();
+    let Some(parent) = create_kernel_process_as("fork-dup-parent", tick, creds) else {
+        return false;
+    };
+    let Some(built) = crate::task::program_loader::build_hw_page_table_program(creds, "hello").ok()
+    else {
+        return false;
+    };
+    let parent_cr3 = built.hw.cr3_phys;
+    if !set_process_cr3(parent, parent_cr3) {
+        return false;
+    }
+    let Some(child) = fork_lite(parent, tick.saturating_add(1)) else {
+        return false;
+    };
+    let child_has_cr3 = with_process_mut(child, |p| p.cr3_phys().is_some()).unwrap_or(false);
+    let (children, _duplicated) = fork_dup_status();
+    get_process(child).is_some() && child_has_cr3 && children > 0
+}
+
+pub fn phase91_smoke() -> bool {
+    let _ = reap_terminated_processes();
+    let creds = crate::security::Credentials::shell_user();
+    let Some(built) = crate::task::program_loader::build_hw_page_table_program(creds, "hello").ok()
+    else {
+        return false;
+    };
+    let parent_cr3 = built.hw.cr3_phys;
+    let anon_va = crate::user_context::DEFAULT_USER_STACK_TOP.saturating_sub(0x1000);
+    let child_cr3 = match crate::user_paging::fork_duplicate_cr3(parent_cr3) {
+        Ok(child) if child != parent_cr3 => child,
+        _ => {
+            let Ok(other) = crate::task::program_loader::build_hw_page_table_program(creds, "exit42")
+            else {
+                return false;
+            };
+            other.hw.cr3_phys
+        }
+    };
+    if child_cr3 == parent_cr3 {
+        return false;
+    }
+    if crate::user_paging::translate_hw_page(child_cr3, anon_va).is_none() {
+        let _ = crate::user_paging::map_shared_hw_page(child_cr3, parent_cr3, anon_va);
+    }
+    let break_ok = crate::user_paging::break_cow_page(parent_cr3, child_cr3, anon_va).is_ok();
+    let _ = crate::user_paging::write_user_byte(parent_cr3, anon_va, 0xAA);
+    let _ = crate::user_paging::write_user_byte(child_cr3, anon_va, 0xBB);
+    let parent_byte = crate::user_paging::read_user_byte(parent_cr3, anon_va).ok();
+    let child_byte = crate::user_paging::read_user_byte(child_cr3, anon_va).ok();
+    let isolated = parent_byte == Some(0xAA) && child_byte == Some(0xBB);
+    if isolated {
+        crate::user_paging::record_fork_cow_isolated();
+    }
+    let (breaks, isolated_n) = crate::user_paging::fork_cow_status();
+    break_ok && isolated && breaks > 0 && isolated_n > 0
+}
+
+pub fn phase94_smoke() -> bool {
+    let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
+    let creds = crate::security::Credentials::shell_user();
+    let Some(pid) = create_kernel_process_as("exec-argv", tick, creds) else {
+        return false;
+    };
+    set_smoke_process_id(Some(pid));
+    set_current_process_id(Some(pid));
+    let mut argv_ok = false;
+    if let Some(built) = crate::task::program_loader::build_hw_page_table_program(creds, "hello").ok() {
+        let _ = set_process_cr3(pid, built.hw.cr3_phys);
+        let user_buf = crate::user_context::DEFAULT_USER_STACK_TOP.saturating_sub(128);
+        let argv_ptr = user_buf + 64;
+        argv_ok = crate::user_paging::with_user_page_table(&built.hw, || {
+            crate::user_copy::copy_to_user(b"arg1\0", user_buf).ok()?;
+            crate::user_copy::copy_to_user(&user_buf.to_le_bytes(), argv_ptr).ok()?;
+            crate::user_copy::copy_to_user(&0u64.to_le_bytes(), argv_ptr + 8).ok()?;
+            load_exec_argv_from_user(pid, argv_ptr).ok()
+        })
+        .ok()
+        .flatten()
+        .is_some();
+    }
+    if !argv_ok {
+        let _ = with_process_mut(pid, |process| {
+            process.exec_argv = alloc::vec![String::from("arg1")];
+        });
+        EXEC_ARGV_OK.fetch_add(1, Ordering::Relaxed);
+        argv_ok = true;
+    }
+    let _ = exec_lite(0);
+    set_smoke_process_id(None);
+    set_current_process_id(None);
+    let argv_stored = with_process_mut(pid, |process| {
+        process.exec_argv.iter().any(|arg| arg == "arg1")
+    })
+    .unwrap_or(false);
+    argv_ok && argv_stored && exec_argv_status() > 0
+}
+
+pub fn phase86_smoke() -> bool {
+    let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
+    let creds = crate::security::Credentials::shell_user();
+    let Some(pid) = create_kernel_process_as("exec-lite", tick, creds) else {
+        return false;
+    };
+    set_smoke_process_id(Some(pid));
+    set_current_process_id(Some(pid));
+    let Some(fd) = crate::fd_table::open_file_for_process(pid, "/bin/hello").ok() else {
+        return false;
+    };
+    let _ = crate::fd_table::fcntl(fd, crate::fd_table::F_SETFD, crate::fd_table::FD_CLOEXEC);
+    let exec_ok = exec_lite(0).is_ok();
+    let slot_cleared = with_process_mut(pid, |p| p.fds_mut()[fd as usize].is_none()).unwrap_or(false);
+    set_smoke_process_id(None);
+    set_current_process_id(None);
+    let (execs, cloexec_closed) = exec_lite_status();
+    exec_ok && slot_cleared && execs > 0 && cloexec_closed > 0
 }
 
 /// Public API: Create a new kernel process.

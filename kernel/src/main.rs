@@ -684,6 +684,262 @@ fn run_phase71_to_80_smokes() {
     );
 }
 
+fn run_phase81_to_90_smokes() {
+    let phase81_ok = kernel::task::program_loader::phase81_hw_sysret_smoke();
+    let (_, sysret_real) = kernel::user_syscall_hw::hw_sysret_real_status();
+    println!(
+        "Phase81-HwSysret: probes={}, sysret_real={}, ok={}",
+        kernel::user_syscall_hw::hw_sysret_real_status().0,
+        sysret_real > 0,
+        phase81_ok
+    );
+    kernel::serial_println!(
+        "Phase81-HwSysret: probes={}, sysret_real={}, ok={}",
+        kernel::user_syscall_hw::hw_sysret_real_status().0,
+        sysret_real > 0,
+        phase81_ok
+    );
+
+    let phase82_ok = kernel::task::program_loader::phase82_getcwd_smoke();
+    let getcwd_reads = kernel::user_path::getcwd_status();
+    println!(
+        "Phase82-Getcwd: reads={}, ok={}",
+        getcwd_reads, phase82_ok
+    );
+    kernel::serial_println!(
+        "Phase82-Getcwd: reads={}, ok={}",
+        getcwd_reads, phase82_ok
+    );
+
+    let phase83_ok = kernel::task::program_loader::phase83_chdirprobe_smoke();
+    println!(
+        "Phase83-Chdirprobe: chdir={}, getcwd={}, ok={}",
+        kernel::user_path::ring3_chdir_status() > 0,
+        kernel::user_path::getcwd_status() > 0,
+        phase83_ok
+    );
+    kernel::serial_println!(
+        "Phase83-Chdirprobe: chdir={}, getcwd={}, ok={}",
+        kernel::user_path::ring3_chdir_status() > 0,
+        kernel::user_path::getcwd_status() > 0,
+        phase83_ok
+    );
+
+    let phase84_ok = kernel::task::program_loader::phase84_vma_split_smoke();
+    let (splits, _) = kernel::vma::split_status();
+    let (unmapped, _) = kernel::mmap::munmap_len_status();
+    println!(
+        "Phase84-VmaSplit: splits={}, unmapped={}, ok={}",
+        splits, unmapped, phase84_ok
+    );
+    kernel::serial_println!(
+        "Phase84-VmaSplit: splits={}, unmapped={}, ok={}",
+        splits, unmapped, phase84_ok
+    );
+
+    let phase85_ok = kernel::task::program_loader::phase85_fork_dup_smoke();
+    let (children, duplicated) = kernel::task::process::fork_dup_status();
+    println!(
+        "Phase85-ForkDup: children={}, duplicated={}, ok={}",
+        children, duplicated, phase85_ok
+    );
+    kernel::serial_println!(
+        "Phase85-ForkDup: children={}, duplicated={}, ok={}",
+        children, duplicated, phase85_ok
+    );
+
+    let phase86_ok = kernel::task::program_loader::phase86_exec_lite_smoke();
+    let (execs, cloexec_closed) = kernel::task::process::exec_lite_status();
+    println!(
+        "Phase86-ExecLite: execs={}, cloexec_closed={}, ok={}",
+        execs, cloexec_closed, phase86_ok
+    );
+    kernel::serial_println!(
+        "Phase86-ExecLite: execs={}, cloexec_closed={}, ok={}",
+        execs, cloexec_closed, phase86_ok
+    );
+
+    let phase87_ok = kernel::task::program_loader::phase87_pipe_lite_smoke();
+    let (pipes, bytes) = kernel::pipe::status();
+    println!(
+        "Phase87-PipeLite: pipes={}, bytes={}, ok={}",
+        pipes, bytes, phase87_ok
+    );
+    kernel::serial_println!(
+        "Phase87-PipeLite: pipes={}, bytes={}, ok={}",
+        pipes, bytes, phase87_ok
+    );
+
+    let phase88_ok = kernel::task::program_loader::phase88_ring3_plt_fault_smoke();
+    let (faults, bound) = kernel::elf_reloc::ring3_plt_fault_status();
+    println!(
+        "Phase88-Ring3PltFault: faults={}, bound={}, ok={}",
+        faults, bound, phase88_ok
+    );
+    kernel::serial_println!(
+        "Phase88-Ring3PltFault: faults={}, bound={}, ok={}",
+        faults, bound, phase88_ok
+    );
+
+    let phase89_ok = kernel::task::program_loader::phase89_ipi_send_smoke();
+    let (sent, acked) = kernel::smp::ipi_send_status();
+    println!(
+        "Phase89-IpiSend: sent={}, acked={}, ok={}",
+        sent, acked, phase89_ok
+    );
+    kernel::serial_println!(
+        "Phase89-IpiSend: sent={}, acked={}, ok={}",
+        sent, acked, phase89_ok
+    );
+
+    let phase90_ok = kernel::task::program_loader::phase90_integration_smoke();
+    println!(
+        "Phase90-Integration: sysret={}, getcwd={}, chdirprobe={}, vma={}, forkdup={}, exec={}, pipe={}, plt={}, ipi={}, ok={}",
+        sysret_real > 0,
+        getcwd_reads > 0,
+        kernel::user_path::chdirprobe_status() > 0,
+        splits > 0,
+        duplicated > 0,
+        execs > 0,
+        pipes > 0,
+        bound > 0,
+        sent >= 1,
+        phase90_ok
+    );
+    kernel::serial_println!(
+        "Phase90-Integration: sysret={}, getcwd={}, chdirprobe={}, vma={}, forkdup={}, exec={}, pipe={}, plt={}, ipi={}, ok={}",
+        sysret_real > 0,
+        getcwd_reads > 0,
+        kernel::user_path::chdirprobe_status() > 0,
+        splits > 0,
+        duplicated > 0,
+        execs > 0,
+        pipes > 0,
+        bound > 0,
+        sent >= 1,
+        phase90_ok
+    );
+}
+
+fn run_phase91_to_100_smokes() {
+    let phase91_ok = kernel::task::program_loader::phase91_fork_cow_smoke();
+    let (cow_breaks, cow_isolated) = kernel::user_paging::fork_cow_status();
+    println!(
+        "Phase91-ForkCow: breaks={}, isolated={}, ok={}",
+        cow_breaks,
+        cow_isolated > 0,
+        phase91_ok
+    );
+    kernel::serial_println!(
+        "Phase91-ForkCow: breaks={}, isolated={}, ok={}",
+        cow_breaks,
+        cow_isolated > 0,
+        phase91_ok
+    );
+
+    let phase92_ok = kernel::task::program_loader::phase92_poll_lite_smoke();
+    let (polls, poll_ready) = kernel::pipe::poll_status();
+    println!(
+        "Phase92-PollLite: polls={}, ready={}, ok={}",
+        polls, poll_ready, phase92_ok
+    );
+    kernel::serial_println!(
+        "Phase92-PollLite: polls={}, ready={}, ok={}",
+        polls, poll_ready, phase92_ok
+    );
+
+    let phase93_ok = kernel::task::program_loader::phase93_mmap_gap_smoke();
+    let gaps = kernel::vma::mmap_gap_status();
+    println!("Phase93-MmapGap: gaps_used={}, ok={}", gaps, phase93_ok);
+    kernel::serial_println!("Phase93-MmapGap: gaps_used={}, ok={}", gaps, phase93_ok);
+
+    let phase94_ok = kernel::task::program_loader::phase94_exec_argv_smoke();
+    let argv_ok = kernel::task::process::exec_argv_status();
+    println!(
+        "Phase94-ExecArgv: execs={}, argv_ok={}, ok={}",
+        kernel::task::process::exec_lite_status().0,
+        argv_ok > 0,
+        phase94_ok
+    );
+    kernel::serial_println!(
+        "Phase94-ExecArgv: execs={}, argv_ok={}, ok={}",
+        kernel::task::process::exec_lite_status().0,
+        argv_ok > 0,
+        phase94_ok
+    );
+
+    let phase95_ok = kernel::task::program_loader::phase95_pipe_probe_smoke();
+    let (hw_pipes, bytes) = kernel::pipe::pipeprobe_status();
+    println!(
+        "Phase95-PipeProbe: hw_pipes={}, bytes={}, ok={}",
+        hw_pipes, bytes, phase95_ok
+    );
+    kernel::serial_println!(
+        "Phase95-PipeProbe: hw_pipes={}, bytes={}, ok={}",
+        hw_pipes, bytes, phase95_ok
+    );
+
+    let phase96_ok = kernel::task::program_loader::phase96_vma_coalesce_smoke();
+    let (coalesced, _) = kernel::vma::coalesce_status();
+    println!(
+        "Phase96-VmaCoalesce: coalesced={}, ok={}",
+        coalesced, phase96_ok
+    );
+    kernel::serial_println!(
+        "Phase96-VmaCoalesce: coalesced={}, ok={}",
+        coalesced, phase96_ok
+    );
+
+    let phase97_ok = kernel::task::program_loader::phase97_work_steal_smoke();
+    let steals = kernel::smp::work_steal_status();
+    println!("Phase97-WorkSteal: steals={}, ok={}", steals, phase97_ok);
+    kernel::serial_println!("Phase97-WorkSteal: steals={}, ok={}", steals, phase97_ok);
+
+    let phase98_ok = kernel::task::program_loader::phase98_ap_runnable_smoke();
+    let ap_run = kernel::smp::ap_runnable_status();
+    println!("Phase98-ApRunnable: enqueued={}, ok={}", ap_run, phase98_ok);
+    kernel::serial_println!("Phase98-ApRunnable: enqueued={}, ok={}", ap_run, phase98_ok);
+
+    let phase99_ok = kernel::task::program_loader::phase99_lapic_icr_smoke();
+    let (icr_writes, icr_sent) = kernel::smp::lapic_icr_status();
+    println!(
+        "Phase99-LapicIcr: writes={}, sent={}, ok={}",
+        icr_writes, icr_sent, phase99_ok
+    );
+    kernel::serial_println!(
+        "Phase99-LapicIcr: writes={}, sent={}, ok={}",
+        icr_writes, icr_sent, phase99_ok
+    );
+
+    let phase100_ok = kernel::task::program_loader::phase100_integration_smoke();
+    println!(
+        "Phase100-Integration: cow={}, poll={}, mmap_gap={}, exec_argv={}, pipeprobe={}, vma_coalesce={}, steal={}, ap_run={}, icr={}, ok={}",
+        cow_breaks > 0,
+        poll_ready > 0,
+        gaps > 0,
+        argv_ok > 0,
+        hw_pipes > 0,
+        coalesced > 0,
+        steals > 0,
+        ap_run > 0,
+        icr_writes > 0,
+        phase100_ok
+    );
+    kernel::serial_println!(
+        "Phase100-Integration: cow={}, poll={}, mmap_gap={}, exec_argv={}, pipeprobe={}, vma_coalesce={}, steal={}, ap_run={}, icr={}, ok={}",
+        cow_breaks > 0,
+        poll_ready > 0,
+        gaps > 0,
+        argv_ok > 0,
+        hw_pipes > 0,
+        coalesced > 0,
+        steals > 0,
+        ap_run > 0,
+        icr_writes > 0,
+        phase100_ok
+    );
+}
+
 fn run_phase21_to_30_smokes() {
     let phase21_ok = kernel::task::program_loader::phase21_smoke_check();
     let (hw_built, hw_verified, hw_rejected, _, _, _, _) = kernel::user_paging::status();
@@ -1001,7 +1257,9 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         run_phase61_to_70_smokes();
     });
     run_phase71_to_80_smokes();
-    kernel::serial_println!("Boot: phase21-80 smokes done");
+    run_phase81_to_90_smokes();
+    run_phase91_to_100_smokes();
+    kernel::serial_println!("Boot: phase21-100 smokes done");
     let phase15_backing_ok = kernel::task::program_loader::phase15_smoke_check();
     let backing_status = kernel::task::program_loader::status();
     let backing_frames = kernel::frame_ownership::status();

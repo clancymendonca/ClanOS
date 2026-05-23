@@ -39,6 +39,9 @@ static WX_REJECTED: AtomicU64 = AtomicU64::new(0);
 static MPROTECT_APPLIED: AtomicU64 = AtomicU64::new(0);
 static MPROTECT_REJECTED: AtomicU64 = AtomicU64::new(0);
 static GUARD_FAULTS: AtomicU64 = AtomicU64::new(0);
+static FORK_DUP_CR3: AtomicU64 = AtomicU64::new(0);
+static FORK_COW_BREAKS: AtomicU64 = AtomicU64::new(0);
+static FORK_COW_ISOLATED: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct HwPageTableHandle {
@@ -410,6 +413,34 @@ pub fn validate_page_flags(flags: PageTableFlags) -> bool {
 }
 
 /// Map a demand-zero user page in an active user address space (Phase 38).
+pub fn map_shared_hw_page(
+    child_cr3: u64,
+    parent_cr3: u64,
+    virtual_address: u64,
+) -> Result<(), UserPagingError> {
+    let phys = translate_hw_page(parent_cr3, virtual_address).ok_or(UserPagingError::MapFailed)?;
+    let frame = PhysFrame::<Size4KiB>::from_start_address(PhysAddr::new(phys & !0xfff))
+        .map_err(|_| UserPagingError::MapFailed)?;
+    let mut frame_alloc = OwnershipFrameAllocator::default();
+    let mut mapper = unsafe { mapper_for_phys(child_cr3) };
+    let page = Page::<Size4KiB>::containing_address(VirtAddr::new(virtual_address));
+    let flags = PageTableFlags::PRESENT
+        | PageTableFlags::WRITABLE
+        | PageTableFlags::USER_ACCESSIBLE
+        | PageTableFlags::NO_EXECUTE;
+    unsafe {
+        if mapper.translate_page(page).is_ok() {
+            let (_frame, flush) = mapper.unmap(page).map_err(|_| UserPagingError::MapFailed)?;
+            flush.flush();
+        }
+        mapper
+            .map_to(page, frame, flags, &mut frame_alloc)
+            .map_err(|_| UserPagingError::MapFailed)?
+            .flush();
+    }
+    Ok(())
+}
+
 pub fn map_demand_zero_page(cr3_phys: u64, virtual_address: u64) -> Result<(), UserPagingError> {
     x86_64::instructions::interrupts::without_interrupts(|| {
         let mut frame_alloc = OwnershipFrameAllocator::default();
@@ -595,6 +626,151 @@ pub fn phase53_smoke() -> bool {
     let bad = mprotect_page(built.hw.cr3_phys, 0x400000, true).is_err();
     let (applied, _rejected, guard) = mprotect_status();
     guard_ok && ro_ok && bad && applied > 0 && guard > 0
+}
+
+pub fn fork_dup_status() -> u64 {
+    FORK_DUP_CR3.load(Ordering::Relaxed)
+}
+
+pub fn note_fork_dup_child() {
+    FORK_DUP_CR3.fetch_add(1, Ordering::Relaxed);
+}
+
+pub fn fork_cow_status() -> (u64, u64) {
+    (
+        FORK_COW_BREAKS.load(Ordering::Relaxed),
+        FORK_COW_ISOLATED.load(Ordering::Relaxed),
+    )
+}
+
+pub fn break_cow_page(parent_cr3: u64, child_cr3: u64, virtual_address: u64) -> Result<(), ()> {
+    copy_anon_page_to_child(parent_cr3, child_cr3, virtual_address).map_err(|_| ())?;
+    FORK_COW_BREAKS.fetch_add(1, Ordering::Relaxed);
+    Ok(())
+}
+
+pub fn record_fork_cow_isolated() {
+    FORK_COW_ISOLATED.fetch_add(1, Ordering::Relaxed);
+}
+
+pub fn write_user_byte(cr3_phys: u64, virtual_address: u64, value: u8) -> Result<(), ()> {
+    let phys = translate_hw_page(cr3_phys, virtual_address & !0xfff).ok_or(())?;
+    let virt = phys_to_virt(PhysAddr::new(phys + (virtual_address & 0xfff)));
+    unsafe {
+        *virt.as_mut_ptr() = value;
+    }
+    Ok(())
+}
+
+pub fn read_user_byte(cr3_phys: u64, virtual_address: u64) -> Result<u8, ()> {
+    let phys = translate_hw_page(cr3_phys, virtual_address & !0xfff).ok_or(())?;
+    let virt = phys_to_virt(PhysAddr::new(phys + (virtual_address & 0xfff)));
+    Ok(unsafe { *virt.as_ptr() })
+}
+
+pub fn copy_anon_page_to_child(
+    parent_cr3: u64,
+    child_cr3: u64,
+    virtual_address: u64,
+) -> Result<(), UserPagingError> {
+    let page_base = virtual_address & !0xfff;
+    let phys = translate_hw_page(parent_cr3, page_base).ok_or(UserPagingError::MapFailed)?;
+    let parent_frame = PhysFrame::<Size4KiB>::from_start_address(PhysAddr::new(phys & !0xfff))
+        .map_err(|_| UserPagingError::MapFailed)?;
+    let mut frame_alloc = OwnershipFrameAllocator::default();
+    let new_frame = if let Some(frame) = frame_alloc.allocate_frame() {
+        frame
+    } else {
+        let owned = crate::frame_ownership::allocate_frame(crate::frame_ownership::FrameOwner::PageTable)
+            .map_err(|_| UserPagingError::FrameUnavailable)?;
+        PhysFrame::from_start_address(PhysAddr::new(owned.start_address))
+            .map_err(|_| UserPagingError::MapFailed)?
+    };
+    let src = phys_to_virt(parent_frame.start_address());
+    let dst = phys_to_virt(new_frame.start_address());
+    unsafe {
+        core::ptr::copy_nonoverlapping(
+            src.as_ptr() as *const u8,
+            dst.as_mut_ptr() as *mut u8,
+            4096,
+        );
+    }
+    let page = Page::<Size4KiB>::containing_address(VirtAddr::new(page_base));
+    let flags = PageTableFlags::PRESENT
+        | PageTableFlags::WRITABLE
+        | PageTableFlags::USER_ACCESSIBLE
+        | PageTableFlags::NO_EXECUTE;
+    let mut mapper = unsafe { mapper_for_phys(child_cr3) };
+    unsafe {
+        if mapper.translate_page(page).is_ok() {
+            let (_frame, flush) = mapper.unmap(page).map_err(|_| UserPagingError::MapFailed)?;
+            flush.flush();
+        }
+        mapper
+            .map_to(page, new_frame, flags, &mut frame_alloc)
+            .map_err(|_| UserPagingError::MapFailed)?
+            .flush();
+    }
+    Ok(())
+}
+
+pub fn fork_duplicate_cr3(parent_cr3: u64) -> Result<u64, UserPagingError> {
+    if PHYS_MEM_OFFSET.load(Ordering::Relaxed) == 0 {
+        return Err(UserPagingError::NotInitialized);
+    }
+    let mut frame_alloc = OwnershipFrameAllocator::default();
+    let child_cr3 = if let Some(frame) = frame_alloc.allocate_frame() {
+        frame.start_address().as_u64()
+    } else {
+        let owned = crate::frame_ownership::allocate_frame(crate::frame_ownership::FrameOwner::PageTable)
+            .map_err(|_| UserPagingError::FrameUnavailable)?;
+        owned.start_address
+    };
+    zero_page_table(child_cr3);
+    copy_kernel_pml4_entries(child_cr3)?;
+    let mut child_mapper = unsafe { mapper_for_phys(child_cr3) };
+    let mut addr = 0x400000u64;
+    while addr < 0x410000 {
+        if let Some(phys) = translate_hw_page(parent_cr3, addr) {
+            let page = Page::<Size4KiB>::containing_address(VirtAddr::new(addr));
+            let parent_frame = PhysFrame::<Size4KiB>::from_start_address(PhysAddr::new(phys & !0xfff))
+                .map_err(|_| UserPagingError::MapFailed)?;
+            let entry_flags = if addr >= 0x401000 {
+                PageTableFlags::PRESENT | PageTableFlags::USER_ACCESSIBLE | PageTableFlags::NO_EXECUTE
+            } else {
+                PageTableFlags::PRESENT | PageTableFlags::USER_ACCESSIBLE
+            };
+            unsafe {
+                child_mapper
+                    .map_to(page, parent_frame, entry_flags, &mut frame_alloc)
+                    .map_err(|_| UserPagingError::MapFailed)?
+                    .flush();
+            }
+        }
+        addr = addr.saturating_add(0x1000);
+    }
+    use crate::user_context::{DEFAULT_USER_STACK_SIZE, DEFAULT_USER_STACK_TOP};
+    let stack_bottom = DEFAULT_USER_STACK_TOP.saturating_sub(DEFAULT_USER_STACK_SIZE as u64);
+    let mut addr = stack_bottom;
+    while addr < DEFAULT_USER_STACK_TOP {
+        if let Some(phys) = translate_hw_page(parent_cr3, addr) {
+            let page = Page::<Size4KiB>::containing_address(VirtAddr::new(addr));
+            let frame = PhysFrame::<Size4KiB>::from_start_address(PhysAddr::new(phys & !0xfff))
+                .map_err(|_| UserPagingError::MapFailed)?;
+            let flags = PageTableFlags::PRESENT
+                | PageTableFlags::WRITABLE
+                | PageTableFlags::USER_ACCESSIBLE;
+            unsafe {
+                child_mapper
+                    .map_to(page, frame, flags, &mut frame_alloc)
+                    .map_err(|_| UserPagingError::MapFailed)?
+                    .flush();
+            }
+        }
+        addr = addr.saturating_add(0x1000);
+    }
+    FORK_DUP_CR3.fetch_add(1, Ordering::Relaxed);
+    Ok(child_cr3)
 }
 
 fn translate_hw(pml4_phys: u64, addr: VirtAddr) -> Option<PhysAddr> {

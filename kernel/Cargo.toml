@@ -18,6 +18,8 @@ doctest = false
 default = []
 # Production preemptive scheduling (Phase 5+)
 preemption = []
+# Real syscall/sysret user probe (QEMU boot only; omitted from host integration tests).
+hw-sysret-probe = []
 
 [dependencies]
 bootloader = { version = "0.9", features = ["map_physical_memory"] }

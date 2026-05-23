@@ -44,7 +44,14 @@ pub fn handle_page_fault(
     let fault_addr = x86_64::registers::control::Cr2::read().as_u64();
     let user_mode = error_code.contains(PageFaultErrorCode::USER_MODE);
     let not_present = !error_code.contains(PageFaultErrorCode::PROTECTION_VIOLATION);
-    if !user_mode || !not_present {
+    if !user_mode {
+        DEMAND_REJECTED.fetch_add(1, Ordering::Relaxed);
+        return false;
+    }
+    if !not_present {
+        if crate::elf_reloc::try_ring3_plt_fault(fault_addr) {
+            return true;
+        }
         DEMAND_REJECTED.fetch_add(1, Ordering::Relaxed);
         return false;
     }

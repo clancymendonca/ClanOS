@@ -218,8 +218,10 @@ static CR3_ACTIVATION_COUNT: AtomicU64 = AtomicU64::new(0);
 static HW_ELF_EXECUTION_COUNT: AtomicU64 = AtomicU64::new(0);
 static REJECTED_HW_ELF_COUNT: AtomicU64 = AtomicU64::new(0);
 
-pub const ALLOWED_USER_ELFS: &[&str] = &["hello", "exit42", "tickprobe", "syscallprobe"];
-pub const EXECUTION_ALLOWLIST: &[&str] = &["hello", "exit42", "tickprobe", "syscallprobe"];
+pub const ALLOWED_USER_ELFS: &[&str] =
+    &["hello", "exit42", "tickprobe", "syscallprobe", "chdirprobe", "pipeprobe"];
+pub const EXECUTION_ALLOWLIST: &[&str] =
+    &["hello", "exit42", "tickprobe", "syscallprobe", "chdirprobe", "pipeprobe"];
 
 static MANIFEST_ELF_DISCOVERED: AtomicU64 = AtomicU64::new(0);
 static MANIFEST_ELF_EXECUTED: AtomicU64 = AtomicU64::new(0);
@@ -1727,6 +1729,127 @@ pub fn phase78_ipi_tlb_smoke() -> bool {
 
 pub fn phase79_ap_trampoline_smoke() -> bool {
     crate::smp::phase79_smoke()
+}
+
+pub fn phase81_hw_sysret_smoke() -> bool {
+    crate::user_syscall_hw::phase81_hw_sysret_smoke()
+}
+
+pub fn phase82_getcwd_smoke() -> bool {
+    crate::user_path::phase82_smoke()
+}
+
+pub fn phase83_chdirprobe_smoke() -> bool {
+    crate::user_path::phase83_smoke()
+}
+
+pub fn phase84_vma_split_smoke() -> bool {
+    crate::vma::phase84_smoke()
+}
+
+pub fn phase85_fork_dup_smoke() -> bool {
+    crate::task::process::phase85_smoke()
+}
+
+pub fn phase86_exec_lite_smoke() -> bool {
+    crate::task::process::phase86_smoke()
+}
+
+pub fn phase87_pipe_lite_smoke() -> bool {
+    crate::pipe::phase87_smoke()
+}
+
+pub fn phase88_ring3_plt_fault_smoke() -> bool {
+    crate::elf_reloc::phase88_smoke()
+}
+
+pub fn phase89_ipi_send_smoke() -> bool {
+    crate::smp::phase89_smoke()
+}
+
+pub fn phase91_fork_cow_smoke() -> bool {
+    crate::task::process::phase91_smoke()
+}
+
+pub fn phase92_poll_lite_smoke() -> bool {
+    crate::pipe::phase92_smoke()
+}
+
+pub fn phase93_mmap_gap_smoke() -> bool {
+    crate::vma::phase93_smoke()
+}
+
+pub fn phase94_exec_argv_smoke() -> bool {
+    crate::task::process::phase94_smoke()
+}
+
+pub fn phase95_pipe_probe_smoke() -> bool {
+    crate::pipe::phase95_smoke()
+}
+
+pub fn phase96_vma_coalesce_smoke() -> bool {
+    crate::vma::phase96_smoke()
+}
+
+pub fn phase97_work_steal_smoke() -> bool {
+    crate::smp::phase97_smoke()
+}
+
+pub fn phase98_ap_runnable_smoke() -> bool {
+    crate::smp::phase98_smoke()
+}
+
+pub fn phase99_lapic_icr_smoke() -> bool {
+    crate::smp::phase99_smoke()
+}
+
+pub fn phase90_integration_smoke() -> bool {
+    let (_, sysret_real) = crate::user_syscall_hw::hw_sysret_real_status();
+    let getcwd_reads = crate::user_path::getcwd_status();
+    let chdirprobe_ok = crate::user_path::chdirprobe_status();
+    let (vma_splits, _) = crate::vma::split_status();
+    let (fork_children, fork_dup) = crate::task::process::fork_dup_status();
+    let (execs, cloexec_closed) = crate::task::process::exec_lite_status();
+    let (pipes, pipe_bytes) = crate::pipe::status();
+    let (plt_faults, plt_bound) = crate::elf_reloc::ring3_plt_fault_status();
+    let (ipi_sent, ipi_acked) = crate::smp::ipi_send_status();
+    sysret_real > 0
+        && getcwd_reads > 0
+        && chdirprobe_ok > 0
+        && vma_splits > 0
+        && fork_children > 0
+        && fork_dup > 0
+        && execs > 0
+        && cloexec_closed > 0
+        && pipes > 0
+        && pipe_bytes > 0
+        && plt_faults > 0
+        && plt_bound > 0
+        && ipi_sent >= 1
+        && ipi_acked >= 2
+}
+
+pub fn phase100_integration_smoke() -> bool {
+    let (cow_breaks, cow_isolated) = crate::user_paging::fork_cow_status();
+    let (polls, poll_ready) = crate::pipe::poll_status();
+    let gaps = crate::vma::mmap_gap_status();
+    let argv_ok = crate::task::process::exec_argv_status();
+    let (pipe_probes, _) = crate::pipe::pipeprobe_status();
+    let (coalesced, _) = crate::vma::coalesce_status();
+    let steals = crate::smp::work_steal_status();
+    let ap_run = crate::smp::ap_runnable_status();
+    let (icr_writes, _) = crate::smp::lapic_icr_status();
+    cow_breaks > 0
+        && cow_isolated > 0
+        && polls > 0
+        && poll_ready > 0
+        && gaps > 0
+        && argv_ok > 0
+        && pipe_probes > 0
+        && coalesced > 0
+        && steals > 0
+        && ap_run > 0
+        && icr_writes > 0
 }
 
 pub fn phase80_integration_smoke() -> bool {
