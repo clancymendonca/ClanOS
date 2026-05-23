@@ -1381,3 +1381,61 @@ fn phase70_integration_smoke_works() {
     kernel::storage::format().expect("format should seed image manifests");
     assert!(kernel::task::program_loader::phase70_integration_smoke());
 }
+
+#[test_case]
+fn phase71_sysret_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase71_sysret_smoke());
+}
+
+#[test_case]
+fn phase72_ring3_chdir_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase72_ring3_chdir_smoke());
+}
+
+#[test_case]
+fn phase73_munmap_len_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase73_munmap_len_smoke());
+}
+
+#[test_case]
+fn phase74_waitlite_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase74_waitlite_smoke());
+}
+
+#[test_case]
+fn phase75_syscallprobe_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase75_syscallprobe_smoke());
+}
+
+#[test_case]
+fn phase76_fcntl_setfd_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase76_fcntl_setfd_smoke());
+}
+
+#[test_case]
+fn phase77_ring3_lazy_plt_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase77_ring3_lazy_plt_smoke());
+}
+
+#[test_case]
+fn phase78_ipi_tlb_smoke_works() {
+    assert!(kernel::task::program_loader::phase78_ipi_tlb_smoke());
+}
+
+#[test_case]
+fn phase79_ap_trampoline_smoke_works() {
+    assert!(kernel::task::program_loader::phase79_ap_trampoline_smoke());
+}
+
+#[test_case]
+fn phase80_integration_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase80_integration_smoke());
+}
