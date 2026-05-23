@@ -1323,3 +1323,61 @@ fn phase60_integration_smoke_works() {
     kernel::storage::format().expect("format should seed image manifests");
     assert!(kernel::task::program_loader::phase60_integration_smoke());
 }
+
+#[test_case]
+fn phase61_chdir_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase61_chdir_smoke());
+}
+
+#[test_case]
+fn phase62_munmap_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase62_munmap_smoke());
+}
+
+#[test_case]
+fn phase63_vma_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase63_vma_smoke());
+}
+
+#[test_case]
+fn phase64_forklite_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase64_forklite_smoke());
+}
+
+#[test_case]
+fn phase65_ring3_syscall_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase65_ring3_syscall_smoke());
+}
+
+#[test_case]
+fn phase66_fcntl_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase66_fcntl_smoke());
+}
+
+#[test_case]
+fn phase67_lazy_plt_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase67_lazy_plt_smoke());
+}
+
+#[test_case]
+fn phase68_tlb_shootdown_smoke_works() {
+    assert!(kernel::task::program_loader::phase68_tlb_shootdown_smoke());
+}
+
+#[test_case]
+fn phase69_ap_idle_smoke_works() {
+    assert!(kernel::task::program_loader::phase69_ap_idle_smoke());
+}
+
+#[test_case]
+fn phase70_integration_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase70_integration_smoke());
+}
