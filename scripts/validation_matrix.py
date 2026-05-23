@@ -507,6 +507,56 @@ def main() -> int:
             None,
         ),
         (
+            "phase71-sysret-check",
+            ["python", "scripts/phase71_sysret_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase72-ring3-chdir-check",
+            ["python", "scripts/phase72_ring3_chdir_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase73-munmap-len-check",
+            ["python", "scripts/phase73_munmap_len_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase74-waitlite-check",
+            ["python", "scripts/phase74_waitlite_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase75-syscallprobe-check",
+            ["python", "scripts/phase75_syscallprobe_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase76-fcntl-setfd-check",
+            ["python", "scripts/phase76_fcntl_setfd_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase77-ring3-lazy-plt-check",
+            ["python", "scripts/phase77_ring3_lazy_plt_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase78-ipi-tlb-check",
+            ["python", "scripts/phase78_ipi_tlb_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase79-ap-trampoline-check",
+            ["python", "scripts/phase79_ap_trampoline_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase80-integration-check",
+            ["python", "scripts/phase80_integration_check.py", "--timeout", str(max(args.smoke_timeout, 180))],
+            None,
+        ),
+        (
             "phase5-soak-check",
             [
                 "python",
