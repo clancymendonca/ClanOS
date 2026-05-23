@@ -13,6 +13,8 @@ static IMPORT_COUNT: AtomicU64 = AtomicU64::new(0);
 static IMPORT_APPLIED: AtomicU64 = AtomicU64::new(0);
 static PLT_SLOTS: AtomicU64 = AtomicU64::new(0);
 static PLT_APPLIED: AtomicU64 = AtomicU64::new(0);
+static PLT_LAZY: AtomicU64 = AtomicU64::new(0);
+static PLT_BOUND: AtomicU64 = AtomicU64::new(0);
 
 const R_X86_64_NONE: u32 = 0;
 const R_X86_64_64: u32 = 1;
@@ -46,6 +48,13 @@ pub fn plt_status() -> (u64, u64) {
     (
         PLT_SLOTS.load(Ordering::Relaxed),
         PLT_APPLIED.load(Ordering::Relaxed),
+    )
+}
+
+pub fn lazy_plt_status() -> (u64, u64) {
+    (
+        PLT_LAZY.load(Ordering::Relaxed),
+        PLT_BOUND.load(Ordering::Relaxed),
     )
 }
 
@@ -127,6 +136,53 @@ pub fn apply_dynamic_imports(
     image_bytes: &[u8],
     lib_base: u64,
 ) -> Result<usize, ()> {
+    apply_dynamic_imports_inner(backed, image_bytes, lib_base, false)
+}
+
+pub fn apply_dynamic_imports_lazy(
+    backed: &mut FrameBackedImage,
+    image_bytes: &[u8],
+    lib_base: u64,
+) -> Result<usize, ()> {
+    apply_dynamic_imports_inner(backed, image_bytes, lib_base, true)
+}
+
+pub fn bind_lazy_plt(
+    backed: &mut FrameBackedImage,
+    image_bytes: &[u8],
+    lib_base: u64,
+) -> Result<usize, ()> {
+    let load_base = backed
+        .regions
+        .first()
+        .and_then(|region| region.pages.first())
+        .map(|page| page.virtual_address)
+        .unwrap_or(0x400000);
+    let relocs = import_relocs_for_image(image_bytes, load_base, lib_base);
+    let mut bound = 0usize;
+    for reloc in &relocs {
+        if reloc.kind != R_X86_64_JUMP_SLOT {
+            continue;
+        }
+        if write_reloc_value(backed, reloc.offset, reloc.addend).is_err() {
+            RELOC_REJECTED.fetch_add(1, Ordering::Relaxed);
+            return Err(());
+        }
+        bound += 1;
+        PLT_BOUND.fetch_add(1, Ordering::Relaxed);
+        PLT_APPLIED.fetch_add(1, Ordering::Relaxed);
+        IMPORT_APPLIED.fetch_add(1, Ordering::Relaxed);
+    }
+    let _ = image_bytes;
+    Ok(bound)
+}
+
+fn apply_dynamic_imports_inner(
+    backed: &mut FrameBackedImage,
+    image_bytes: &[u8],
+    lib_base: u64,
+    lazy_plt: bool,
+) -> Result<usize, ()> {
     let load_base = backed
         .regions
         .first()
@@ -137,6 +193,11 @@ pub fn apply_dynamic_imports(
     let mut applied = 0usize;
     for reloc in &relocs {
         if reloc.kind != R_X86_64_GLOB_DAT && reloc.kind != R_X86_64_JUMP_SLOT {
+            continue;
+        }
+        if lazy_plt && reloc.kind == R_X86_64_JUMP_SLOT {
+            PLT_LAZY.fetch_add(1, Ordering::Relaxed);
+            applied += 1;
             continue;
         }
         let value = reloc.addend;
@@ -150,7 +211,36 @@ pub fn apply_dynamic_imports(
             PLT_APPLIED.fetch_add(1, Ordering::Relaxed);
         }
     }
+    let _ = image_bytes;
     Ok(applied)
+}
+
+pub fn phase67_smoke() -> bool {
+    let sample = crate::storage::phase11_sample_elf_image();
+    let Some(img) = crate::task::program_loader::back_mapped_program_with_relocs(
+        crate::security::Credentials::shell_user(),
+        "hello",
+    )
+    .ok() else {
+        return false;
+    };
+    let mut backed = img.backed;
+    let _ = crate::shared_loader::attach_shared_library(&mut backed, sample.as_bytes());
+    let lazy = apply_dynamic_imports_lazy(
+        &mut backed,
+        sample.as_bytes(),
+        crate::shared_loader::SHARED_LIB_BASE,
+    )
+    .unwrap_or(0);
+    let (lazy_count, bound_before) = lazy_plt_status();
+    let bound = bind_lazy_plt(
+        &mut backed,
+        sample.as_bytes(),
+        crate::shared_loader::SHARED_LIB_BASE,
+    )
+    .unwrap_or(0);
+    let (_, bound_after) = lazy_plt_status();
+    lazy > 0 && lazy_count > 0 && bound > 0 && bound_after > bound_before
 }
 
 pub fn phase57_smoke() -> bool {

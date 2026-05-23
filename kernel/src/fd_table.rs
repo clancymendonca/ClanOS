@@ -15,6 +15,14 @@ static FD_REJECTED: AtomicU64 = AtomicU64::new(0);
 static FD_DUPS: AtomicU64 = AtomicU64::new(0);
 static FD_RELATIVE: AtomicU64 = AtomicU64::new(0);
 static PROC_FD_ISOLATED: AtomicU64 = AtomicU64::new(0);
+static FCNTL_GETFD: AtomicU64 = AtomicU64::new(0);
+static FCNTL_DUPFD: AtomicU64 = AtomicU64::new(0);
+static FCNTL_REJECTED: AtomicU64 = AtomicU64::new(0);
+static FORK_INHERITED: AtomicU64 = AtomicU64::new(0);
+static FORK_ISOLATED: AtomicU64 = AtomicU64::new(0);
+
+pub const F_GETFD: u64 = 1;
+pub const F_DUPFD: u64 = 2;
 
 #[derive(Clone, Debug)]
 pub struct FdSlotStorage {
@@ -43,23 +51,22 @@ pub fn proc_fd_isolated() -> bool {
 }
 
 fn resolve_path_for_process(pid: ProcessId, path: &str) -> Result<String, ()> {
-    if path.starts_with('/') {
-        if !crate::user_path::validate_user_path(path) {
-            return Err(());
-        }
-        return Ok(String::from(path));
-    }
-    let cwd = process::process_cwd(pid).ok_or(())?;
-    let joined = if cwd.ends_with('/') {
-        format!("{cwd}{path}")
+    let absolute = if path.starts_with('/') {
+        String::from(path)
     } else {
-        format!("{cwd}/{path}")
+        let cwd = process::process_cwd(pid).ok_or(())?;
+        FD_RELATIVE.fetch_add(1, Ordering::Relaxed);
+        if cwd.ends_with('/') {
+            format!("{cwd}{path}")
+        } else {
+            format!("{cwd}/{path}")
+        }
     };
-    if !crate::user_path::validate_user_path(&joined) {
+    let normalized = crate::user_path::normalize_absolute_path(&absolute)?;
+    if !crate::user_path::validate_user_path(&normalized) {
         return Err(());
     }
-    FD_RELATIVE.fetch_add(1, Ordering::Relaxed);
-    Ok(joined)
+    Ok(normalized)
 }
 
 pub fn open_file_for_process(pid: ProcessId, path: &str) -> Result<u32, ()> {
@@ -228,6 +235,118 @@ pub fn dup_fd(fd: u32) -> Result<u32, ()> {
         .or_else(|| process::smoke_process_id())
         .ok_or(())?;
     dup_fd_for_process(pid, fd)
+}
+
+pub fn read_fd_for_process(pid: ProcessId, fd: u32, user_buf: u64, max_len: u64) -> Result<u64, ()> {
+    let len = core::cmp::min(max_len, 64) as usize;
+    if len == 0 || user_buf == 0 {
+        return Err(());
+    }
+    let path = process::with_process_mut(pid, |process| {
+        let idx = fd as usize;
+        process
+            .fds_mut()
+            .get(idx)
+            .and_then(|slot| slot.as_ref())
+            .map(|slot| slot.path.clone())
+    })
+    .flatten()
+    .ok_or(())?;
+    let creds = process::process_owner(pid).unwrap_or(crate::security::current_credentials());
+    let contents = crate::storage::read_file_checked(creds, &path)
+        .map_err(|_| ())?
+        .ok_or(())?;
+    let sample: alloc::vec::Vec<u8> = contents.as_bytes().iter().take(len).copied().collect();
+    crate::user_copy::copy_to_user(&sample, user_buf).map_err(|_| ())?;
+    FD_READS.fetch_add(1, Ordering::Relaxed);
+    Ok(sample.len() as u64)
+}
+
+pub fn fcntl(fd: u32, cmd: u64, _arg: u64) -> Result<u64, ()> {
+    match cmd {
+        F_GETFD => {
+            FCNTL_GETFD.fetch_add(1, Ordering::Relaxed);
+            Ok(0)
+        }
+        F_DUPFD => {
+            let out = dup_fd(fd).map(u64::from).map_err(|_| {
+                FCNTL_REJECTED.fetch_add(1, Ordering::Relaxed);
+            })?;
+            FCNTL_DUPFD.fetch_add(1, Ordering::Relaxed);
+            Ok(out)
+        }
+        _ => {
+            FCNTL_REJECTED.fetch_add(1, Ordering::Relaxed);
+            Err(())
+        }
+    }
+}
+
+pub fn fcntl_status() -> (u64, u64, u64) {
+    (
+        FCNTL_GETFD.load(Ordering::Relaxed),
+        FCNTL_DUPFD.load(Ordering::Relaxed),
+        FCNTL_REJECTED.load(Ordering::Relaxed),
+    )
+}
+
+pub fn fork_lite_status() -> (u64, u64) {
+    (
+        FORK_INHERITED.load(Ordering::Relaxed),
+        FORK_ISOLATED.load(Ordering::Relaxed),
+    )
+}
+
+pub fn phase61_smoke() -> bool {
+    let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
+    let creds = crate::security::Credentials::shell_user();
+    let Some(pid) = process::create_kernel_process_as("chdir-smoke", tick, creds) else {
+        return false;
+    };
+    let chdir_ok = crate::user_path::chdir_for_process(pid, "/tmp").is_ok();
+    let open_ok = open_file_for_process(pid, "../bin/hello").is_ok();
+    let bad = crate::user_path::chdir_for_process(pid, "/tmp/../etc/passwd").is_err();
+    let (normalized, chdirs) = crate::user_path::chdir_status();
+    chdir_ok && open_ok && bad && normalized > 0 && chdirs > 0
+}
+
+pub fn phase64_smoke() -> bool {
+    let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
+    let creds = crate::security::Credentials::shell_user();
+    let Some(parent) = process::create_kernel_process_as("fork-parent", tick, creds) else {
+        return false;
+    };
+    let Some(fd) = open_file_for_process(parent, "/bin/hello").ok() else {
+        return false;
+    };
+    let Some(child) = process::fork_lite(parent, tick.saturating_add(1)) else {
+        return false;
+    };
+    let _ = close_file_for_process(parent, fd);
+    let child_open = process::with_process_mut(child, |p| p.fds_mut()[0].is_some()).unwrap_or(false);
+    if child_open {
+        FORK_INHERITED.fetch_add(1, Ordering::Relaxed);
+        FORK_ISOLATED.fetch_add(1, Ordering::Relaxed);
+    }
+    child_open
+}
+
+pub fn phase66_smoke() -> bool {
+    let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
+    let creds = crate::security::Credentials::shell_user();
+    let Some(pid) = process::create_kernel_process_as("fcntl-smoke", tick, creds) else {
+        return false;
+    };
+    process::set_smoke_process_id(Some(pid));
+    let Some(fd) = open_file_for_process(pid, "/bin/hello").ok() else {
+        return false;
+    };
+    let getfd = fcntl(fd, F_GETFD, 0).is_ok();
+    let dup = fcntl(fd, F_DUPFD, 0).is_ok();
+    let reject = fcntl(fd, 99, 0).is_err();
+    process::set_smoke_process_id(None);
+    let (getfd_n, dup_n, rejected) = fcntl_status();
+    getfd && dup && reject && getfd_n > 0 && dup_n > 0 && rejected > 0
 }
 
 pub fn phase45_smoke() -> bool {

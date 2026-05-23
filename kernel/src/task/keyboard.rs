@@ -289,6 +289,15 @@ fn execute_console_command(command: &str) {
                             crate::task::process::ProcessLoadState::PltRelocReady => "plt-reloc",
                             crate::task::process::ProcessLoadState::DigestTrustReady => "digest-trust",
                             crate::task::process::ProcessLoadState::RunqueueReady => "runqueue",
+                            crate::task::process::ProcessLoadState::ChdirReady => "chdir",
+                            crate::task::process::ProcessLoadState::MunmapReady => "munmap",
+                            crate::task::process::ProcessLoadState::VmaReady => "vma",
+                            crate::task::process::ProcessLoadState::ForkLiteReady => "fork-lite",
+                            crate::task::process::ProcessLoadState::Ring3SyscallReady => "ring3-syscall",
+                            crate::task::process::ProcessLoadState::FcntlReady => "fcntl",
+                            crate::task::process::ProcessLoadState::LazyPltReady => "lazy-plt",
+                            crate::task::process::ProcessLoadState::TlbShootdownReady => "tlb-shootdown",
+                            crate::task::process::ProcessLoadState::ApIdleReady => "ap-idle",
                         })
                         .unwrap_or("-");
                     println!(

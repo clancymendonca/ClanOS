@@ -1587,6 +1587,116 @@ pub fn phase60_integration_smoke() -> bool {
         && runq_enq > 0
 }
 
+pub fn phase61_chdir_smoke() -> bool {
+    crate::fd_table::phase61_smoke()
+}
+
+pub fn phase62_munmap_smoke() -> bool {
+    crate::mmap::phase62_smoke()
+}
+
+pub fn phase63_vma_smoke() -> bool {
+    crate::vma::phase63_smoke()
+}
+
+pub fn phase64_forklite_smoke() -> bool {
+    crate::fd_table::phase64_smoke()
+}
+
+pub fn phase65_ring3_syscall_smoke() -> bool {
+    crate::user_syscall_hw::init_syscall_msrs();
+    let hw = if let Some(hw) = crate::mmap::hw_handle_for_last_mmap_smoke() {
+        hw
+    } else {
+        let Some(built) =
+            build_hw_page_table_program(crate::security::Credentials::shell_user(), "hello").ok()
+        else {
+            return false;
+        };
+        built.hw
+    };
+    let selectors = crate::gdt::user_selectors();
+    let entry = crate::user_context::UserEntryFrame {
+        rip: 0x400000,
+        rsp: crate::user_context::DEFAULT_USER_STACK_TOP.saturating_sub(128),
+        rflags: 0x202,
+        code_selector: selectors.code.0,
+        stack_selector: selectors.data.0,
+    };
+    let write_ok = crate::user_syscall_hw::run_hw_probe_syscall(
+        &hw,
+        &entry,
+        selectors,
+        crate::syscall::SyscallId::WritePathProbe,
+    )
+    .is_ok();
+    let mprotect_ok = crate::user_syscall_hw::run_hw_probe_syscall(
+        &hw,
+        &entry,
+        selectors,
+        crate::syscall::SyscallId::Mprotect,
+    )
+    .is_ok();
+    let (writepath, mprotect) = crate::user_syscall_hw::ring3_syscall_status();
+    write_ok && mprotect_ok && writepath > 0 && mprotect > 0
+}
+
+pub fn phase66_fcntl_smoke() -> bool {
+    crate::fd_table::phase66_smoke()
+}
+
+pub fn phase67_lazy_plt_smoke() -> bool {
+    crate::elf_reloc::phase67_smoke()
+}
+
+pub fn phase68_tlb_shootdown_smoke() -> bool {
+    crate::smp::phase68_smoke()
+}
+
+pub fn phase69_ap_idle_smoke() -> bool {
+    crate::smp::phase69_smoke()
+}
+
+pub fn phase70_integration_smoke() -> bool {
+    let (normalized, chdirs) = crate::user_path::chdir_status();
+    let (unmapped, munmap_rej) = crate::mmap::munmap_status();
+    let (vma_regions, vma_overlap) = crate::vma::status();
+    let (fork_inherited, fork_isolated) = crate::fd_table::fork_lite_status();
+    let (ring3_write, ring3_mprotect) = crate::user_syscall_hw::ring3_syscall_status();
+    let (fcntl_getfd, fcntl_dup, fcntl_rej) = crate::fd_table::fcntl_status();
+    let (plt_lazy, plt_bound) = crate::elf_reloc::lazy_plt_status();
+    let (shootdown_req, shootdown_done) = crate::smp::shootdown_status();
+    let (aps, ap_idle) = crate::smp::ap_idle_status();
+    normalized > 0
+        && chdirs > 0
+        && unmapped >= 2
+        && munmap_rej > 0
+        && vma_regions >= 2
+        && vma_overlap > 0
+        && fork_inherited > 0
+        && fork_isolated > 0
+        && ring3_write > 0
+        && ring3_mprotect > 0
+        && fcntl_getfd > 0
+        && fcntl_dup > 0
+        && fcntl_rej > 0
+        && plt_lazy > 0
+        && plt_bound > 0
+        && shootdown_req >= 2
+        && shootdown_done >= 2
+        && aps >= 1
+        && ap_idle > 0
+        && phase61_chdir_smoke()
+        && phase62_munmap_smoke()
+        && phase63_vma_smoke()
+        && phase64_forklite_smoke()
+        && phase65_ring3_syscall_smoke()
+        && phase66_fcntl_smoke()
+        && phase67_lazy_plt_smoke()
+        && phase68_tlb_shootdown_smoke()
+        && phase69_ap_idle_smoke()
+}
+
 pub fn manifest_elf_status() -> (u64, u64, u64) {
     (
         MANIFEST_ELF_DISCOVERED.load(Ordering::Relaxed),

@@ -411,6 +411,140 @@ fn run_phase51_to_60_smokes() {
     );
 }
 
+fn run_phase61_to_70_smokes() {
+    let phase61_ok = kernel::task::program_loader::phase61_chdir_smoke();
+    let (normalized, chdirs) = kernel::user_path::chdir_status();
+    println!(
+        "Phase61-Chdir: normalized={}, chdirs={}, ok={}",
+        normalized, chdirs, phase61_ok
+    );
+    kernel::serial_println!(
+        "Phase61-Chdir: normalized={}, chdirs={}, ok={}",
+        normalized, chdirs, phase61_ok
+    );
+
+    let phase62_ok = kernel::task::program_loader::phase62_munmap_smoke();
+    let (unmapped, munmap_rej) = kernel::mmap::munmap_status();
+    println!(
+        "Phase62-Munmap: unmapped={}, rejected={}, ok={}",
+        unmapped, munmap_rej, phase62_ok
+    );
+    kernel::serial_println!(
+        "Phase62-Munmap: unmapped={}, rejected={}, ok={}",
+        unmapped, munmap_rej, phase62_ok
+    );
+
+    let phase63_ok = kernel::task::program_loader::phase63_vma_smoke();
+    let (vma_regions, vma_overlap) = kernel::vma::status();
+    println!(
+        "Phase63-Vma: regions={}, overlaps_rejected={}, ok={}",
+        vma_regions, vma_overlap, phase63_ok
+    );
+    kernel::serial_println!(
+        "Phase63-Vma: regions={}, overlaps_rejected={}, ok={}",
+        vma_regions, vma_overlap, phase63_ok
+    );
+
+    let phase64_ok = kernel::task::program_loader::phase64_forklite_smoke();
+    let (inherited, isolated) = kernel::fd_table::fork_lite_status();
+    println!(
+        "Phase64-ForkLite: inherited={}, isolated={}, ok={}",
+        inherited, isolated, phase64_ok
+    );
+    kernel::serial_println!(
+        "Phase64-ForkLite: inherited={}, isolated={}, ok={}",
+        inherited, isolated, phase64_ok
+    );
+
+    let phase65_ok = kernel::task::program_loader::phase65_ring3_syscall_smoke();
+    let (ring3_write, ring3_mprotect) = kernel::user_syscall_hw::ring3_syscall_status();
+    println!(
+        "Phase65-Ring3Syscall: writepath={}, mprotect={}, ok={}",
+        ring3_write > 0,
+        ring3_mprotect > 0,
+        phase65_ok
+    );
+    kernel::serial_println!(
+        "Phase65-Ring3Syscall: writepath={}, mprotect={}, ok={}",
+        ring3_write > 0,
+        ring3_mprotect > 0,
+        phase65_ok
+    );
+
+    let phase66_ok = kernel::task::program_loader::phase66_fcntl_smoke();
+    let (fcntl_getfd, fcntl_dup, fcntl_rej) = kernel::fd_table::fcntl_status();
+    println!(
+        "Phase66-Fcntl: getfd={}, dupfd={}, rejected={}, ok={}",
+        fcntl_getfd, fcntl_dup, fcntl_rej, phase66_ok
+    );
+    kernel::serial_println!(
+        "Phase66-Fcntl: getfd={}, dupfd={}, rejected={}, ok={}",
+        fcntl_getfd, fcntl_dup, fcntl_rej, phase66_ok
+    );
+
+    let phase67_ok = kernel::task::program_loader::phase67_lazy_plt_smoke();
+    let (plt_lazy, plt_bound) = kernel::elf_reloc::lazy_plt_status();
+    println!(
+        "Phase67-LazyPlt: lazy={}, bound={}, ok={}",
+        plt_lazy, plt_bound, phase67_ok
+    );
+    kernel::serial_println!(
+        "Phase67-LazyPlt: lazy={}, bound={}, ok={}",
+        plt_lazy, plt_bound, phase67_ok
+    );
+
+    let phase68_ok = kernel::task::program_loader::phase68_tlb_shootdown_smoke();
+    let (cpus, _, _) = kernel::smp::status();
+    let (shootdowns, _) = kernel::smp::shootdown_status();
+    println!(
+        "Phase68-TlbShootdown: cpus={}, shootdowns={}, ok={}",
+        cpus, shootdowns, phase68_ok
+    );
+    kernel::serial_println!(
+        "Phase68-TlbShootdown: cpus={}, shootdowns={}, ok={}",
+        cpus, shootdowns, phase68_ok
+    );
+
+    let phase69_ok = kernel::task::program_loader::phase69_ap_idle_smoke();
+    let (aps, idle_ticks) = kernel::smp::ap_idle_status();
+    println!(
+        "Phase69-ApIdle: aps={}, idle_ticks={}, ok={}",
+        aps, idle_ticks, phase69_ok
+    );
+    kernel::serial_println!(
+        "Phase69-ApIdle: aps={}, idle_ticks={}, ok={}",
+        aps, idle_ticks, phase69_ok
+    );
+
+    let phase70_ok = kernel::task::program_loader::phase70_integration_smoke();
+    println!(
+        "Phase70-Integration: chdir={}, munmap={}, vma={}, fork={}, ring3={}, fcntl={}, lazyplt={}, tlb={}, ap={}, ok={}",
+        phase61_ok,
+        phase62_ok,
+        phase63_ok,
+        phase64_ok,
+        phase65_ok,
+        phase66_ok,
+        phase67_ok,
+        phase68_ok,
+        phase69_ok,
+        phase70_ok,
+    );
+    kernel::serial_println!(
+        "Phase70-Integration: chdir={}, munmap={}, vma={}, fork={}, ring3={}, fcntl={}, lazyplt={}, tlb={}, ap={}, ok={}",
+        phase61_ok,
+        phase62_ok,
+        phase63_ok,
+        phase64_ok,
+        phase65_ok,
+        phase66_ok,
+        phase67_ok,
+        phase68_ok,
+        phase69_ok,
+        phase70_ok,
+    );
+}
+
 fn run_phase21_to_30_smokes() {
     let phase21_ok = kernel::task::program_loader::phase21_smoke_check();
     let (hw_built, hw_verified, hw_rejected, _, _, _, _) = kernel::user_paging::status();
@@ -725,8 +859,9 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         run_phase31_to_40_smokes();
         run_phase41_to_50_smokes();
         run_phase51_to_60_smokes();
+        run_phase61_to_70_smokes();
     });
-    kernel::serial_println!("Boot: phase21-50 smokes done");
+    kernel::serial_println!("Boot: phase21-70 smokes done");
     let phase15_backing_ok = kernel::task::program_loader::phase15_smoke_check();
     let backing_status = kernel::task::program_loader::status();
     let backing_frames = kernel::frame_ownership::status();

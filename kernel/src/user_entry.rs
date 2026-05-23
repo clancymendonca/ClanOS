@@ -40,14 +40,58 @@ pub fn handle_user_fault(stack_frame: &mut InterruptStackFrame, from_vector_80: 
     }
     let _ = crate::user_paging::restore_kernel_page_table();
     if bringup == 2 && from_vector_80 {
-        let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
-        crate::user_syscall::store_hw_syscall_return(crate::user_syscall::UserSyscallReturn {
-            syscall_id: crate::syscall::SyscallId::GetTickCount as u64,
-            arg0: 0,
-            return_value: tick,
-            error: None,
-            returned_to_user: true,
-        });
+        let syscall_id: u64;
+        let arg0: u64;
+        let arg1: u64;
+        let arg2: u64;
+        unsafe {
+            core::arch::asm!(
+                "mov {0}, rax",
+                "mov {1}, rdi",
+                "mov {2}, rsi",
+                "mov {3}, rdx",
+                out(reg) syscall_id,
+                out(reg) arg0,
+                out(reg) arg1,
+                out(reg) arg2,
+                options(nomem, nostack)
+            );
+        }
+        if syscall_id == crate::syscall::SyscallId::WritePathProbe as u64 {
+            crate::user_syscall_hw::record_ring3_writepath();
+        }
+        if syscall_id == crate::syscall::SyscallId::Mprotect as u64 {
+            crate::user_syscall_hw::record_ring3_mprotect();
+        }
+        let result = if syscall_id == crate::syscall::SyscallId::GetTickCount as u64 {
+            let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
+            crate::user_syscall::UserSyscallReturn {
+                syscall_id,
+                arg0,
+                return_value: tick,
+                error: None,
+                returned_to_user: true,
+            }
+        } else {
+            let frame = crate::user_syscall::UserRegisterFrame {
+                syscall_id,
+                arg0,
+                arg1,
+                arg2,
+                return_value: 0,
+                error: None,
+            };
+            crate::user_syscall::dispatch_from_user(frame).unwrap_or_else(|_| {
+                crate::user_syscall::UserSyscallReturn {
+                    syscall_id,
+                    arg0,
+                    return_value: 0,
+                    error: Some(crate::syscall::SyscallError::InvalidArgument),
+                    returned_to_user: true,
+                }
+            })
+        };
+        crate::user_syscall::store_hw_syscall_return(result);
         crate::user_syscall_hw::record_hw_syscall_completed();
         USER_TRAP_COUNT.fetch_add(1, Ordering::Relaxed);
         USER_TRAP_RETURNS.fetch_add(1, Ordering::Relaxed);
@@ -139,6 +183,29 @@ pub fn write_user_stub_syscall_int80(
     bytes[11] = 0x05;
     bytes[12] = 0xCD;
     bytes[13] = 0x80;
+    write_user_stub_at_entry(hw, rip, &bytes)
+}
+
+pub fn write_user_stub_hw_syscall(
+    hw: &HwPageTableHandle,
+    rip: u64,
+    syscall_id: u64,
+) -> Result<(), UserEntryError> {
+    let mut bytes = [0u8; 17];
+    bytes[0] = 0x48;
+    bytes[1] = 0x31;
+    bytes[2] = 0xFF;
+    bytes[3] = 0x48;
+    bytes[4] = 0x31;
+    bytes[5] = 0xF6;
+    bytes[6] = 0x48;
+    bytes[7] = 0xC7;
+    bytes[8] = 0xC0;
+    bytes[9..13].copy_from_slice(&(syscall_id as u32).to_le_bytes());
+    bytes[13] = 0x0F;
+    bytes[14] = 0x05;
+    bytes[15] = 0x0F;
+    bytes[16] = 0x0B;
     write_user_stub_at_entry(hw, rip, &bytes)
 }
 

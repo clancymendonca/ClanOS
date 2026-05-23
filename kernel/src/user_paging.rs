@@ -436,7 +436,56 @@ pub fn map_demand_zero_page(cr3_phys: u64, virtual_address: u64) -> Result<(), U
                 .map_err(|_| UserPagingError::MapFailed)?
                 .flush();
         }
-        crate::smp::flush_tlb_on_unmap();
+        crate::smp::request_tlb_shootdown();
+        Ok(())
+    })
+}
+
+static UNMAP_APPLIED: AtomicU64 = AtomicU64::new(0);
+static UNMAP_REJECTED: AtomicU64 = AtomicU64::new(0);
+
+pub fn unmap_status() -> (u64, u64) {
+    (
+        UNMAP_APPLIED.load(Ordering::Relaxed),
+        UNMAP_REJECTED.load(Ordering::Relaxed),
+    )
+}
+
+pub fn is_munmap_allowed(virtual_address: u64) -> bool {
+    let page = virtual_address & !0xfff;
+    if page == crate::mmap::MMAP_ANON_BASE {
+        return true;
+    }
+    if page == crate::demand_paging::FILE_DEMAND_BASE
+        || page == crate::demand_paging::FILE_DEMAND_BASE + 0x1000
+    {
+        return true;
+    }
+    if page >= 0x400000 && page < crate::mmap::MMAP_ANON_BASE {
+        return false;
+    }
+    page >= crate::mmap::MMAP_ANON_BASE && page < crate::mmap::MMAP_ANON_LIMIT
+}
+
+pub fn unmap_user_page(cr3_phys: u64, virtual_address: u64) -> Result<(), UserPagingError> {
+    if !is_munmap_allowed(virtual_address) {
+        UNMAP_REJECTED.fetch_add(1, Ordering::Relaxed);
+        return Err(UserPagingError::MapFailed);
+    }
+    x86_64::instructions::interrupts::without_interrupts(|| {
+        let page_base = virtual_address & !0xfff;
+        let mut mapper = unsafe { mapper_for_phys(cr3_phys) };
+        let page = Page::<Size4KiB>::containing_address(VirtAddr::new(page_base));
+        if mapper.translate_page(page).is_err() {
+            UNMAP_REJECTED.fetch_add(1, Ordering::Relaxed);
+            return Err(UserPagingError::MapFailed);
+        }
+        unsafe {
+            let (_frame, flush) = mapper.unmap(page).map_err(|_| UserPagingError::MapFailed)?;
+            flush.flush();
+        }
+        UNMAP_APPLIED.fetch_add(1, Ordering::Relaxed);
+        crate::smp::request_tlb_shootdown();
         Ok(())
     })
 }

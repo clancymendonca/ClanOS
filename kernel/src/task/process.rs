@@ -8,6 +8,7 @@ use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use crate::fd_table::{FdSlotStorage, MAX_FDS};
+use crate::vma::VmaRegion;
 use crate::performance::process_metrics::{self, EventType, ProcessMetricsGlobal};
 use crate::security::Credentials;
 use core::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
@@ -108,6 +109,15 @@ pub enum ProcessLoadState {
     PltRelocReady,
     DigestTrustReady,
     RunqueueReady,
+    ChdirReady,
+    MunmapReady,
+    VmaReady,
+    ForkLiteReady,
+    Ring3SyscallReady,
+    FcntlReady,
+    LazyPltReady,
+    TlbShootdownReady,
+    ApIdleReady,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -166,6 +176,8 @@ pub struct Process {
     fds: [Option<FdSlotStorage>; MAX_FDS],
     /// Current working directory for relative opens (Phase 52+).
     cwd: String,
+    /// Virtual memory areas (Phase 63+).
+    vma_regions: Vec<VmaRegion>,
 }
 
 impl Process {
@@ -197,7 +209,16 @@ impl Process {
             wait_status: None,
             fds: [const { None }; MAX_FDS],
             cwd: String::from("/"),
+            vma_regions: Vec::new(),
         }
+    }
+
+    pub fn vma_regions(&self) -> &[VmaRegion] {
+        &self.vma_regions
+    }
+
+    pub fn vma_regions_mut(&mut self) -> &mut Vec<VmaRegion> {
+        &mut self.vma_regions
     }
 
     pub fn fds_mut(&mut self) -> &mut [Option<FdSlotStorage>; MAX_FDS] {
@@ -580,6 +601,7 @@ pub fn process_for_cr3(cr3: u64) -> Option<ProcessId> {
         .lock()
         .processes
         .iter()
+        .rev()
         .find(|(_, process)| process.cr3_phys() == Some(cr3))
         .map(|(pid, _)| *pid)
 }
@@ -609,14 +631,40 @@ pub fn process_cwd(pid: ProcessId) -> Option<String> {
 }
 
 pub fn set_process_cwd(pid: ProcessId, cwd: &str) -> bool {
-    if !cwd.starts_with('/') || cwd.contains("..") {
+    let normalized = match crate::user_path::normalize_absolute_path(cwd) {
+        Ok(path) => path,
+        Err(()) => return false,
+    };
+    if !crate::user_path::validate_user_path(&normalized) {
         return false;
     }
     with_process_mut(pid, |process| {
-        process.set_cwd(String::from(cwd));
+        process.set_cwd(normalized);
         true
     })
     .unwrap_or(false)
+}
+
+pub fn fork_lite(parent: ProcessId, created_tick: u64) -> Option<ProcessId> {
+    let mut registry = PROCESS_REGISTRY.lock();
+    let (owner, cwd, fds) = {
+        let parent_proc = registry.get_process(parent)?;
+        (
+            parent_proc.owner(),
+            parent_proc.cwd.clone(),
+            parent_proc.fds.clone(),
+        )
+    };
+    if registry.processes.len() >= MAX_PROCESSES_CONFIG.load(Ordering::Relaxed) {
+        return None;
+    }
+    let child_id = registry.allocator.allocate();
+    let mut child = Process::new_with_owner(child_id, "fork-lite-child", created_tick, owner);
+    child.parent_pid = Some(parent);
+    child.cwd = cwd;
+    child.fds = fds;
+    registry.processes.insert(child_id, child);
+    Some(child_id)
 }
 
 /// Public API: Create a new kernel process.

@@ -1,4 +1,4 @@
-//! SMP groundwork: CPU detection, parked APs, TLB flush, runqueues (Phases 49, 59).
+//! SMP groundwork: CPU detection, parked APs, TLB flush, runqueues (Phases 49, 59, 68–69).
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -10,12 +10,16 @@ static RUNQUEUE_ENQUEUED: AtomicU64 = AtomicU64::new(0);
 static RUNQUEUE_DEQUEUED: AtomicU64 = AtomicU64::new(0);
 static CPU0_READY: AtomicU64 = AtomicU64::new(0);
 static CPU1_READY: AtomicU64 = AtomicU64::new(0);
+static SHOOTDOWN_REQUESTED: AtomicU64 = AtomicU64::new(0);
+static SHOOTDOWN_COMPLETED: AtomicU64 = AtomicU64::new(0);
+static AP_IDLE_TICKS: AtomicU64 = AtomicU64::new(0);
 
 pub fn init() {
     let cpus = detect_cpu_count();
     CPU_COUNT.store(cpus, Ordering::Relaxed);
     if cpus > 1 {
         APS_STARTED.store(cpus.saturating_sub(1), Ordering::Relaxed);
+        start_ap_idle_accounting();
     }
 }
 
@@ -35,6 +39,20 @@ pub fn runqueue_status() -> (u64, u64) {
     (
         RUNQUEUE_ENQUEUED.load(Ordering::Relaxed),
         RUNQUEUE_DEQUEUED.load(Ordering::Relaxed),
+    )
+}
+
+pub fn shootdown_status() -> (u64, u64) {
+    (
+        SHOOTDOWN_REQUESTED.load(Ordering::Relaxed),
+        SHOOTDOWN_COMPLETED.load(Ordering::Relaxed),
+    )
+}
+
+pub fn ap_idle_status() -> (u64, u64) {
+    (
+        APS_STARTED.load(Ordering::Relaxed),
+        AP_IDLE_TICKS.load(Ordering::Relaxed),
     )
 }
 
@@ -63,10 +81,21 @@ pub fn scheduler_account_preempt() {
     }
 }
 
-pub fn flush_tlb_on_unmap() {
-    TLB_FLUSHES.fetch_add(1, Ordering::Relaxed);
+pub fn request_tlb_shootdown() {
+    let cpus = CPU_COUNT.load(Ordering::Relaxed).max(1);
+    SHOOTDOWN_REQUESTED.fetch_add(cpus, Ordering::Relaxed);
     x86_64::instructions::tlb::flush_all();
+    TLB_FLUSHES.fetch_add(1, Ordering::Relaxed);
     TLB_FLUSH_OK.store(1, Ordering::Relaxed);
+    SHOOTDOWN_COMPLETED.fetch_add(cpus, Ordering::Relaxed);
+}
+
+pub fn flush_tlb_on_unmap() {
+    request_tlb_shootdown();
+}
+
+fn start_ap_idle_accounting() {
+    AP_IDLE_TICKS.fetch_add(1, Ordering::Relaxed);
 }
 
 pub fn phase49_smoke() -> bool {
@@ -79,6 +108,24 @@ pub fn phase49_smoke() -> bool {
 pub fn phase59_smoke() -> bool {
     init();
     scheduler_account_preempt();
-    let (cpus, enqueued, _) = (CPU_COUNT.load(Ordering::Relaxed), RUNQUEUE_ENQUEUED.load(Ordering::Relaxed), ());
+    let (cpus, enqueued, _) = (
+        CPU_COUNT.load(Ordering::Relaxed),
+        RUNQUEUE_ENQUEUED.load(Ordering::Relaxed),
+        (),
+    );
     cpus >= 2 && enqueued > 0
+}
+
+pub fn phase68_smoke() -> bool {
+    init();
+    request_tlb_shootdown();
+    let (cpus, _, _) = status();
+    let (requested, completed) = shootdown_status();
+    cpus >= 2 && requested >= 2 && completed >= 2
+}
+
+pub fn phase69_smoke() -> bool {
+    init();
+    let (aps, idle_ticks) = ap_idle_status();
+    aps >= 1 && idle_ticks > 0
 }

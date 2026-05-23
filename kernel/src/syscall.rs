@@ -78,6 +78,10 @@ pub enum SyscallId {
     Mprotect = 71,
     Mmap = 72,
     WritePathProbe = 73,
+    Chdir = 74,
+    Munmap = 75,
+    ForkLite = 76,
+    Fcntl = 77,
 }
 
 static LAST_EXIT_CODE: core::sync::atomic::AtomicU64 =
@@ -495,6 +499,29 @@ pub fn invoke_with_args(id: u64, arg0: u64, arg1: u64, arg2: u64) -> Result<u64,
                 return Err(SyscallError::InvalidArgument);
             }
             crate::user_path::write_path_probe(arg0, arg1)
+                .map_err(|_| SyscallError::InvalidArgument)
+        }
+        x if x == SyscallId::Chdir as u64 => {
+            crate::user_path::chdir_from_user(arg0)
+                .map(|_| 0)
+                .map_err(|_| SyscallError::InvalidArgument)
+        }
+        x if x == SyscallId::Munmap as u64 => {
+            crate::mmap::munmap_syscall(arg0)
+                .map(|_| 0)
+                .map_err(|_| SyscallError::InvalidArgument)
+        }
+        x if x == SyscallId::ForkLite as u64 => {
+            let pid = crate::task::process::current_process_id()
+                .or_else(|| crate::task::process::smoke_process_id())
+                .ok_or(SyscallError::InvalidArgument)?;
+            let tick = crate::performance::metrics::TICK_COUNTER.load(core::sync::atomic::Ordering::Relaxed);
+            crate::task::process::fork_lite(pid, tick)
+                .map(|child| child.as_u64())
+                .ok_or(SyscallError::InvalidArgument)
+        }
+        x if x == SyscallId::Fcntl as u64 => {
+            crate::fd_table::fcntl(arg0 as u32, arg1, arg2)
                 .map_err(|_| SyscallError::InvalidArgument)
         }
         _ => Err(SyscallError::InvalidSyscall),

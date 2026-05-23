@@ -21,6 +21,8 @@ static HW_SYSRETS: AtomicU64 = AtomicU64::new(0);
 static HW_SYSCALL_READY: AtomicU64 = AtomicU64::new(0);
 pub static HW_SYSCALL_ALLOWED: AtomicU64 = AtomicU64::new(0);
 pub static HW_SYSCALL_REJECTED: AtomicU64 = AtomicU64::new(0);
+static RING3_WRITEPATH: AtomicU64 = AtomicU64::new(0);
+static RING3_MPROTECT: AtomicU64 = AtomicU64::new(0);
 
 pub const ALLOWED_HW_SYSCALLS: &[SyscallId] = &[
     SyscallId::GetTickCount,
@@ -38,6 +40,10 @@ pub const ALLOWED_HW_SYSCALLS: &[SyscallId] = &[
     SyscallId::Mprotect,
     SyscallId::Mmap,
     SyscallId::WritePathProbe,
+    SyscallId::Chdir,
+    SyscallId::Munmap,
+    SyscallId::ForkLite,
+    SyscallId::Fcntl,
 ];
 
 pub fn status() -> (u64, u64) {
@@ -64,10 +70,51 @@ pub fn record_hw_syscall_completed() {
     HW_SYSRETS.fetch_add(1, Ordering::Relaxed);
 }
 
-pub fn init_syscall_msrs() {
-    if HW_SYSCALL_READY.load(Ordering::Relaxed) != 0 {
-        return;
+pub fn ring3_syscall_status() -> (u64, u64) {
+    (
+        RING3_WRITEPATH.load(Ordering::Relaxed),
+        RING3_MPROTECT.load(Ordering::Relaxed),
+    )
+}
+
+pub fn record_ring3_writepath() {
+    RING3_WRITEPATH.store(1, Ordering::Relaxed);
+}
+
+pub fn record_ring3_mprotect() {
+    RING3_MPROTECT.store(1, Ordering::Relaxed);
+}
+
+pub fn run_hw_probe_syscall(
+    hw: &HwPageTableHandle,
+    entry: &UserEntryFrame,
+    selectors: UserSelectors,
+    syscall_id: SyscallId,
+) -> Result<UserSyscallReturn, UserEntryError> {
+    user_entry::write_user_stub_int80_syscall(hw, entry.rip, syscall_id as u64)?;
+    user_entry::set_hw_syscall_bringup_flag();
+    let before = HW_SYSCALLS.load(Ordering::Relaxed);
+    user_entry::enter_user_syscall_hw(hw, entry, selectors)?;
+    if HW_SYSCALLS.load(Ordering::Relaxed) > before {
+        if syscall_id == SyscallId::WritePathProbe {
+            record_ring3_writepath();
+        }
+        if syscall_id == SyscallId::Mprotect {
+            record_ring3_mprotect();
+        }
+        Ok(user_syscall::last_hw_syscall_return().unwrap_or(UserSyscallReturn {
+            syscall_id: syscall_id as u64,
+            arg0: 0,
+            return_value: 0,
+            error: None,
+            returned_to_user: true,
+        }))
+    } else {
+        Err(UserEntryError::NoTrap)
     }
+}
+
+pub fn init_syscall_msrs() {
     let syscall_entry = syscall_entry_trampoline as *const () as u64;
     unsafe {
         let user = crate::gdt::user_selectors();
@@ -112,6 +159,7 @@ pub fn run_hw_tick_syscall(
 }
 
 extern "C" fn syscall_entry_trampoline() {
+    let (user_rip, user_rflags) = unsafe { read_syscall_user_return() };
     let _ = crate::user_paging::restore_kernel_page_table();
     let (syscall_id, arg0, arg1, arg2) = unsafe { read_syscall_args() };
     if !is_allowed_hw_syscall(syscall_id) {
@@ -124,12 +172,17 @@ extern "C" fn syscall_entry_trampoline() {
             returned_to_user: true,
         });
         HW_SYSCALLS.fetch_add(1, Ordering::Relaxed);
-        let _ = crate::user_paging::activate_bringup_user_cr3();
         unsafe {
-            core::arch::asm!("sysret", options(noreturn));
+            sysret_to_user(user_rip, user_rflags);
         }
     }
     HW_SYSCALL_ALLOWED.fetch_add(1, Ordering::Relaxed);
+    if syscall_id == SyscallId::WritePathProbe as u64 {
+        record_ring3_writepath();
+    }
+    if syscall_id == SyscallId::Mprotect as u64 {
+        record_ring3_mprotect();
+    }
     let frame = UserRegisterFrame {
         syscall_id,
         arg0,
@@ -148,10 +201,34 @@ extern "C" fn syscall_entry_trampoline() {
     user_syscall::store_hw_syscall_return(result);
     HW_SYSCALLS.fetch_add(1, Ordering::Relaxed);
     HW_SYSRETS.fetch_add(1, Ordering::Relaxed);
-    let _ = crate::user_paging::activate_bringup_user_cr3();
     unsafe {
-        core::arch::asm!("sysret", options(noreturn));
+        sysret_to_user(user_rip, user_rflags);
     }
+}
+
+unsafe fn read_syscall_user_return() -> (u64, u64) {
+    let user_rip: u64;
+    let user_rflags: u64;
+    core::arch::asm!(
+        "mov {0}, rcx",
+        "mov {1}, r11",
+        out(reg) user_rip,
+        out(reg) user_rflags,
+        options(nomem, nostack)
+    );
+    (user_rip, user_rflags)
+}
+
+unsafe fn sysret_to_user(user_rip: u64, user_rflags: u64) -> ! {
+    let _ = crate::user_paging::activate_bringup_user_cr3();
+    core::arch::asm!(
+        "mov rcx, {0}",
+        "mov r11, {1}",
+        "sysret",
+        in(reg) user_rip,
+        in(reg) user_rflags,
+        options(noreturn)
+    );
 }
 
 unsafe fn read_syscall_args() -> (u64, u64, u64, u64) {
