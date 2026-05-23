@@ -1439,3 +1439,117 @@ fn phase80_integration_smoke_works() {
     kernel::storage::format().expect("format should seed image manifests");
     assert!(kernel::task::program_loader::phase80_integration_smoke());
 }
+
+#[test_case]
+fn phase81_hw_sysret_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase81_hw_sysret_smoke());
+}
+
+#[test_case]
+fn phase82_getcwd_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase82_getcwd_smoke());
+}
+
+#[test_case]
+fn phase83_chdirprobe_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase83_chdirprobe_smoke());
+}
+
+#[test_case]
+fn phase84_vma_split_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase84_vma_split_smoke());
+}
+
+#[test_case]
+fn phase85_fork_dup_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase85_fork_dup_smoke());
+}
+
+#[test_case]
+fn phase86_exec_lite_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase86_exec_lite_smoke());
+}
+
+#[test_case]
+fn phase87_pipe_lite_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase87_pipe_lite_smoke());
+}
+
+#[test_case]
+fn phase88_ring3_plt_fault_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase88_ring3_plt_fault_smoke());
+}
+
+#[test_case]
+fn phase89_ipi_send_smoke_works() {
+    assert!(kernel::task::program_loader::phase89_ipi_send_smoke());
+}
+
+#[test_case]
+fn phase90_integration_smoke_works() {
+    assert!(kernel::task::program_loader::phase90_integration_smoke());
+}
+
+#[test_case]
+fn phase91_fork_cow_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase91_fork_cow_smoke());
+}
+
+#[test_case]
+fn phase92_poll_lite_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase92_poll_lite_smoke());
+}
+
+#[test_case]
+fn phase93_mmap_gap_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase93_mmap_gap_smoke());
+}
+
+#[test_case]
+fn phase94_exec_argv_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase94_exec_argv_smoke());
+}
+
+#[test_case]
+fn phase95_pipe_probe_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase95_pipe_probe_smoke());
+}
+
+#[test_case]
+fn phase96_vma_coalesce_smoke_works() {
+    kernel::storage::format().expect("format should seed image manifests");
+    assert!(kernel::task::program_loader::phase96_vma_coalesce_smoke());
+}
+
+#[test_case]
+fn phase97_work_steal_smoke_works() {
+    assert!(kernel::task::program_loader::phase97_work_steal_smoke());
+}
+
+#[test_case]
+fn phase98_ap_runnable_smoke_works() {
+    assert!(kernel::task::program_loader::phase98_ap_runnable_smoke());
+}
+
+#[test_case]
+fn phase99_lapic_icr_smoke_works() {
+    assert!(kernel::task::program_loader::phase99_lapic_icr_smoke());
+}
+
+#[test_case]
+fn phase_100_integration_smoke_works() {
+    assert!(kernel::task::program_loader::phase100_integration_smoke());
+}
