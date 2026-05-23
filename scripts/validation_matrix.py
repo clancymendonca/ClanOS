@@ -557,6 +557,106 @@ def main() -> int:
             None,
         ),
         (
+            "phase81-hw-sysret-check",
+            ["python", "scripts/phase81_hw_sysret_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase82-getcwd-check",
+            ["python", "scripts/phase82_getcwd_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase83-chdirprobe-check",
+            ["python", "scripts/phase83_chdirprobe_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase84-vma-split-check",
+            ["python", "scripts/phase84_vma_split_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase85-fork-dup-check",
+            ["python", "scripts/phase85_fork_dup_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase86-exec-lite-check",
+            ["python", "scripts/phase86_exec_lite_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase87-pipe-lite-check",
+            ["python", "scripts/phase87_pipe_lite_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase88-ring3-plt-fault-check",
+            ["python", "scripts/phase88_ring3_plt_fault_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase89-ipi-send-check",
+            ["python", "scripts/phase89_ipi_send_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase90-integration-check",
+            ["python", "scripts/phase90_integration_check.py", "--timeout", str(max(args.smoke_timeout, 300))],
+            None,
+        ),
+        (
+            "phase91-fork-cow-check",
+            ["python", "scripts/phase91_fork_cow_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase92-poll-lite-check",
+            ["python", "scripts/phase92_poll_lite_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase93-mmap-gap-check",
+            ["python", "scripts/phase93_mmap_gap_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase94-exec-argv-check",
+            ["python", "scripts/phase94_exec_argv_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase95-pipe-probe-check",
+            ["python", "scripts/phase95_pipe_probe_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase96-vma-coalesce-check",
+            ["python", "scripts/phase96_vma_coalesce_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase97-work-steal-check",
+            ["python", "scripts/phase97_work_steal_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase98-ap-runnable-check",
+            ["python", "scripts/phase98_ap_runnable_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase99-lapic-icr-check",
+            ["python", "scripts/phase99_lapic_icr_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase100-integration-check",
+            ["python", "scripts/phase100_integration_check.py", "--timeout", str(max(args.smoke_timeout, 300))],
+            None,
+        ),
+        (
             "phase5-soak-check",
             [
                 "python",
