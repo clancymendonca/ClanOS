@@ -457,6 +457,56 @@ def main() -> int:
             None,
         ),
         (
+            "phase61-chdir-check",
+            ["python", "scripts/phase61_chdir_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase62-munmap-check",
+            ["python", "scripts/phase62_munmap_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase63-vma-check",
+            ["python", "scripts/phase63_vma_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase64-forklite-check",
+            ["python", "scripts/phase64_forklite_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase65-ring3-syscall-check",
+            ["python", "scripts/phase65_ring3_syscall_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase66-fcntl-check",
+            ["python", "scripts/phase66_fcntl_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase67-lazy-plt-check",
+            ["python", "scripts/phase67_lazy_plt_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase68-tlb-shootdown-check",
+            ["python", "scripts/phase68_tlb_shootdown_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase69-ap-idle-check",
+            ["python", "scripts/phase69_ap_idle_check.py", "--timeout", str(args.smoke_timeout)],
+            None,
+        ),
+        (
+            "phase70-integration-check",
+            ["python", "scripts/phase70_integration_check.py", "--timeout", str(max(args.smoke_timeout, 180))],
+            None,
+        ),
+        (
             "phase5-soak-check",
             [
                 "python",
