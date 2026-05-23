@@ -72,3 +72,23 @@ Boot smoke:
 ```text
 Phase53-Mprotect: applied=..., rejected=..., guard_faults=..., ok=true
 ```
+
+## VMA Registry (Phase 63)
+
+Each process keeps a list of `VmaRegion` records (base, length, protection, backing). `mmap` and `munmap` register and remove regions; overlapping mappings are rejected. Anonymous mmap hints advance via `vma::next_anon_hint`.
+
+Boot smoke:
+
+```text
+Phase63-Vma: regions=..., overlaps_rejected=..., ok=true
+```
+
+## munmap (Phase 62)
+
+`Munmap` unmaps anonymous mmap pages and the read-only file mmap page. Image and executable ranges are rejected. Unmap triggers `smp::request_tlb_shootdown()`.
+
+Boot smoke:
+
+```text
+Phase62-Munmap: unmapped=..., rejected=..., ok=true
+```

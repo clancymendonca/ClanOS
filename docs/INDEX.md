@@ -2,7 +2,7 @@
 
 Central index for phase checklists, deep-dive guides, and validation commands. The public roadmap lives in the root [README](../README.md).
 
-## Phase Checklists (1–60)
+## Phase Checklists (1–70)
 
 | Phase | Topic | Checklist |
 |------:|-------|-----------|
@@ -66,6 +66,16 @@ Central index for phase checklists, deep-dive guides, and validation commands. T
 | 58 | Manifest digest trust | [phase-58-checklist.md](phase-58-checklist.md) |
 | 59 | Per-CPU runqueue skeleton | [phase-59-checklist.md](phase-59-checklist.md) |
 | 60 | Integration (51–59) | [phase-60-checklist.md](phase-60-checklist.md) |
+| 61 | chdir and path normalization | [phase-61-checklist.md](phase-61-checklist.md) |
+| 62 | munmap | [phase-62-checklist.md](phase-62-checklist.md) |
+| 63 | Per-process VMA registry | [phase-63-checklist.md](phase-63-checklist.md) |
+| 64 | Fork-lite FD inheritance | [phase-64-checklist.md](phase-64-checklist.md) |
+| 65 | Ring 3 HW syscall probes | [phase-65-checklist.md](phase-65-checklist.md) |
+| 66 | Minimal fcntl stub | [phase-66-checklist.md](phase-66-checklist.md) |
+| 67 | Lazy PLT resolution | [phase-67-checklist.md](phase-67-checklist.md) |
+| 68 | TLB shootdown accounting | [phase-68-checklist.md](phase-68-checklist.md) |
+| 69 | AP idle accounting | [phase-69-checklist.md](phase-69-checklist.md) |
+| 70 | Integration (61–69) | [phase-70-checklist.md](phase-70-checklist.md) |
 
 ## Deep-Dive Guides
 
@@ -81,7 +91,7 @@ Central index for phase checklists, deep-dive guides, and validation commands. T
 | [MAPPING_STUBS.md](MAPPING_STUBS.md) | 13 |
 | [FRAME_OWNERSHIP.md](FRAME_OWNERSHIP.md) | 14 |
 | [FRAME_BACKED_IMAGES.md](FRAME_BACKED_IMAGES.md) | 15 |
-| [USER_PAGE_TABLES.md](USER_PAGE_TABLES.md) | 16, 21–22, 30–31, 48 |
+| [USER_PAGE_TABLES.md](USER_PAGE_TABLES.md) | 16, 21–22, 30–31, 48, 62–63 |
 | [USER_CONTEXT.md](USER_CONTEXT.md) | 17 |
 | [RING3_TRAMPOLINE.md](RING3_TRAMPOLINE.md) | 18, 23–24 |
 | [USER_SYSCALLS.md](USER_SYSCALLS.md) | 19–20, 25–26, 34–36, 44–46 |
@@ -89,7 +99,7 @@ Central index for phase checklists, deep-dive guides, and validation commands. T
 | [SHARED_LIBRARIES.md](SHARED_LIBRARIES.md) | 39, 41–42 |
 | [DEMAND_PAGING.md](DEMAND_PAGING.md) | 38, 47 |
 | [FILE_DESCRIPTORS.md](FILE_DESCRIPTORS.md) | 45–46 |
-| [SMP.md](SMP.md) | 49, 59 |
+| [SMP.md](SMP.md) | 49, 59, 68–69 |
 | [context-lab.md](context-lab.md) | 4 (isolated lab) |
 
 ## Validation

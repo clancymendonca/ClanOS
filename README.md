@@ -683,6 +683,76 @@ Checklist: `docs/phase-59-checklist.md`
 
 Checklist: `docs/phase-60-checklist.md`
 
+### Phase 61 — chdir and Path Normalization
+
+* `Chdir` syscall; collapse `..` in resolved paths
+* `Phase61-Chdir` boot smoke
+
+Checklist: `docs/phase-61-checklist.md`
+
+### Phase 62 — munmap
+
+* `Munmap` syscall; TLB shootdown on unmap
+* `Phase62-Munmap` boot smoke
+
+Checklist: `docs/phase-62-checklist.md`
+
+### Phase 63 — Per-Process VMA Registry
+
+* region list on `Process`; mmap overlap rejection
+* `Phase63-Vma` boot smoke
+
+Checklist: `docs/phase-63-checklist.md`
+
+### Phase 64 — Fork-Lite with FD Inheritance
+
+* `ForkLite` syscall; shallow-copy FD table and cwd
+* `Phase64-ForkLite` boot smoke
+
+Checklist: `docs/phase-64-checklist.md`
+
+### Phase 65 — Ring 3 HW Syscall Probes
+
+* hardware `syscall` path for `WritePathProbe` / `Mprotect`
+* `Phase65-Ring3Syscall` boot smoke
+
+Checklist: `docs/phase-65-checklist.md`
+
+### Phase 66 — Minimal fcntl Stub
+
+* `F_GETFD` and `F_DUPFD` via `Fcntl` syscall
+* `Phase66-Fcntl` boot smoke
+
+Checklist: `docs/phase-66-checklist.md`
+
+### Phase 67 — Lazy PLT Resolution
+
+* defer `R_X86_64_JUMP_SLOT` until `bind_lazy_plt`
+* `Phase67-LazyPlt` boot smoke
+
+Checklist: `docs/phase-67-checklist.md`
+
+### Phase 68 — Cross-CPU TLB Shootdown Accounting
+
+* per-CPU shootdown counters on unmap/map flush
+* `Phase68-TlbShootdown` boot smoke
+
+Checklist: `docs/phase-68-checklist.md`
+
+### Phase 69 — AP Idle Trampoline Accounting
+
+* parked AP idle tick counter under QEMU `-smp 2`
+* `Phase69-ApIdle` boot smoke
+
+Checklist: `docs/phase-69-checklist.md`
+
+### Phase 70 — Integration Milestone (61–69)
+
+* cumulative validation of phases 61–69
+* `Phase70-Integration` boot smoke
+
+Checklist: `docs/phase-70-checklist.md`
+
 ---
 
 # Documentation
