@@ -645,6 +645,56 @@ pub fn set_process_cwd(pid: ProcessId, cwd: &str) -> bool {
     .unwrap_or(false)
 }
 
+static WAIT_LITE_OK: AtomicU64 = AtomicU64::new(0);
+static WAIT_LITE_REJECTED: AtomicU64 = AtomicU64::new(0);
+
+pub fn wait_lite_status() -> (u64, u64) {
+    (
+        WAIT_LITE_OK.load(Ordering::Relaxed),
+        WAIT_LITE_REJECTED.load(Ordering::Relaxed),
+    )
+}
+
+pub fn set_process_exit_code(pid: ProcessId, code: i32) {
+    let _ = with_process_mut(pid, |process| {
+        process.exit_with_code(code);
+    });
+}
+
+pub fn wait_lite(parent: ProcessId, child: ProcessId) -> Result<i32, ()> {
+    let registry = PROCESS_REGISTRY.lock();
+    let Some(child_proc) = registry.get_process(child) else {
+        WAIT_LITE_REJECTED.fetch_add(1, Ordering::Relaxed);
+        return Err(());
+    };
+    if child_proc.parent_pid() != Some(parent) {
+        WAIT_LITE_REJECTED.fetch_add(1, Ordering::Relaxed);
+        return Err(());
+    }
+    let Some(code) = child_proc.exit_code() else {
+        WAIT_LITE_REJECTED.fetch_add(1, Ordering::Relaxed);
+        return Err(());
+    };
+    WAIT_LITE_OK.fetch_add(1, Ordering::Relaxed);
+    Ok(code)
+}
+
+pub fn phase74_smoke() -> bool {
+    let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
+    let creds = crate::security::Credentials::shell_user();
+    let Some(parent) = create_kernel_process_as("wait-parent", tick, creds) else {
+        return false;
+    };
+    let Some(child) = fork_lite(parent, tick.saturating_add(1)) else {
+        return false;
+    };
+    terminate_process(child, 17);
+    let waited = wait_lite(parent, child).ok() == Some(17);
+    let rejected = wait_lite(parent, parent).is_err();
+    let (waited_n, rejected_n) = wait_lite_status();
+    waited && rejected && waited_n > 0 && rejected_n > 0
+}
+
 pub fn fork_lite(parent: ProcessId, created_tick: u64) -> Option<ProcessId> {
     let mut registry = PROCESS_REGISTRY.lock();
     let (owner, cwd, fds) = {

@@ -82,6 +82,7 @@ pub enum SyscallId {
     Munmap = 75,
     ForkLite = 76,
     Fcntl = 77,
+    WaitLite = 78,
 }
 
 static LAST_EXIT_CODE: core::sync::atomic::AtomicU64 =
@@ -422,6 +423,11 @@ pub fn invoke_with_args(id: u64, arg0: u64, arg1: u64, arg2: u64) -> Result<u64,
         x if x == SyscallId::ExitProcess as u64 => {
             LAST_EXIT_CODE.store(arg0, core::sync::atomic::Ordering::Relaxed);
             LAST_EXIT_RECORDED.fetch_add(1, core::sync::atomic::Ordering::Relaxed);
+            if let Some(pid) = crate::task::process::current_process_id()
+                .or_else(|| crate::task::process::smoke_process_id())
+            {
+                crate::task::process::set_process_exit_code(pid, arg0 as i32);
+            }
             Ok(0)
         }
         x if x == SyscallId::WaitProcess as u64 => {
@@ -507,7 +513,7 @@ pub fn invoke_with_args(id: u64, arg0: u64, arg1: u64, arg2: u64) -> Result<u64,
                 .map_err(|_| SyscallError::InvalidArgument)
         }
         x if x == SyscallId::Munmap as u64 => {
-            crate::mmap::munmap_syscall(arg0)
+            crate::mmap::munmap_syscall(arg0, arg1)
                 .map(|_| 0)
                 .map_err(|_| SyscallError::InvalidArgument)
         }
@@ -522,6 +528,14 @@ pub fn invoke_with_args(id: u64, arg0: u64, arg1: u64, arg2: u64) -> Result<u64,
         }
         x if x == SyscallId::Fcntl as u64 => {
             crate::fd_table::fcntl(arg0 as u32, arg1, arg2)
+                .map_err(|_| SyscallError::InvalidArgument)
+        }
+        x if x == SyscallId::WaitLite as u64 => {
+            let parent = crate::task::process::current_process_id()
+                .or_else(|| crate::task::process::smoke_process_id())
+                .ok_or(SyscallError::InvalidArgument)?;
+            crate::task::process::wait_lite(parent, crate::task::process::ProcessId::from_raw(arg0))
+                .map(|code| code as u64)
                 .map_err(|_| SyscallError::InvalidArgument)
         }
         _ => Err(SyscallError::InvalidSyscall),

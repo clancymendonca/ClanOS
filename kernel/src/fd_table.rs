@@ -16,6 +16,7 @@ static FD_DUPS: AtomicU64 = AtomicU64::new(0);
 static FD_RELATIVE: AtomicU64 = AtomicU64::new(0);
 static PROC_FD_ISOLATED: AtomicU64 = AtomicU64::new(0);
 static FCNTL_GETFD: AtomicU64 = AtomicU64::new(0);
+static FCNTL_SETFD: AtomicU64 = AtomicU64::new(0);
 static FCNTL_DUPFD: AtomicU64 = AtomicU64::new(0);
 static FCNTL_REJECTED: AtomicU64 = AtomicU64::new(0);
 static FORK_INHERITED: AtomicU64 = AtomicU64::new(0);
@@ -23,10 +24,13 @@ static FORK_ISOLATED: AtomicU64 = AtomicU64::new(0);
 
 pub const F_GETFD: u64 = 1;
 pub const F_DUPFD: u64 = 2;
+pub const F_SETFD: u64 = 3;
+pub const FD_CLOEXEC: u64 = 1;
 
 #[derive(Clone, Debug)]
 pub struct FdSlotStorage {
     pub path: String,
+    pub flags: u32,
 }
 
 pub fn status() -> (u64, u64, u64, u64, u64) {
@@ -81,7 +85,7 @@ pub fn open_file_for_process(pid: ProcessId, path: &str) -> Result<u32, ()> {
     match process::with_process_mut(pid, |process| {
         for (idx, slot) in process.fds_mut().iter_mut().enumerate() {
             if slot.is_none() {
-                *slot = Some(FdSlotStorage { path });
+                *slot = Some(FdSlotStorage { path, flags: 0 });
                 FD_OPENS.fetch_add(1, Ordering::Relaxed);
                 return Ok(idx as u32);
             }
@@ -105,7 +109,7 @@ pub fn dup_fd_for_process(pid: ProcessId, fd: u32) -> Result<u32, ()> {
         let path = table[idx].as_ref().map(|slot| slot.path.clone()).ok_or(())?;
         for (new_idx, slot) in table.iter_mut().enumerate() {
             if slot.is_none() {
-                *slot = Some(FdSlotStorage { path });
+                *slot = Some(FdSlotStorage { path, flags: 0 });
                 FD_DUPS.fetch_add(1, Ordering::Relaxed);
                 return Ok(new_idx as u32);
             }
@@ -262,10 +266,39 @@ pub fn read_fd_for_process(pid: ProcessId, fd: u32, user_buf: u64, max_len: u64)
     Ok(sample.len() as u64)
 }
 
-pub fn fcntl(fd: u32, cmd: u64, _arg: u64) -> Result<u64, ()> {
+pub fn fcntl(fd: u32, cmd: u64, arg: u64) -> Result<u64, ()> {
     match cmd {
         F_GETFD => {
             FCNTL_GETFD.fetch_add(1, Ordering::Relaxed);
+            let pid = process::current_process_id()
+                .or_else(|| process::smoke_process_id())
+                .ok_or(())?;
+            let flags = process::with_process_mut(pid, |process| {
+                process.fds_mut().get(fd as usize).and_then(|slot| slot.as_ref()).map(|slot| slot.flags)
+            })
+            .flatten()
+            .ok_or(())?;
+            Ok(flags as u64)
+        }
+        F_SETFD => {
+            let pid = process::current_process_id()
+                .or_else(|| process::smoke_process_id())
+                .ok_or(())?;
+            let updated = process::with_process_mut(pid, |process| {
+                if let Some(slot) = process.fds_mut().get_mut(fd as usize) {
+                    if let Some(entry) = slot.as_mut() {
+                        entry.flags = (arg & 0xffff_ffff) as u32;
+                        return true;
+                    }
+                }
+                false
+            })
+            .unwrap_or(false);
+            if !updated {
+                FCNTL_REJECTED.fetch_add(1, Ordering::Relaxed);
+                return Err(());
+            }
+            FCNTL_SETFD.fetch_add(1, Ordering::Relaxed);
             Ok(0)
         }
         F_DUPFD => {
@@ -286,6 +319,14 @@ pub fn fcntl_status() -> (u64, u64, u64) {
     (
         FCNTL_GETFD.load(Ordering::Relaxed),
         FCNTL_DUPFD.load(Ordering::Relaxed),
+        FCNTL_REJECTED.load(Ordering::Relaxed),
+    )
+}
+
+pub fn fcntl_setfd_status() -> (u64, u64, u64) {
+    (
+        FCNTL_SETFD.load(Ordering::Relaxed),
+        FCNTL_GETFD.load(Ordering::Relaxed),
         FCNTL_REJECTED.load(Ordering::Relaxed),
     )
 }
@@ -347,6 +388,24 @@ pub fn phase66_smoke() -> bool {
     process::set_smoke_process_id(None);
     let (getfd_n, dup_n, rejected) = fcntl_status();
     getfd && dup && reject && getfd_n > 0 && dup_n > 0 && rejected > 0
+}
+
+pub fn phase76_smoke() -> bool {
+    let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
+    let creds = crate::security::Credentials::shell_user();
+    let Some(pid) = process::create_kernel_process_as("fcntl-setfd-smoke", tick, creds) else {
+        return false;
+    };
+    process::set_smoke_process_id(Some(pid));
+    let Some(fd) = open_file_for_process(pid, "/bin/hello").ok() else {
+        return false;
+    };
+    let setfd = fcntl(fd, F_SETFD, FD_CLOEXEC).is_ok();
+    let getfd = fcntl(fd, F_GETFD, 0).ok() == Some(FD_CLOEXEC);
+    let reject = fcntl(fd, 99, 0).is_err();
+    process::set_smoke_process_id(None);
+    let (setfd_n, getfd_n, rejected) = fcntl_setfd_status();
+    setfd && getfd && reject && setfd_n > 0 && getfd_n > 0 && rejected > 0
 }
 
 pub fn phase45_smoke() -> bool {

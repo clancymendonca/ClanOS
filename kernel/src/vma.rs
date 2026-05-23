@@ -66,6 +66,47 @@ pub fn unregister_region(pid: ProcessId, base: u64) -> bool {
     .unwrap_or(false)
 }
 
+pub fn truncate_region(pid: ProcessId, base: u64, len: u64) -> bool {
+    process::with_process_mut(pid, |process| {
+        let regions = process.vma_regions_mut();
+        if let Some(region) = regions.iter_mut().find(|region| region.base == base) {
+            if region.len <= len {
+                return false;
+            }
+            region.base = region.base.saturating_add(len);
+            region.len = region.len.saturating_sub(len);
+            return true;
+        }
+        if let Some(idx) = regions.iter().position(|region| {
+            region.base < base && region.base.saturating_add(region.len) > base.saturating_add(len)
+        }) {
+            let region = regions.remove(idx);
+            let tail_base = base.saturating_add(len);
+            let tail_len = region.base.saturating_add(region.len).saturating_sub(tail_base);
+            if tail_len > 0 {
+                regions.push(VmaRegion {
+                    base: tail_base,
+                    len: tail_len,
+                    prot: region.prot,
+                    backing: region.backing,
+                });
+            }
+            let head_len = base.saturating_sub(region.base);
+            if head_len > 0 {
+                regions.push(VmaRegion {
+                    base: region.base,
+                    len: head_len,
+                    prot: region.prot,
+                    backing: region.backing,
+                });
+            }
+            return true;
+        }
+        false
+    })
+    .unwrap_or(false)
+}
+
 pub fn next_anon_hint(pid: ProcessId) -> u64 {
     let mut hint = crate::mmap::MMAP_ANON_BASE;
     if let Some(regions) = process::with_process_mut(pid, |p| p.vma_regions().to_vec()) {

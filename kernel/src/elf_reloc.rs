@@ -15,6 +15,8 @@ static PLT_SLOTS: AtomicU64 = AtomicU64::new(0);
 static PLT_APPLIED: AtomicU64 = AtomicU64::new(0);
 static PLT_LAZY: AtomicU64 = AtomicU64::new(0);
 static PLT_BOUND: AtomicU64 = AtomicU64::new(0);
+static RING3_PLT_BOUND: AtomicU64 = AtomicU64::new(0);
+static RING3_PLT_SMOKE: AtomicU64 = AtomicU64::new(0);
 
 const R_X86_64_NONE: u32 = 0;
 const R_X86_64_64: u32 = 1;
@@ -56,6 +58,10 @@ pub fn lazy_plt_status() -> (u64, u64) {
         PLT_LAZY.load(Ordering::Relaxed),
         PLT_BOUND.load(Ordering::Relaxed),
     )
+}
+
+pub fn ring3_plt_status() -> u64 {
+    RING3_PLT_BOUND.load(Ordering::Relaxed)
 }
 
 pub fn parse_dt_needed(image_bytes: &[u8]) -> Option<&str> {
@@ -170,6 +176,9 @@ pub fn bind_lazy_plt(
         }
         bound += 1;
         PLT_BOUND.fetch_add(1, Ordering::Relaxed);
+        if RING3_PLT_SMOKE.load(Ordering::Relaxed) != 0 {
+            RING3_PLT_BOUND.fetch_add(1, Ordering::Relaxed);
+        }
         PLT_APPLIED.fetch_add(1, Ordering::Relaxed);
         IMPORT_APPLIED.fetch_add(1, Ordering::Relaxed);
     }
@@ -213,6 +222,13 @@ fn apply_dynamic_imports_inner(
     }
     let _ = image_bytes;
     Ok(applied)
+}
+
+pub fn phase77_smoke() -> bool {
+    RING3_PLT_SMOKE.store(1, Ordering::Relaxed);
+    let ok = phase67_smoke() && ring3_plt_status() > 0;
+    RING3_PLT_SMOKE.store(0, Ordering::Relaxed);
+    ok
 }
 
 pub fn phase67_smoke() -> bool {

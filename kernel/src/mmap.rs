@@ -10,6 +10,7 @@ static FILE_MAPPED: AtomicU64 = AtomicU64::new(0);
 static MMAP_REJECTED: AtomicU64 = AtomicU64::new(0);
 static MUNMAP_APPLIED: AtomicU64 = AtomicU64::new(0);
 static MUNMAP_REJECTED: AtomicU64 = AtomicU64::new(0);
+static PARTIAL_MUNMAP: AtomicU64 = AtomicU64::new(0);
 static LAST_MMAP_CR3: AtomicU64 = AtomicU64::new(0);
 
 pub fn hw_handle_for_last_mmap_smoke() -> Option<crate::user_paging::HwPageTableHandle> {
@@ -37,6 +38,13 @@ pub fn munmap_status() -> (u64, u64) {
     (
         MUNMAP_APPLIED.load(Ordering::Relaxed),
         MUNMAP_REJECTED.load(Ordering::Relaxed),
+    )
+}
+
+pub fn munmap_len_status() -> (u64, u64) {
+    (
+        MUNMAP_APPLIED.load(Ordering::Relaxed),
+        PARTIAL_MUNMAP.load(Ordering::Relaxed),
     )
 }
 
@@ -120,16 +128,43 @@ pub fn mmap_file_readonly(cr3_phys: u64, path: &str, prot: u64) -> Result<u64, (
 }
 
 pub fn munmap_address(cr3_phys: u64, addr: u64) -> Result<(), ()> {
-    let pid = crate::task::process::smoke_process_id()
-        .or_else(|| crate::task::process::process_for_cr3(cr3_phys));
-    if crate::user_paging::unmap_user_page(cr3_phys, addr).is_err() {
+    munmap_range(cr3_phys, addr, 0x1000)
+}
+
+pub fn munmap_range(cr3_phys: u64, addr: u64, len: u64) -> Result<(), ()> {
+    let base = addr & !0xfff;
+    if base != addr {
         MUNMAP_REJECTED.fetch_add(1, Ordering::Relaxed);
         return Err(());
     }
-    if let Some(pid) = pid {
-        let _ = crate::vma::unregister_region(pid, addr & !0xfff);
+    if base == 0x400000 {
+        MUNMAP_REJECTED.fetch_add(1, Ordering::Relaxed);
+        return Err(());
     }
-    MUNMAP_APPLIED.fetch_add(1, Ordering::Relaxed);
+    let span = if len == 0 { 0x1000 } else { len & !0xfff };
+    if span == 0 {
+        MUNMAP_REJECTED.fetch_add(1, Ordering::Relaxed);
+        return Err(());
+    }
+    let pid = crate::task::process::smoke_process_id()
+        .or_else(|| crate::task::process::process_for_cr3(cr3_phys));
+    let pages = span / 0x1000;
+    for page in 0..pages {
+        let page_addr = base.saturating_add(page * 0x1000);
+        if crate::user_paging::unmap_user_page(cr3_phys, page_addr).is_err() {
+            MUNMAP_REJECTED.fetch_add(1, Ordering::Relaxed);
+            return Err(());
+        }
+        MUNMAP_APPLIED.fetch_add(1, Ordering::Relaxed);
+    }
+    if let Some(pid) = pid {
+        if crate::vma::unregister_region(pid, base) {
+            PARTIAL_MUNMAP.fetch_add(1, Ordering::Relaxed);
+        } else if crate::vma::truncate_region(pid, base, span) {
+            PARTIAL_MUNMAP.fetch_add(1, Ordering::Relaxed);
+        }
+    }
+    crate::smp::request_tlb_shootdown();
     Ok(())
 }
 
@@ -142,9 +177,38 @@ pub fn mmap_syscall(user_path: u64, prot: u64, anon: u64) -> Result<u64, ()> {
     mmap_file_readonly(cr3, &path, prot)
 }
 
-pub fn munmap_syscall(addr: u64) -> Result<(), ()> {
+pub fn munmap_syscall(addr: u64, len: u64) -> Result<(), ()> {
     let cr3 = crate::user_paging::active_user_cr3().ok_or(())?;
-    munmap_address(cr3, addr)
+    munmap_range(cr3, addr, len)
+}
+
+pub fn phase73_smoke() -> bool {
+    let cr3 = {
+        let cached = LAST_MMAP_CR3.load(Ordering::Relaxed);
+        if cached != 0 {
+            cached
+        } else {
+            let Some(built) = crate::task::program_loader::build_hw_page_table_program(
+                crate::security::Credentials::shell_user(),
+                "hello",
+            )
+            .ok() else {
+                return false;
+            };
+            LAST_MMAP_CR3.store(built.hw.cr3_phys, Ordering::Relaxed);
+            built.hw.cr3_phys
+        }
+    };
+    let Some(base1) = mmap_anonymous(cr3, 2, MMAP_ANON_BASE.saturating_add(0x3000)).ok() else {
+        return false;
+    };
+    let Some(base2) = mmap_anonymous(cr3, 2, base1.saturating_add(0x1000)).ok() else {
+        return false;
+    };
+    let partial = munmap_range(cr3, base2, 0x1000).is_ok();
+    let reject = munmap_range(cr3, 0x400000, 0x1000).is_err();
+    let (pages, partial_regions) = munmap_len_status();
+    partial && reject && pages >= 1 && partial_regions > 0
 }
 
 pub fn phase54_smoke() -> bool {

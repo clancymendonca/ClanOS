@@ -705,6 +705,11 @@ fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), Stor
             "/bin/systrust",
             "ares-exec-v1\nname=systrust\nkind=elf64-image\nentry=0x400000\nimage=/bin/tickprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=Trust-gated ELF fixture",
         ),
+        (
+            "/bin/syscallprobe",
+            "ares-exec-v1\nname=syscallprobe\nkind=elf64-image\nentry=0x400000\nimage=/bin/syscallprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=HW syscall probe ELF fixture",
+        ),
+        ("/bin/syscallprobe.elf", sample_elf.as_str()),
         ("/bin/libc_stub.elf", sample_elf.as_str()),
         ("/lib/libaux_stub.elf", sample_elf.as_str()),
         ("/tmp/phase52-smoke.txt", "relative-open"),

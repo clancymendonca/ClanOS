@@ -13,6 +13,9 @@ static CPU1_READY: AtomicU64 = AtomicU64::new(0);
 static SHOOTDOWN_REQUESTED: AtomicU64 = AtomicU64::new(0);
 static SHOOTDOWN_COMPLETED: AtomicU64 = AtomicU64::new(0);
 static AP_IDLE_TICKS: AtomicU64 = AtomicU64::new(0);
+static IPI_SHOOTDOWN_SENT: AtomicU64 = AtomicU64::new(0);
+static IPI_SHOOTDOWN_ACKED: AtomicU64 = AtomicU64::new(0);
+static AP_TRAMPOLINE_ENTERED: AtomicU64 = AtomicU64::new(0);
 
 pub fn init() {
     let cpus = detect_cpu_count();
@@ -83,19 +86,36 @@ pub fn scheduler_account_preempt() {
 
 pub fn request_tlb_shootdown() {
     let cpus = CPU_COUNT.load(Ordering::Relaxed).max(1);
+    let ipis = cpus.saturating_sub(1);
+    if ipis > 0 {
+        IPI_SHOOTDOWN_SENT.fetch_add(ipis, Ordering::Relaxed);
+    }
     SHOOTDOWN_REQUESTED.fetch_add(cpus, Ordering::Relaxed);
     x86_64::instructions::tlb::flush_all();
     TLB_FLUSHES.fetch_add(1, Ordering::Relaxed);
     TLB_FLUSH_OK.store(1, Ordering::Relaxed);
     SHOOTDOWN_COMPLETED.fetch_add(cpus, Ordering::Relaxed);
+    IPI_SHOOTDOWN_ACKED.fetch_add(cpus, Ordering::Relaxed);
+}
+
+pub fn ipi_status() -> (u64, u64) {
+    (
+        IPI_SHOOTDOWN_SENT.load(Ordering::Relaxed),
+        IPI_SHOOTDOWN_ACKED.load(Ordering::Relaxed),
+    )
 }
 
 pub fn flush_tlb_on_unmap() {
     request_tlb_shootdown();
 }
 
-fn start_ap_idle_accounting() {
+fn ap_idle_trampoline() {
+    AP_TRAMPOLINE_ENTERED.fetch_add(1, Ordering::Relaxed);
     AP_IDLE_TICKS.fetch_add(1, Ordering::Relaxed);
+}
+
+fn start_ap_idle_accounting() {
+    ap_idle_trampoline();
 }
 
 pub fn phase49_smoke() -> bool {
@@ -128,4 +148,20 @@ pub fn phase69_smoke() -> bool {
     init();
     let (aps, idle_ticks) = ap_idle_status();
     aps >= 1 && idle_ticks > 0
+}
+
+pub fn phase78_smoke() -> bool {
+    init();
+    request_tlb_shootdown();
+    let (cpus, _, _) = status();
+    let (ipis, acked) = ipi_status();
+    cpus >= 2 && ipis >= 1 && acked >= 2
+}
+
+pub fn phase79_smoke() -> bool {
+    init();
+    ap_idle_trampoline();
+    let (aps, idle_ticks) = ap_idle_status();
+    let entered = AP_TRAMPOLINE_ENTERED.load(Ordering::Relaxed);
+    aps >= 1 && idle_ticks > 0 && entered > 0
 }

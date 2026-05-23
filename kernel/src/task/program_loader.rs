@@ -218,8 +218,8 @@ static CR3_ACTIVATION_COUNT: AtomicU64 = AtomicU64::new(0);
 static HW_ELF_EXECUTION_COUNT: AtomicU64 = AtomicU64::new(0);
 static REJECTED_HW_ELF_COUNT: AtomicU64 = AtomicU64::new(0);
 
-pub const ALLOWED_USER_ELFS: &[&str] = &["hello", "exit42", "tickprobe"];
-pub const EXECUTION_ALLOWLIST: &[&str] = &["hello", "exit42", "tickprobe"];
+pub const ALLOWED_USER_ELFS: &[&str] = &["hello", "exit42", "tickprobe", "syscallprobe"];
+pub const EXECUTION_ALLOWLIST: &[&str] = &["hello", "exit42", "tickprobe", "syscallprobe"];
 
 static MANIFEST_ELF_DISCOVERED: AtomicU64 = AtomicU64::new(0);
 static MANIFEST_ELF_EXECUTED: AtomicU64 = AtomicU64::new(0);
@@ -1138,7 +1138,7 @@ pub fn execute_allowlisted_user_elf(
         REJECTED_HW_ELF_COUNT.fetch_add(1, Ordering::Relaxed);
         return Err(ProgramLoadError::HwElfRejected);
     }
-    if name == "hello" || name == "tickprobe" {
+    if name == "hello" || name == "tickprobe" || name == "syscallprobe" {
         return execute_hw_user_elf(credentials, "hello");
     }
     let syscall = run_hw_syscall_probe(credentials, name)?;
@@ -1414,7 +1414,7 @@ pub fn execute_trusted_manifest_elf(
         }
     }
     TRUST_EXEC_OK.fetch_add(1, Ordering::Relaxed);
-    if name == "hello" || name == "tickprobe" || name == "systrust" {
+    if name == "hello" || name == "tickprobe" || name == "systrust" || name == "syscallprobe" {
         return execute_hw_user_elf(credentials, "hello");
     }
     let syscall = run_hw_syscall_probe(credentials, name)?;
@@ -1655,6 +1655,110 @@ pub fn phase68_tlb_shootdown_smoke() -> bool {
 
 pub fn phase69_ap_idle_smoke() -> bool {
     crate::smp::phase69_smoke()
+}
+
+pub fn phase71_sysret_smoke() -> bool {
+    crate::user_syscall_hw::phase71_smoke()
+}
+
+pub fn phase72_ring3_chdir_smoke() -> bool {
+    crate::user_path::phase72_smoke()
+}
+
+pub fn phase73_munmap_len_smoke() -> bool {
+    crate::mmap::phase73_smoke()
+}
+
+pub fn phase74_waitlite_smoke() -> bool {
+    crate::task::process::phase74_smoke()
+}
+
+pub fn phase75_syscallprobe_smoke() -> bool {
+    crate::user_syscall_hw::init_syscall_msrs();
+    let creds = crate::security::Credentials::shell_user();
+    let manifest_ok = execute_manifest_elf_gated(creds, "syscallprobe")
+        .map(|r| r.exit_code == 0)
+        .unwrap_or(false);
+    let hw = if let Some(hw) = crate::mmap::hw_handle_for_last_mmap_smoke() {
+        hw
+    } else {
+        let Some(built) = build_hw_page_table_program(creds, "syscallprobe").ok() else {
+            return false;
+        };
+        built.hw
+    };
+    let selectors = crate::gdt::user_selectors();
+    let entry = crate::user_context::UserEntryFrame {
+        rip: 0x400000,
+        rsp: crate::user_context::DEFAULT_USER_STACK_TOP.saturating_sub(128),
+        rflags: 0x202,
+        code_selector: selectors.code.0,
+        stack_selector: selectors.data.0,
+    };
+    let write_ok = crate::user_syscall_hw::run_hw_probe_syscall(
+        &hw,
+        &entry,
+        selectors,
+        crate::syscall::SyscallId::WritePathProbe,
+    )
+    .is_ok();
+    let mprotect_ok = crate::user_syscall_hw::run_hw_syscall_probe(
+        &hw,
+        &entry,
+        selectors,
+        crate::syscall::SyscallId::Mprotect,
+    )
+    .is_ok();
+    let (writepath, mprotect) = crate::user_syscall_hw::ring3_syscall_status();
+    manifest_ok && write_ok && mprotect_ok && writepath > 0 && mprotect > 0
+}
+
+pub fn phase76_fcntl_setfd_smoke() -> bool {
+    crate::fd_table::phase76_smoke()
+}
+
+pub fn phase77_ring3_lazy_plt_smoke() -> bool {
+    crate::elf_reloc::phase77_smoke()
+}
+
+pub fn phase78_ipi_tlb_smoke() -> bool {
+    crate::smp::phase78_smoke()
+}
+
+pub fn phase79_ap_trampoline_smoke() -> bool {
+    crate::smp::phase79_smoke()
+}
+
+pub fn phase80_integration_smoke() -> bool {
+    let (probes, sysret_ok) = crate::user_syscall_hw::sysret_status();
+    let ring3_chdirs = crate::user_path::ring3_chdir_status();
+    let (unmapped_pages, partial_regions) = crate::mmap::munmap_len_status();
+    let (waited, wait_rejected) = crate::task::process::wait_lite_status();
+    let (ring3_write, ring3_mprotect) = crate::user_syscall_hw::ring3_syscall_status();
+    let (fcntl_setfd, fcntl_getfd, fcntl_rej) = crate::fd_table::fcntl_setfd_status();
+    let (plt_lazy, plt_bound) = crate::elf_reloc::lazy_plt_status();
+    let ring3_plt = crate::elf_reloc::ring3_plt_status();
+    let (ipis, ipi_acked) = crate::smp::ipi_status();
+    let (aps, ap_idle) = crate::smp::ap_idle_status();
+    sysret_ok > 0
+        && probes > 0
+        && ring3_chdirs > 0
+        && unmapped_pages >= 3
+        && partial_regions > 0
+        && waited > 0
+        && wait_rejected > 0
+        && ring3_write > 0
+        && ring3_mprotect > 0
+        && fcntl_setfd > 0
+        && fcntl_getfd > 0
+        && fcntl_rej > 0
+        && plt_lazy > 0
+        && plt_bound > 0
+        && ring3_plt > 0
+        && ipis >= 1
+        && ipi_acked >= 2
+        && aps >= 1
+        && ap_idle > 0
 }
 
 pub fn phase70_integration_smoke() -> bool {
@@ -2296,6 +2400,8 @@ fn static_source_path(path: &str) -> &'static str {
         "/bin/exit42.elf" => "/bin/exit42.elf",
         "/bin/tickprobe" => "/bin/tickprobe",
         "/bin/tickprobe.elf" => "/bin/tickprobe.elf",
+        "/bin/syscallprobe" => "/bin/syscallprobe",
+        "/bin/syscallprobe.elf" => "/bin/syscallprobe.elf",
         _ => "<image>",
     }
 }

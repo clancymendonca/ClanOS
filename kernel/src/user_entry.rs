@@ -40,6 +40,7 @@ pub fn handle_user_fault(stack_frame: &mut InterruptStackFrame, from_vector_80: 
     }
     let _ = crate::user_paging::restore_kernel_page_table();
     if bringup == 2 && from_vector_80 {
+        let _ = crate::user_paging::activate_bringup_user_cr3();
         let syscall_id: u64;
         let arg0: u64;
         let arg1: u64;
@@ -93,6 +94,8 @@ pub fn handle_user_fault(stack_frame: &mut InterruptStackFrame, from_vector_80: 
         };
         crate::user_syscall::store_hw_syscall_return(result);
         crate::user_syscall_hw::record_hw_syscall_completed();
+        crate::user_syscall_hw::record_sysret_applied();
+        let _ = crate::user_paging::restore_kernel_page_table();
         USER_TRAP_COUNT.fetch_add(1, Ordering::Relaxed);
         USER_TRAP_RETURNS.fetch_add(1, Ordering::Relaxed);
     } else if from_vector_80 {
@@ -155,15 +158,33 @@ pub fn write_user_stub_int80_syscall(
     rip: u64,
     syscall_id: u64,
 ) -> Result<(), UserEntryError> {
-    let mut bytes = [0u8; 10];
-    bytes[0] = 0x48;
-    bytes[1] = 0xC7;
-    bytes[2] = 0xC0;
-    bytes[3..7].copy_from_slice(&(syscall_id as u32).to_le_bytes());
-    bytes[7] = 0xCD;
-    bytes[8] = 0x80;
-    bytes[9] = 0xF4; // hlt if execution falls through after the trap resume path
-    write_user_stub_at_entry(hw, rip, &bytes)
+    write_user_stub_int80_syscall_rdi(hw, rip, syscall_id, 0)
+}
+
+pub fn write_user_stub_int80_syscall_rdi(
+    hw: &HwPageTableHandle,
+    rip: u64,
+    syscall_id: u64,
+    arg0_rdi: u64,
+) -> Result<(), UserEntryError> {
+    let mut bytes = [0u8; 32];
+    let mut len = 0usize;
+    if arg0_rdi != 0 {
+        bytes[0] = 0x48;
+        bytes[1] = 0xBF;
+        bytes[2..10].copy_from_slice(&arg0_rdi.to_le_bytes());
+        len = 10;
+    }
+    bytes[len] = 0x48;
+    bytes[len + 1] = 0xC7;
+    bytes[len + 2] = 0xC0;
+    bytes[len + 3..len + 7].copy_from_slice(&(syscall_id as u32).to_le_bytes());
+    len += 7;
+    bytes[len] = 0xCD;
+    bytes[len + 1] = 0x80;
+    bytes[len + 2] = 0xF4;
+    len += 3;
+    write_user_stub_at_entry(hw, rip, &bytes[..len])
 }
 
 pub fn write_user_stub_syscall_int80(
@@ -191,22 +212,42 @@ pub fn write_user_stub_hw_syscall(
     rip: u64,
     syscall_id: u64,
 ) -> Result<(), UserEntryError> {
-    let mut bytes = [0u8; 17];
-    bytes[0] = 0x48;
-    bytes[1] = 0x31;
-    bytes[2] = 0xFF;
-    bytes[3] = 0x48;
-    bytes[4] = 0x31;
-    bytes[5] = 0xF6;
-    bytes[6] = 0x48;
-    bytes[7] = 0xC7;
-    bytes[8] = 0xC0;
-    bytes[9..13].copy_from_slice(&(syscall_id as u32).to_le_bytes());
-    bytes[13] = 0x0F;
-    bytes[14] = 0x05;
-    bytes[15] = 0x0F;
-    bytes[16] = 0x0B;
-    write_user_stub_at_entry(hw, rip, &bytes)
+    write_user_stub_hw_syscall_rdi(hw, rip, syscall_id, 0)
+}
+
+pub fn write_user_stub_hw_syscall_rdi(
+    hw: &HwPageTableHandle,
+    rip: u64,
+    syscall_id: u64,
+    arg0_rdi: u64,
+) -> Result<(), UserEntryError> {
+    let mut bytes = [0u8; 32];
+    let mut len = 0usize;
+    if arg0_rdi != 0 {
+        bytes[0] = 0x48;
+        bytes[1] = 0xBF;
+        bytes[2..10].copy_from_slice(&arg0_rdi.to_le_bytes());
+        len = 10;
+    } else {
+        bytes[0] = 0x48;
+        bytes[1] = 0x31;
+        bytes[2] = 0xFF;
+        bytes[3] = 0x48;
+        bytes[4] = 0x31;
+        bytes[5] = 0xF6;
+        len = 6;
+    }
+    bytes[len] = 0x48;
+    bytes[len + 1] = 0xC7;
+    bytes[len + 2] = 0xC0;
+    bytes[len + 3..len + 7].copy_from_slice(&(syscall_id as u32).to_le_bytes());
+    len += 7;
+    bytes[len] = 0x0F;
+    bytes[len + 1] = 0x05;
+    bytes[len + 2] = 0x0F;
+    bytes[len + 3] = 0x0B;
+    len += 4;
+    write_user_stub_at_entry(hw, rip, &bytes[..len])
 }
 
 pub fn resume_after_hw_syscall() -> ! {

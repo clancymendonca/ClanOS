@@ -23,6 +23,8 @@ pub static HW_SYSCALL_ALLOWED: AtomicU64 = AtomicU64::new(0);
 pub static HW_SYSCALL_REJECTED: AtomicU64 = AtomicU64::new(0);
 static RING3_WRITEPATH: AtomicU64 = AtomicU64::new(0);
 static RING3_MPROTECT: AtomicU64 = AtomicU64::new(0);
+static SYSRET_APPLIED: AtomicU64 = AtomicU64::new(0);
+static HW_SYSCALL_PROBES: AtomicU64 = AtomicU64::new(0);
 
 pub const ALLOWED_HW_SYSCALLS: &[SyscallId] = &[
     SyscallId::GetTickCount,
@@ -44,6 +46,7 @@ pub const ALLOWED_HW_SYSCALLS: &[SyscallId] = &[
     SyscallId::Munmap,
     SyscallId::ForkLite,
     SyscallId::Fcntl,
+    SyscallId::WaitLite,
 ];
 
 pub fn status() -> (u64, u64) {
@@ -83,6 +86,83 @@ pub fn record_ring3_writepath() {
 
 pub fn record_ring3_mprotect() {
     RING3_MPROTECT.store(1, Ordering::Relaxed);
+}
+
+pub fn sysret_status() -> (u64, u64) {
+    (
+        HW_SYSCALL_PROBES.load(Ordering::Relaxed),
+        SYSRET_APPLIED.load(Ordering::Relaxed),
+    )
+}
+
+pub fn run_hw_syscall_probe(
+    hw: &HwPageTableHandle,
+    entry: &UserEntryFrame,
+    selectors: UserSelectors,
+    syscall_id: SyscallId,
+) -> Result<UserSyscallReturn, UserEntryError> {
+    run_hw_syscall_probe_rdi(hw, entry, selectors, syscall_id, 0)
+}
+
+pub fn record_sysret_applied() {
+    SYSRET_APPLIED.fetch_add(1, Ordering::Relaxed);
+}
+
+pub fn run_hw_syscall_probe_rdi(
+    hw: &HwPageTableHandle,
+    entry: &UserEntryFrame,
+    selectors: UserSelectors,
+    syscall_id: SyscallId,
+    arg0_rdi: u64,
+) -> Result<UserSyscallReturn, UserEntryError> {
+    if arg0_rdi == 0 {
+        user_entry::write_user_stub_int80_syscall(hw, entry.rip, syscall_id as u64)?;
+    } else {
+        user_entry::write_user_stub_int80_syscall_rdi(hw, entry.rip, syscall_id as u64, arg0_rdi)?;
+    }
+    user_entry::set_hw_syscall_bringup_flag();
+    HW_SYSCALL_PROBES.fetch_add(1, Ordering::Relaxed);
+    let before = HW_SYSCALLS.load(Ordering::Relaxed);
+    user_entry::enter_user_syscall_hw(hw, entry, selectors)?;
+    if HW_SYSCALLS.load(Ordering::Relaxed) > before {
+        Ok(user_syscall::last_hw_syscall_return().unwrap_or(UserSyscallReturn {
+            syscall_id: syscall_id as u64,
+            arg0: 0,
+            return_value: 0,
+            error: None,
+            returned_to_user: true,
+        }))
+    } else {
+        Err(UserEntryError::NoTrap)
+    }
+}
+
+pub fn phase71_smoke() -> bool {
+    init_syscall_msrs();
+    let Some(built) = crate::task::program_loader::build_hw_page_table_program(
+        crate::security::Credentials::shell_user(),
+        "hello",
+    )
+    .ok() else {
+        return false;
+    };
+    let selectors = crate::gdt::user_selectors();
+    let entry = UserEntryFrame {
+        rip: 0x400000,
+        rsp: crate::user_context::DEFAULT_USER_STACK_TOP.saturating_sub(128),
+        rflags: 0x202,
+        code_selector: selectors.code.0,
+        stack_selector: selectors.data.0,
+    };
+    let probe_ok = run_hw_syscall_probe(
+        &built.hw,
+        &entry,
+        selectors,
+        SyscallId::GetTickCount,
+    )
+    .is_ok();
+    let (probes, sysret_ok) = sysret_status();
+    probe_ok && probes > 0 && sysret_ok > 0
 }
 
 pub fn run_hw_probe_syscall(
@@ -220,6 +300,7 @@ unsafe fn read_syscall_user_return() -> (u64, u64) {
 }
 
 unsafe fn sysret_to_user(user_rip: u64, user_rflags: u64) -> ! {
+    SYSRET_APPLIED.fetch_add(1, Ordering::Relaxed);
     let _ = crate::user_paging::activate_bringup_user_cr3();
     core::arch::asm!(
         "mov rcx, {0}",

@@ -7,6 +7,7 @@ static PATH_WRITES: AtomicU64 = AtomicU64::new(0);
 static PATH_REJECTED: AtomicU64 = AtomicU64::new(0);
 static PATH_NORMALIZED: AtomicU64 = AtomicU64::new(0);
 static CHDIR_COUNT: AtomicU64 = AtomicU64::new(0);
+static RING3_CHDIRS: AtomicU64 = AtomicU64::new(0);
 
 pub const MAX_USER_PATH_LEN: usize = 96;
 
@@ -29,6 +30,10 @@ pub fn chdir_status() -> (u64, u64) {
         PATH_NORMALIZED.load(Ordering::Relaxed),
         CHDIR_COUNT.load(Ordering::Relaxed),
     )
+}
+
+pub fn ring3_chdir_status() -> u64 {
+    RING3_CHDIRS.load(Ordering::Relaxed)
 }
 
 pub fn normalize_absolute_path(path: &str) -> Result<alloc::string::String, ()> {
@@ -217,6 +222,50 @@ pub fn phase55_smoke() -> bool {
         PATH_READS.fetch_add(1, Ordering::Relaxed);
     }
     verified
+}
+
+pub fn phase72_smoke() -> bool {
+    let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
+    let creds = crate::security::Credentials::shell_user();
+    let Some(pid) = crate::task::process::create_kernel_process_as("ring3-chdir", tick, creds) else {
+        return false;
+    };
+    let Some(built) = crate::task::program_loader::build_hw_page_table_program(creds, "hello").ok()
+    else {
+        return false;
+    };
+    let _ = crate::task::process::set_process_cr3(pid, built.hw.cr3_phys);
+    crate::task::process::set_smoke_process_id(Some(pid));
+    crate::task::process::set_current_process_id(Some(pid));
+    let user_path = crate::user_context::DEFAULT_USER_STACK_TOP.saturating_sub(128);
+    let bad_path = crate::user_context::DEFAULT_USER_STACK_TOP.saturating_sub(192);
+    let chdir_ok = crate::user_paging::with_user_page_table(&built.hw, || {
+        for (i, byte) in b"/tmp".iter().enumerate() {
+            crate::user_copy::copy_to_user(core::slice::from_ref(byte), user_path + i as u64).ok()?;
+        }
+        let _ = crate::user_copy::copy_to_user(&[0u8], user_path + b"/tmp".len() as u64);
+        chdir_from_user(user_path).ok()
+    })
+    .ok()
+    .flatten()
+    .is_some();
+    let cwd_ok = crate::task::process::process_cwd(pid).as_deref() == Some("/tmp");
+    let bad = crate::user_paging::with_user_page_table(&built.hw, || {
+        for (i, byte) in b"/tmp/../etc/passwd".iter().enumerate() {
+            crate::user_copy::copy_to_user(core::slice::from_ref(byte), bad_path + i as u64).ok()?;
+        }
+        let _ = crate::user_copy::copy_to_user(&[0u8], bad_path + b"/tmp/../etc/passwd".len() as u64);
+        Some(chdir_from_user(bad_path).is_err())
+    })
+    .ok()
+    .flatten()
+    .unwrap_or(false);
+    crate::task::process::set_smoke_process_id(None);
+    crate::task::process::set_current_process_id(None);
+    if chdir_ok && cwd_ok {
+        RING3_CHDIRS.fetch_add(1, Ordering::Relaxed);
+    }
+    chdir_ok && cwd_ok && bad && RING3_CHDIRS.load(Ordering::Relaxed) > 0
 }
 
 pub fn phase44_smoke() -> bool {
