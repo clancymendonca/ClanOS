@@ -931,8 +931,22 @@ pub fn increment_kernel_task_counter(task_id: usize) -> u64 {
     }
 }
 
+/// Clear preemption telemetry accumulated before the Phase 5 context lab.
+pub fn reset_phase5_preemption_telemetry_baseline() {
+    interrupts::without_interrupts(|| {
+        RESCHEDULE_REQUESTS.store(0, Ordering::Relaxed);
+        RESCHEDULE_POINTS.store(0, Ordering::Relaxed);
+        MAX_PREEMPT_BACKLOG.store(0, Ordering::Relaxed);
+        MAX_ESTIMATED_LATENCY_MS.store(0, Ordering::Relaxed);
+        NEED_RESCHEDULE.store(false, Ordering::Relaxed);
+        IRQ_PREEMPT_PENDING.store(false, Ordering::Relaxed);
+        LAST_PHASE5_FAIRNESS_LOG_TICK.store(TIMER_TICKS.load(Ordering::Relaxed), Ordering::Relaxed);
+    });
+}
+
 /// Phase 5: Spawn 4 independent kernel tasks for fairness testing.
 pub fn spawn_kernel_tasks_phase5() {
+    reset_phase5_preemption_telemetry_baseline();
     spawn_context_task("kernel-task-1", kernel_task_1);
     spawn_context_task("kernel-task-2", kernel_task_2);
     spawn_context_task("kernel-task-3", kernel_task_3);

@@ -14,4 +14,4 @@
 
 ## Deferred
 
-- [ ] Default-on HW probe without QEMU GPF on all targets.
+- [x] QEMU `hw-sysret-probe`: dedicated syscall stack, `syscall` dispatch, kernel resume after probe (`sysret` #GPs under QEMU).

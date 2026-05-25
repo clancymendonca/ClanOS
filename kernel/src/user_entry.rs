@@ -112,6 +112,27 @@ pub fn handle_user_fault(stack_frame: &mut InterruptStackFrame, from_vector_80: 
     true
 }
 
+/// After a real `syscall` in the Phase 81 QEMU probe, return to the kernel resume site without `sysret`.
+pub fn return_from_hw_syscall_probe() -> ! {
+    crate::user_syscall_hw::record_hw_sysret_real();
+    USER_TRAP_COUNT.fetch_add(1, Ordering::Relaxed);
+    USER_TRAP_RETURNS.fetch_add(1, Ordering::Relaxed);
+    USER_BRINGUP.store(0, Ordering::Relaxed);
+    let _ = crate::user_paging::restore_kernel_page_table();
+    let rip = KERNEL_RESUME_RIP.load(Ordering::Relaxed);
+    // `KERNEL_RESUME_RSP` is captured before `call`; the resume site runs with post-call RSP.
+    let rsp = KERNEL_RESUME_RSP.load(Ordering::Relaxed).saturating_sub(8);
+    unsafe {
+        core::arch::asm!(
+            "mov rsp, {rsp}",
+            "jmp {rip}",
+            rsp = in(reg) rsp,
+            rip = in(reg) rip,
+            options(noreturn)
+        );
+    }
+}
+
 fn resume_kernel_frame(stack_frame: &mut InterruptStackFrame) {
     unsafe {
         let mut frame = stack_frame.as_mut().read();
@@ -154,6 +175,15 @@ pub fn enter_user_syscall_hw(
     selectors: UserSelectors,
 ) -> Result<(), UserEntryError> {
     enter_user_common(hw, entry, selectors, false)
+}
+
+/// Same as [`enter_user_syscall_hw`] but enters Ring 3 via `iretq` (required for real `syscall`/`sysret`).
+pub fn enter_user_syscall_hw_iretq(
+    hw: &HwPageTableHandle,
+    entry: &UserEntryFrame,
+    selectors: UserSelectors,
+) -> Result<(), UserEntryError> {
+    enter_user_common(hw, entry, selectors, true)
 }
 
 pub fn write_user_stub_int80_syscall(
@@ -278,7 +308,7 @@ fn enter_user_common(
                 enter_user_mode(
                     selectors.code.0 as u64,
                     selectors.data.0 as u64,
-                    0x2,
+                    entry.rflags,
                     entry.rip,
                     entry.rsp,
                 );

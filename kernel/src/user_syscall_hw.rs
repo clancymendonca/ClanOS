@@ -28,6 +28,32 @@ static HW_SYSRET_REAL: AtomicU64 = AtomicU64::new(0);
 static HW_SYSCALL_PROBES: AtomicU64 = AtomicU64::new(0);
 pub static REAL_HW_PROBE: AtomicU64 = AtomicU64::new(0);
 
+#[repr(C, align(16))]
+struct SyscallStack {
+    data: [u8; 4096 * 8],
+}
+
+static mut SYSCALL_STACK: SyscallStack = SyscallStack {
+    data: [0; 4096 * 8],
+};
+static mut SYSCALL_USER_RSP: u64 = 0;
+static mut SYSCALL_STACK_TOP_VAL: u64 = 0;
+
+core::arch::global_asm!(
+    ".global syscall_entry_trampoline_asm",
+    "syscall_entry_trampoline_asm:",
+    "mov QWORD PTR [rip + {USER_RSP}], rsp",
+    "mov rsp, QWORD PTR [rip + {STACK_TOP}]",
+    "call {HANDLER}",
+    USER_RSP = sym SYSCALL_USER_RSP,
+    STACK_TOP = sym SYSCALL_STACK_TOP_VAL,
+    HANDLER = sym syscall_entry_trampoline,
+);
+
+extern "C" {
+    fn syscall_entry_trampoline_asm();
+}
+
 pub const ALLOWED_HW_SYSCALLS: &[SyscallId] = &[
     SyscallId::GetTickCount,
     SyscallId::UserCopyProbe,
@@ -135,9 +161,9 @@ pub fn run_hw_syscall_probe_rdi(
     let use_real = REAL_HW_PROBE.load(Ordering::Relaxed) != 0;
     if use_real {
         if arg0_rdi == 0 {
-            user_entry::write_user_stub_hw_syscall(hw, entry.rip, syscall_id as u64)?;
+            user_entry::write_user_stub_syscall_int80(hw, entry.rip, syscall_id as u64)?;
         } else {
-            user_entry::write_user_stub_hw_syscall_rdi(hw, entry.rip, syscall_id as u64, arg0_rdi)?;
+            user_entry::write_user_stub_int80_syscall_rdi(hw, entry.rip, syscall_id as u64, arg0_rdi)?;
         }
     } else if arg0_rdi == 0 {
         user_entry::write_user_stub_int80_syscall(hw, entry.rip, syscall_id as u64)?;
@@ -186,13 +212,20 @@ pub fn phase81_hw_sysret_smoke() -> bool {
             return false;
         };
         let selectors = crate::gdt::user_selectors();
-        let entry = UserEntryFrame {
-            rip: 0x400000,
-            rsp: crate::user_context::DEFAULT_USER_STACK_TOP.saturating_sub(128),
+        let entry_point = built.inactive.backed.mapped.prepared.load_plan.entry_point;
+        let entry = crate::user_context::build_user_context(
+            &built.inactive.page_table,
+            entry_point,
+            selectors,
+        )
+        .map(|ctx| ctx.entry)
+        .unwrap_or(UserEntryFrame {
+            rip: 0x400_000,
+            rsp: crate::user_context::DEFAULT_USER_STACK_TOP.saturating_sub(16),
             rflags: 0x202,
             code_selector: selectors.code.0,
             stack_selector: selectors.data.0,
-        };
+        });
         let probe_ok =
             run_hw_syscall_probe(&built.hw, &entry, selectors, SyscallId::GetTickCount).is_ok();
         REAL_HW_PROBE.store(0, Ordering::Relaxed);
@@ -259,7 +292,14 @@ pub fn run_hw_probe_syscall(
 }
 
 pub fn init_syscall_msrs() {
-    let syscall_entry = syscall_entry_trampoline as *const () as u64;
+    let stack_top = unsafe {
+        let base = (&raw const SYSCALL_STACK).addr() as u64;
+        base + core::mem::size_of::<SyscallStack>() as u64
+    };
+    unsafe {
+        SYSCALL_STACK_TOP_VAL = stack_top;
+    }
+    let syscall_entry = syscall_entry_trampoline_asm as *const () as u64;
     unsafe {
         let user = crate::gdt::user_selectors();
         Star::write(
@@ -317,6 +357,9 @@ extern "C" fn syscall_entry_trampoline() {
             returned_to_user: true,
         });
         HW_SYSCALLS.fetch_add(1, Ordering::Relaxed);
+        if REAL_HW_PROBE.load(Ordering::Relaxed) != 0 {
+            user_entry::return_from_hw_syscall_probe();
+        }
         unsafe {
             sysret_to_user(user_rip, user_rflags);
         }
@@ -346,6 +389,9 @@ extern "C" fn syscall_entry_trampoline() {
     user_syscall::store_hw_syscall_return(result);
     HW_SYSCALLS.fetch_add(1, Ordering::Relaxed);
     HW_SYSRETS.fetch_add(1, Ordering::Relaxed);
+    if REAL_HW_PROBE.load(Ordering::Relaxed) != 0 {
+        user_entry::return_from_hw_syscall_probe();
+    }
     unsafe {
         sysret_to_user(user_rip, user_rflags);
     }
@@ -367,12 +413,15 @@ unsafe fn read_syscall_user_return() -> (u64, u64) {
 unsafe fn sysret_to_user(user_rip: u64, user_rflags: u64) -> ! {
     HW_SYSRET_REAL.fetch_add(1, Ordering::Relaxed);
     let _ = crate::user_paging::activate_bringup_user_cr3();
+    let user_rsp = SYSCALL_USER_RSP;
     core::arch::asm!(
-        "mov rcx, {0}",
-        "mov r11, {1}",
+        "mov rsp, {user_rsp}",
+        "mov rcx, {user_rip}",
+        "mov r11, {user_rflags}",
         "sysret",
-        in(reg) user_rip,
-        in(reg) user_rflags,
+        user_rsp = in(reg) user_rsp,
+        user_rip = in(reg) user_rip,
+        user_rflags = in(reg) user_rflags,
         options(noreturn)
     );
 }
