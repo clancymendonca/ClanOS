@@ -984,9 +984,25 @@ Key guides:
 * [AXIOMS.md](docs/AXIOMS.md) — constitutional axioms A1–A10 (A7+A10 anti-entropy pair)
 * [ROADMAP_POST100.md](docs/ROADMAP_POST100.md) — phases 101–150 table
 
-### Phases 111–150 — Native platform (planned)
+### Phases 111–120 — Capability Foundation (implementation)
 
-Capabilities, brokers, endpoints, service-centric scheduling — implementation blocked until phase 110 constitutional sign-off. See [ROADMAP_POST100.md](docs/ROADMAP_POST100.md).
+Kernel object table, native cap lifecycle (IDs 256+ kernel-only), storage grants, compat path broker, ambient/namespace policy, and cap+compat integration milestone.
+
+Status: complete (validated 2026-05-25 — `Phase120-CapCompat` boot smoke)
+
+Checklist index: `docs/phase-111-checklist.md` … `docs/phase-120-checklist.md`
+
+Validation:
+
+```
+cargo check -p kernel
+cargo test -p kernel --features preemption --test preemption_integration
+python scripts/phase120_cap_integration_check.py --timeout 300
+```
+
+### Phases 121–150 — Native platform (planned)
+
+Service loaders, brokers, endpoints, service-centric scheduling — see [ROADMAP_POST100.md](docs/ROADMAP_POST100.md).
 
 ---
 
@@ -1075,6 +1091,14 @@ cargo build -p kernel
 ---
 
 # Running
+
+## CI
+
+GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs `cargo fmt --check` and the full validation matrix on every push and pull request to `main`/`master` (Ubuntu, QEMU; expect roughly 4–6 hours):
+
+```
+python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --boot-wait 90 --smoke-timeout 180
+```
 
 Run AresOS using QEMU:
 

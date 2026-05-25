@@ -109,7 +109,7 @@ Central index for phase checklists, deep-dive guides, and validation commands. T
 
 ## Post-100 Constitutional Architecture
 
-Governance framework for semantic integrity — documentation pass phases **101–110** complete; implementation **111+** gated on phase 110 sign-off.
+Governance framework for semantic integrity — phases **101–110** (documentation) and **111–120** (capability foundation) complete; phases **121+** planned.
 
 | Guide | Role |
 |-------|------|
@@ -197,7 +197,13 @@ python scripts/semantic_lint.py
 python scripts/phase110_constitutional_check.py --timeout 300
 ```
 
-Matrix entries: `semantic-lint-check`, `phase110-constitutional-check`
+Phases 111–120 capability foundation:
+
+```bash
+python scripts/phase120_cap_integration_check.py --timeout 300
+```
+
+Matrix entries: `semantic-lint-check`, `phase110-constitutional-check`, `phase120-cap-integration-check`
 
 Full QEMU matrix (serial; allow ~2+ hours on Windows):
 

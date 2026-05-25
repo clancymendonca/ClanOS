@@ -37,11 +37,11 @@ Index: [INDEX.md](INDEX.md) · Vision: [NATIVE_MODEL.md](NATIVE_MODEL.md)
 
 Integration milestone: **110**.
 
-**Status (documentation + validation):** phases 101–110 complete — `semantic_lint.py`, `phase110_constitutional_check.py`, `Phase110-Constitutional` boot smoke. Phases **111+** gated until sign-off checklist satisfied.
+**Status (documentation + validation):** phases 101–110 complete — `semantic_lint.py`, `phase110_constitutional_check.py`, `Phase110-Constitutional` boot smoke.
 
 ---
 
-## Phases 111–120 — Capabilities (implementation future)
+## Phases 111–120 — Capabilities (implementation)
 
 | Phase | Title | Layer | Tag | Notes |
 |------:|-------|-------|-----|-------|
@@ -57,6 +57,8 @@ Integration milestone: **110**.
 | 120 | Integration | kernel | governance | Cap + compat coexistence |
 
 Integration milestone: **120**.
+
+**Status (implementation + validation):** phases 111–120 complete — `kernel_object.rs`, `native_syscall.rs` (256–258 kernel-only), `path_broker.rs`, `storage_broker.rs`, `phase120_cap_integration_check.py`, `Phase120-CapCompat` boot smoke. Ring-3 native syscall allowlist deferred to phase 128 (G4).
 
 ---
 
