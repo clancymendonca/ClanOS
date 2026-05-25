@@ -8,8 +8,9 @@ on:
   pull_request:
 
 jobs:
-  fmt-and-check:
+  validation:
     runs-on: ubuntu-latest
+    timeout-minutes: 360
 
     steps:
       - name: Checkout
@@ -23,11 +24,33 @@ jobs:
       - name: Cache Rust artifacts
         uses: Swatinem/rust-cache@v2
 
+      - name: Cache bootimage tools
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/bootimage
+            ~/.cargo/bin/bootimage-runner
+            ~/.cargo/bin/cargo-bootimage
+          key: bootimage-tools-${{ runner.os }}-v1
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-system-x86 nasm
+
+      - name: Install bootimage tools
+        run: |
+          if ! command -v bootimage >/dev/null 2>&1; then
+            cargo install bootimage bootloader --locked
+          fi
+
       - name: Verify formatting
         run: cargo fmt --all -- --check
 
-      - name: Compile check (workspace)
-        run: cargo check --workspace
-
-      - name: Compile test targets (kernel)
-        run: cargo test -p kernel --no-run
+      - name: Full validation matrix
+        run: |
+          python3 scripts/validation_matrix.py \
+            --soak-duration 30 \
+            --latency-duration 30 \
+            --boot-wait 90 \
+            --smoke-timeout 180
