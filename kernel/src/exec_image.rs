@@ -84,7 +84,12 @@ pub enum ImageLoadError {
     UnsupportedExecution,
 }
 
-pub fn builtin_image(name: &str, source_path: &str, trust: ProgramTrust, owner: UserId) -> ExecutableImage {
+pub fn builtin_image(
+    name: &str,
+    source_path: &str,
+    trust: ProgramTrust,
+    owner: UserId,
+) -> ExecutableImage {
     ExecutableImage {
         name: name.to_string(),
         source_path: source_path.to_string(),
@@ -123,7 +128,11 @@ pub fn parse_elf64_image(
     }
 
     let table_end = phoff
-        .checked_add(phentsize.checked_mul(phnum).ok_or(ImageLoadError::InvalidHeader)?)
+        .checked_add(
+            phentsize
+                .checked_mul(phnum)
+                .ok_or(ImageLoadError::InvalidHeader)?,
+        )
         .ok_or(ImageLoadError::InvalidHeader)?;
     if table_end > bytes.len() {
         return Err(ImageLoadError::InvalidHeader);
@@ -146,7 +155,14 @@ pub fn parse_elf64_image(
                 | ((raw_flags & 0x1 != 0) as u8) * SegmentFlags::EXECUTE,
         );
 
-        validate_segment(bytes.len(), file_offset, file_size, memory_size, virtual_address, flags)?;
+        validate_segment(
+            bytes.len(),
+            file_offset,
+            file_size,
+            memory_size,
+            virtual_address,
+            flags,
+        )?;
         segments.push(ImageSegment {
             virtual_address,
             file_offset,
@@ -180,7 +196,11 @@ fn validate_segment(
     if virtual_address == 0 || memory_size == 0 || file_size == 0 || memory_size < file_size {
         return Err(ImageLoadError::InvalidSegmentLayout);
     }
-    if file_offset.checked_add(file_size).ok_or(ImageLoadError::InvalidSegmentLayout)? > image_len {
+    if file_offset
+        .checked_add(file_size)
+        .ok_or(ImageLoadError::InvalidSegmentLayout)?
+        > image_len
+    {
         return Err(ImageLoadError::InvalidSegmentLayout);
     }
     if flags.writable() && flags.executable() {
@@ -217,13 +237,17 @@ fn read_u16(bytes: &[u8], offset: usize) -> Result<u16, ImageLoadError> {
 
 fn read_u16_at(bytes: &[u8], offset: usize) -> Result<u16, ImageLoadError> {
     let end = offset.checked_add(2).ok_or(ImageLoadError::InvalidHeader)?;
-    let slice = bytes.get(offset..end).ok_or(ImageLoadError::InvalidHeader)?;
+    let slice = bytes
+        .get(offset..end)
+        .ok_or(ImageLoadError::InvalidHeader)?;
     Ok(u16::from_le_bytes([slice[0], slice[1]]))
 }
 
 fn read_u32_at(bytes: &[u8], offset: usize) -> Result<u32, ImageLoadError> {
     let end = offset.checked_add(4).ok_or(ImageLoadError::InvalidHeader)?;
-    let slice = bytes.get(offset..end).ok_or(ImageLoadError::InvalidHeader)?;
+    let slice = bytes
+        .get(offset..end)
+        .ok_or(ImageLoadError::InvalidHeader)?;
     Ok(u32::from_le_bytes([slice[0], slice[1], slice[2], slice[3]]))
 }
 
@@ -233,7 +257,9 @@ fn read_u64(bytes: &[u8], offset: usize) -> Result<u64, ImageLoadError> {
 
 fn read_u64_at(bytes: &[u8], offset: usize) -> Result<u64, ImageLoadError> {
     let end = offset.checked_add(8).ok_or(ImageLoadError::InvalidHeader)?;
-    let slice = bytes.get(offset..end).ok_or(ImageLoadError::InvalidHeader)?;
+    let slice = bytes
+        .get(offset..end)
+        .ok_or(ImageLoadError::InvalidHeader)?;
     Ok(u64::from_le_bytes([
         slice[0], slice[1], slice[2], slice[3], slice[4], slice[5], slice[6], slice[7],
     ]))
@@ -263,7 +289,13 @@ mod tests {
     #[test_case]
     fn invalid_magic_is_rejected() {
         assert_eq!(
-            parse_elf64_image("bad", "/bin/bad", b"not-elf", ProgramTrust::User, UserId::from_raw(100)),
+            parse_elf64_image(
+                "bad",
+                "/bin/bad",
+                b"not-elf",
+                ProgramTrust::User,
+                UserId::from_raw(100)
+            ),
             Err(ImageLoadError::InvalidMagic)
         );
     }

@@ -5,7 +5,7 @@
 
 use alloc::collections::BTreeMap;
 use alloc::vec::Vec;
-use core::sync::atomic::{AtomicU64, AtomicU32, Ordering};
+use core::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 
 use lazy_static::lazy_static;
 use spin::Mutex;
@@ -168,10 +168,7 @@ pub fn register_fsnode_object(local_id: u32, max_rights: Rights) -> ObjectId {
 }
 
 pub fn object_generation(object_id: ObjectId) -> Option<Generation> {
-    OBJECT_REGISTRY
-        .lock()
-        .get(&object_id)
-        .map(|r| r.generation)
+    OBJECT_REGISTRY.lock().get(&object_id).map(|r| r.generation)
 }
 
 pub fn bump_object_generation(object_id: ObjectId) -> bool {
@@ -212,8 +209,7 @@ pub fn native_ambient_allows(pid: ProcessId) -> bool {
 }
 
 pub fn cap_count_for_process(pid: ProcessId) -> usize {
-    process::with_process_mut(pid, |p| p.caps().iter().filter(|s| s.is_some()).count())
-        .unwrap_or(0)
+    process::with_process_mut(pid, |p| p.caps().iter().filter(|s| s.is_some()).count()).unwrap_or(0)
 }
 
 pub fn mint_cap_for_process(
@@ -221,7 +217,8 @@ pub fn mint_cap_for_process(
     object_id: ObjectId,
     rights: Rights,
 ) -> Result<u32, CapError> {
-    if process::process_mode(pid) == process::ProcessMode::Native && cap_count_for_process(pid) == 0 {
+    if process::process_mode(pid) == process::ProcessMode::Native && cap_count_for_process(pid) == 0
+    {
         return Err(CapError::AmbientDenied);
     }
     let reg = OBJECT_REGISTRY.lock();
@@ -411,9 +408,7 @@ pub fn phase112_cap_lifecycle_smoke() -> bool {
     )
     .ok();
     let sender_empty = get_cap(pid_a, slot_a).is_none();
-    let receiver = moved
-        .and_then(|s| get_cap(pid_b, s as u32))
-        .is_some();
+    let receiver = moved.and_then(|s| get_cap(pid_b, s as u32)).is_some();
     let closed = moved
         .and_then(|s| {
             crate::native_syscall::invoke_native(
@@ -462,8 +457,7 @@ pub fn phase114_storage_grant_smoke() -> bool {
 }
 
 pub fn phase116_ambient_deny_smoke() -> bool {
-    let Some(pid) = process::create_process_for_smoke("native-zero-cap")
-    else {
+    let Some(pid) = process::create_process_for_smoke("native-zero-cap") else {
         return false;
     };
     process::set_process_mode(pid, process::ProcessMode::Native);
@@ -482,8 +476,7 @@ pub fn phase117_namespace_smoke() -> bool {
     let Some(native_pid) = process::create_process_for_smoke("native-ns") else {
         return false;
     };
-    let Some(compat_pid) = process::create_process_for_smoke("compat-ns")
-    else {
+    let Some(compat_pid) = process::create_process_for_smoke("compat-ns") else {
         return false;
     };
     process::set_process_mode(native_pid, process::ProcessMode::Native);

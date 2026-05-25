@@ -1,5 +1,6 @@
 //! Phase 7 storage stack with a block-device boundary and a tiny filesystem.
 
+use crate::security::{AccessKind, Credentials, FileMode, UserId};
 use alloc::{
     string::{String, ToString},
     vec,
@@ -8,7 +9,6 @@ use alloc::{
 use core::fmt;
 use lazy_static::lazy_static;
 use spin::Mutex;
-use crate::security::{AccessKind, Credentials, FileMode, UserId};
 
 pub const SECTOR_SIZE: usize = 512;
 pub const DEFAULT_SECTOR_COUNT: usize = 64;
@@ -262,7 +262,8 @@ impl<D: BlockDevice> SimpleFs<D> {
         };
 
         if let Some(entry) = entries[index].take() {
-            self.device.write_sector(entry.data_sector, &[0; SECTOR_SIZE])?;
+            self.device
+                .write_sector(entry.data_sector, &[0; SECTOR_SIZE])?;
         }
         self.write_directory(&entries)
     }
@@ -309,7 +310,11 @@ impl<D: BlockDevice> SimpleFs<D> {
                 driver_backed: false,
             });
         }
-        let count = self.read_directory()?.iter().filter(|entry| entry.is_some()).count();
+        let count = self
+            .read_directory()?
+            .iter()
+            .filter(|entry| entry.is_some())
+            .count();
         Ok(StorageInfo {
             mounted: true,
             file_count: count,
@@ -344,7 +349,10 @@ impl<D: BlockDevice> SimpleFs<D> {
             if !overwrite {
                 return Err(StorageError::AlreadyExists);
             }
-            let data_sector = entries[index].as_ref().ok_or(StorageError::InvalidImage)?.data_sector;
+            let data_sector = entries[index]
+                .as_ref()
+                .ok_or(StorageError::InvalidImage)?
+                .data_sector;
             self.write_data_sector(data_sector, bytes)?;
             entries[index] = Some(DirectoryEntry {
                 path: path.to_string(),
@@ -437,7 +445,11 @@ impl<D: BlockDevice> SimpleFs<D> {
         self.write_header(count)
     }
 
-    fn write_data_sector(&mut self, data_sector: usize, contents: &[u8]) -> Result<(), StorageError> {
+    fn write_data_sector(
+        &mut self,
+        data_sector: usize,
+        contents: &[u8],
+    ) -> Result<(), StorageError> {
         let mut sector = [0; SECTOR_SIZE];
         sector[..contents.len()].copy_from_slice(contents);
         self.device.write_sector(data_sector, &sector)
@@ -520,7 +532,13 @@ pub fn create_file_checked(credentials: Credentials, path: &str) -> Result<(), S
     ensure_backend();
     authorize_create(credentials, path)?;
     let mut fs = STORAGE.lock();
-    fs.write_file_internal(path, "", false, credentials.user, default_mode_for_path(path))
+    fs.write_file_internal(
+        path,
+        "",
+        false,
+        credentials.user,
+        default_mode_for_path(path),
+    )
 }
 
 pub fn write_file(path: &str, contents: &str) -> Result<(), StorageError> {
@@ -536,11 +554,22 @@ pub fn write_file_checked(
     ensure_backend();
     let mut fs = STORAGE.lock();
     if let Some(metadata) = fs.metadata(path)? {
-        authorize(credentials, metadata.owner, metadata.mode, AccessKind::Write)?;
+        authorize(
+            credentials,
+            metadata.owner,
+            metadata.mode,
+            AccessKind::Write,
+        )?;
         fs.write_file_internal(path, contents, true, metadata.owner, metadata.mode)
     } else {
         authorize_create(credentials, path)?;
-        fs.write_file_internal(path, contents, true, credentials.user, default_mode_for_path(path))
+        fs.write_file_internal(
+            path,
+            contents,
+            true,
+            credentials.user,
+            default_mode_for_path(path),
+        )
     }
 }
 
@@ -555,7 +584,12 @@ pub fn delete_file_checked(credentials: Credentials, path: &str) -> Result<(), S
     let Some(metadata) = fs.metadata(path)? else {
         return Err(StorageError::NotFound);
     };
-    authorize(credentials, metadata.owner, metadata.mode, AccessKind::Write)?;
+    authorize(
+        credentials,
+        metadata.owner,
+        metadata.mode,
+        AccessKind::Write,
+    )?;
     fs.delete_file(path)
 }
 
@@ -574,7 +608,12 @@ pub fn chmod_execute_checked(
     let Some(metadata) = fs.metadata(path)? else {
         return Err(StorageError::NotFound);
     };
-    authorize(credentials, metadata.owner, metadata.mode, AccessKind::Manage)?;
+    authorize(
+        credentials,
+        metadata.owner,
+        metadata.mode,
+        AccessKind::Manage,
+    )?;
     fs.chmod_execute(path, enabled)
 }
 
@@ -594,7 +633,12 @@ pub fn can_execute(credentials: Credentials, path: &str) -> Result<(), StorageEr
     let Some(metadata) = fs.metadata(path)? else {
         return Err(StorageError::NotFound);
     };
-    authorize(credentials, metadata.owner, metadata.mode, AccessKind::Execute)
+    authorize(
+        credentials,
+        metadata.owner,
+        metadata.mode,
+        AccessKind::Execute,
+    )
 }
 
 fn ensure_backend() {
@@ -837,10 +881,14 @@ mod tests {
         let mut device = MemoryBlockDevice::new(4);
         let mut write = [0; SECTOR_SIZE];
         write[0] = 42;
-        device.write_sector(2, &write).expect("sector write should succeed");
+        device
+            .write_sector(2, &write)
+            .expect("sector write should succeed");
 
         let mut read = [0; SECTOR_SIZE];
-        device.read_sector(2, &mut read).expect("sector read should succeed");
+        device
+            .read_sector(2, &mut read)
+            .expect("sector read should succeed");
         assert_eq!(read[0], 42);
     }
 
@@ -862,7 +910,8 @@ mod tests {
     fn simple_fs_persists_across_remount() {
         let mut fs = SimpleFs::new(MemoryBlockDevice::new(DEFAULT_SECTOR_COUNT));
         fs.format().expect("format should succeed");
-        fs.write_file("/persist.txt", "hello").expect("write should succeed");
+        fs.write_file("/persist.txt", "hello")
+            .expect("write should succeed");
         fs.unmount();
         fs.mount().expect("remount should succeed");
         assert_eq!(
@@ -886,7 +935,8 @@ mod tests {
             fs.read_file("/tmp.txt").expect("read should succeed"),
             Some(String::new())
         );
-        fs.write_file("/tmp.txt", "updated").expect("write should succeed");
+        fs.write_file("/tmp.txt", "updated")
+            .expect("write should succeed");
         assert_eq!(
             fs.read_file("/tmp.txt").expect("read should succeed"),
             Some("updated".to_string())

@@ -1,9 +1,6 @@
 //! Phase 13 deterministic mapping stubs for executable load plans.
 
-use alloc::{
-    string::String,
-    vec::Vec,
-};
+use alloc::{string::String, vec::Vec};
 use lazy_static::lazy_static;
 use spin::Mutex;
 
@@ -138,14 +135,25 @@ impl MappingRegistry {
     }
 
     fn get(&self, id: MappingId) -> Option<MappedImage> {
-        self.mappings.iter().find(|mapping| mapping.id == id).cloned()
+        self.mappings
+            .iter()
+            .find(|mapping| mapping.id == id)
+            .cloned()
     }
 
     fn status(&self) -> MappingRegistryStatus {
         MappingRegistryStatus {
             mapped_count: self.mappings.len(),
-            total_pages: self.mappings.iter().map(|mapping| mapping.total_pages).sum(),
-            copied_bytes: self.mappings.iter().map(|mapping| mapping.copied_bytes).sum(),
+            total_pages: self
+                .mappings
+                .iter()
+                .map(|mapping| mapping.total_pages)
+                .sum(),
+            copied_bytes: self
+                .mappings
+                .iter()
+                .map(|mapping| mapping.copied_bytes)
+                .sum(),
             zero_filled_bytes: self
                 .mappings
                 .iter()

@@ -146,7 +146,10 @@ pub fn build_load_plan(image: &ExecutableImage) -> Result<LoadPlan, LoadPlanErro
     }
 
     validate_regions(&regions)?;
-    let total_pages = regions.iter().map(|region| region.page_count).sum::<usize>();
+    let total_pages = regions
+        .iter()
+        .map(|region| region.page_count)
+        .sum::<usize>();
     if total_pages + STACK_RESERVATION_PAGES > MAX_IMAGE_PAGES {
         return Err(LoadPlanError::BudgetExceeded);
     }
@@ -173,7 +176,8 @@ pub fn validate_regions(regions: &[LoadRegion]) -> Result<(), LoadPlanError> {
         return Err(LoadPlanError::MissingExecutableSegment);
     }
     for (index, region) in regions.iter().enumerate() {
-        if region.start % PAGE_SIZE as u64 != 0 || region.size == 0 || region.size % PAGE_SIZE != 0 {
+        if region.start % PAGE_SIZE as u64 != 0 || region.size == 0 || region.size % PAGE_SIZE != 0
+        {
             return Err(LoadPlanError::InvalidAlignment);
         }
         if region.permissions.writable() && region.permissions.executable() {
@@ -236,8 +240,14 @@ mod tests {
         assert_eq!(plan.stack_pages, STACK_RESERVATION_PAGES);
         assert_eq!(plan.regions[0].start, 0x400000);
         assert_eq!(plan.regions[0].size, PAGE_SIZE);
-        assert!(matches!(plan.regions[0].actions[0], LoadAction::Copy { len: 4, .. }));
-        assert!(matches!(plan.regions[0].actions[1], LoadAction::ZeroFill { len: 4092, .. }));
+        assert!(matches!(
+            plan.regions[0].actions[0],
+            LoadAction::Copy { len: 4, .. }
+        ));
+        assert!(matches!(
+            plan.regions[0].actions[1],
+            LoadAction::ZeroFill { len: 4092, .. }
+        ));
     }
 
     #[test_case]
@@ -246,7 +256,9 @@ mod tests {
             start: 0x400000,
             size: PAGE_SIZE,
             page_count: 1,
-            permissions: LoadPermissions::from_bits(LoadPermissions::WRITE | LoadPermissions::EXECUTE),
+            permissions: LoadPermissions::from_bits(
+                LoadPermissions::WRITE | LoadPermissions::EXECUTE,
+            ),
             actions: Vec::new(),
         };
         assert_eq!(
@@ -257,7 +269,8 @@ mod tests {
 
     #[test_case]
     fn overlapping_regions_are_rejected() {
-        let permissions = LoadPermissions::from_bits(LoadPermissions::READ | LoadPermissions::EXECUTE);
+        let permissions =
+            LoadPermissions::from_bits(LoadPermissions::READ | LoadPermissions::EXECUTE);
         let regions = [
             LoadRegion {
                 start: 0x400000,

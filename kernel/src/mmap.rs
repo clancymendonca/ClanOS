@@ -241,11 +241,7 @@ fn phase62_smoke_fresh(cr3: u64) -> bool {
     let unmap_file = file_mapped && munmap_address(cr3, file_base).is_ok();
     let reject_image = munmap_address(cr3, 0x400000).is_err();
     let (after_u, after_r) = munmap_status();
-    unmap_anon
-        && unmap_file
-        && reject_image
-        && after_u >= before_u + 2
-        && after_r > before_r
+    unmap_anon && unmap_file && reject_image && after_u >= before_u + 2 && after_r > before_r
 }
 
 pub fn phase62_smoke() -> bool {

@@ -187,7 +187,10 @@ pub fn list_block_devices() -> Vec<BlockDeviceInfo> {
 }
 
 pub fn active_info() -> Result<BlockDeviceInfo, BlockError> {
-    MANAGER.lock().active_entry().map(|entry| entry.info.clone())
+    MANAGER
+        .lock()
+        .active_entry()
+        .map(|entry| entry.info.clone())
 }
 
 pub fn active_sector_count() -> Result<usize, BlockError> {
@@ -197,10 +200,7 @@ pub fn active_sector_count() -> Result<usize, BlockError> {
         .map(|entry| entry.info.sector_count)
 }
 
-pub fn read_active_sector(
-    sector: usize,
-    buffer: &mut [u8; SECTOR_SIZE],
-) -> Result<(), BlockError> {
+pub fn read_active_sector(sector: usize, buffer: &mut [u8; SECTOR_SIZE]) -> Result<(), BlockError> {
     let manager = MANAGER.lock();
     let entry = manager.active_entry()?;
     let source = entry.media.get(sector).ok_or(BlockError::OutOfRange)?;
@@ -208,10 +208,7 @@ pub fn read_active_sector(
     Ok(())
 }
 
-pub fn write_active_sector(
-    sector: usize,
-    buffer: &[u8; SECTOR_SIZE],
-) -> Result<(), BlockError> {
+pub fn write_active_sector(sector: usize, buffer: &[u8; SECTOR_SIZE]) -> Result<(), BlockError> {
     let mut manager = MANAGER.lock();
     let entry = manager.active_entry_mut()?;
     if entry.info.read_only {

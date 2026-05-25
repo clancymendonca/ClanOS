@@ -237,8 +237,16 @@ pub fn compute_fairness_metrics(
         return FairnessMetrics::compute(0, 0, 0, 0, 0);
     }
 
-    let max_cpu_ticks = processes.iter().map(|(_, _, ticks)| *ticks).max().unwrap_or(0);
-    let min_cpu_ticks = processes.iter().map(|(_, _, ticks)| *ticks).min().unwrap_or(0);
+    let max_cpu_ticks = processes
+        .iter()
+        .map(|(_, _, ticks)| *ticks)
+        .max()
+        .unwrap_or(0);
+    let min_cpu_ticks = processes
+        .iter()
+        .map(|(_, _, ticks)| *ticks)
+        .min()
+        .unwrap_or(0);
 
     FairnessMetrics::compute(
         total_processes,

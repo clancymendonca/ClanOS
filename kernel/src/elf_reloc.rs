@@ -137,7 +137,11 @@ pub fn relocs_for_image(image_bytes: &[u8], load_base: u64) -> Vec<StaticReloc> 
     relocs
 }
 
-pub fn import_relocs_for_image(image_bytes: &[u8], load_base: u64, lib_base: u64) -> Vec<StaticReloc> {
+pub fn import_relocs_for_image(
+    image_bytes: &[u8],
+    load_base: u64,
+    lib_base: u64,
+) -> Vec<StaticReloc> {
     let mut relocs = relocs_for_image(image_bytes, load_base);
     if parse_dt_needed(image_bytes).is_some() {
         relocs.push(StaticReloc {
@@ -348,13 +352,21 @@ pub fn apply_static_relocs(
     Ok(applied)
 }
 
-fn write_reloc_value(backed: &FrameBackedImage, virtual_address: u64, value: u64) -> Result<(), ()> {
+fn write_reloc_value(
+    backed: &FrameBackedImage,
+    virtual_address: u64,
+    value: u64,
+) -> Result<(), ()> {
     let page_base = virtual_address & !0xfff;
     let offset = (virtual_address & 0xfff) as usize;
     for region in &backed.regions {
         for page in &region.pages {
             if page.virtual_address == page_base {
-                crate::user_paging::write_phys_bytes(page.frame.start_address, offset, &value.to_le_bytes());
+                crate::user_paging::write_phys_bytes(
+                    page.frame.start_address,
+                    offset,
+                    &value.to_le_bytes(),
+                );
                 return Ok(());
             }
         }

@@ -218,10 +218,22 @@ static CR3_ACTIVATION_COUNT: AtomicU64 = AtomicU64::new(0);
 static HW_ELF_EXECUTION_COUNT: AtomicU64 = AtomicU64::new(0);
 static REJECTED_HW_ELF_COUNT: AtomicU64 = AtomicU64::new(0);
 
-pub const ALLOWED_USER_ELFS: &[&str] =
-    &["hello", "exit42", "tickprobe", "syscallprobe", "chdirprobe", "pipeprobe"];
-pub const EXECUTION_ALLOWLIST: &[&str] =
-    &["hello", "exit42", "tickprobe", "syscallprobe", "chdirprobe", "pipeprobe"];
+pub const ALLOWED_USER_ELFS: &[&str] = &[
+    "hello",
+    "exit42",
+    "tickprobe",
+    "syscallprobe",
+    "chdirprobe",
+    "pipeprobe",
+];
+pub const EXECUTION_ALLOWLIST: &[&str] = &[
+    "hello",
+    "exit42",
+    "tickprobe",
+    "syscallprobe",
+    "chdirprobe",
+    "pipeprobe",
+];
 
 static MANIFEST_ELF_DISCOVERED: AtomicU64 = AtomicU64::new(0);
 static MANIFEST_ELF_EXECUTED: AtomicU64 = AtomicU64::new(0);
@@ -475,7 +487,10 @@ pub fn validate_program_image(
     }
     crate::storage::can_execute(credentials, &program.source_path)
         .map_err(|_| ProgramLoadError::PermissionDenied)?;
-    let image_path = program.image_path.as_ref().ok_or(ProgramLoadError::MissingImage)?;
+    let image_path = program
+        .image_path
+        .as_ref()
+        .ok_or(ProgramLoadError::MissingImage)?;
     crate::storage::can_execute(credentials, image_path)
         .map_err(|_| ProgramLoadError::PermissionDenied)?;
     program.image.ok_or(ProgramLoadError::ImageInvalid)
@@ -498,7 +513,10 @@ pub fn phase11_smoke_check() -> bool {
         .map(|output| output.contains("hello"))
         .unwrap_or(true)
         && status().unsupported_execution_count > before;
-    validate_ok && initial_status.image_count >= 1 && initial_status.valid_image_count >= 1 && blocked_ok
+    validate_ok
+        && initial_status.image_count >= 1
+        && initial_status.valid_image_count >= 1
+        && blocked_ok
 }
 
 pub fn prepare_program_image(
@@ -511,22 +529,32 @@ pub fn prepare_program_image(
     }
     crate::storage::can_execute(credentials, &program.source_path)
         .map_err(|_| ProgramLoadError::PermissionDenied)?;
-    let image_path = program.image_path.as_ref().ok_or(ProgramLoadError::MissingImage)?;
+    let image_path = program
+        .image_path
+        .as_ref()
+        .ok_or(ProgramLoadError::MissingImage)?;
     crate::storage::can_execute(credentials, image_path)
         .map_err(|_| ProgramLoadError::PermissionDenied)?;
-    let image = program.image.clone().ok_or(ProgramLoadError::ImageInvalid)?;
+    let image = program
+        .image
+        .clone()
+        .ok_or(ProgramLoadError::ImageInvalid)?;
     let load_plan = crate::load_plan::build_load_plan(&image).map_err(|_| {
         REJECTED_LOAD_PLAN_COUNT.fetch_add(1, Ordering::Relaxed);
         ProgramLoadError::LoadPlanRejected
     })?;
     let address_space_id = crate::address_space::AddressSpaceId::from_raw(
-        PREPARED_IMAGE_COUNT.load(Ordering::Relaxed).saturating_add(1),
+        PREPARED_IMAGE_COUNT
+            .load(Ordering::Relaxed)
+            .saturating_add(1),
     );
-    let address_space = crate::address_space::descriptor_for_load_plan(address_space_id, &load_plan)
-        .map_err(|_| {
-            REJECTED_LOAD_PLAN_COUNT.fetch_add(1, Ordering::Relaxed);
-            ProgramLoadError::LoadPlanRejected
-        })?;
+    let address_space =
+        crate::address_space::descriptor_for_load_plan(address_space_id, &load_plan).map_err(
+            |_| {
+                REJECTED_LOAD_PLAN_COUNT.fetch_add(1, Ordering::Relaxed);
+                ProgramLoadError::LoadPlanRejected
+            },
+        )?;
 
     PREPARED_IMAGE_COUNT.fetch_add(1, Ordering::Relaxed);
     TOTAL_PLANNED_PAGES.fetch_add(load_plan.total_pages as u64, Ordering::Relaxed);
@@ -543,7 +571,9 @@ pub fn prepare_program_image(
 pub fn phase12_smoke_check() -> bool {
     let before = status();
     let prepared = prepare_program_image(crate::security::Credentials::shell_user(), "hello")
-        .map(|prepared| prepared.load_plan.total_pages > 0 && !prepared.address_space.regions.is_empty())
+        .map(|prepared| {
+            prepared.load_plan.total_pages > 0 && !prepared.address_space.regions.is_empty()
+        })
         .unwrap_or(false);
     let blocked = crate::task::userspace::run_program("hello", &[])
         .map(|output| output.contains("hello"))
@@ -662,7 +692,9 @@ pub fn build_user_page_table(
     }
     let backed = image;
     let id = crate::user_memory::UserPageTableId::from_raw(
-        USER_PAGE_TABLE_COUNT.load(Ordering::Relaxed).saturating_add(1),
+        USER_PAGE_TABLE_COUNT
+            .load(Ordering::Relaxed)
+            .saturating_add(1),
     );
     let page_table =
         crate::user_memory::build_inactive_page_table(id, &backed.backed).map_err(|_| {
@@ -672,7 +704,12 @@ pub fn build_user_page_table(
 
     USER_PAGE_TABLE_COUNT.fetch_add(1, Ordering::Relaxed);
     TOTAL_USER_PAGE_TABLE_PAGES.fetch_add(page_table.mapped_pages as u64, Ordering::Relaxed);
-    record_page_table_process(credentials, &backed.mapped.prepared, &backed.backed, &page_table);
+    record_page_table_process(
+        credentials,
+        &backed.mapped.prepared,
+        &backed.backed,
+        &page_table,
+    );
 
     Ok(UserPageTableProgramImage { backed, page_table })
 }
@@ -732,7 +769,14 @@ pub fn phase17_smoke_check() -> bool {
             prepared.context.selectors_ready
                 && prepared.context.entry_ready
                 && !prepared.context.ring3_entered
-                && prepared.context.entry.rip == prepared.page_table.backed.mapped.prepared.load_plan.entry_point
+                && prepared.context.entry.rip
+                    == prepared
+                        .page_table
+                        .backed
+                        .mapped
+                        .prepared
+                        .load_plan
+                        .entry_point
         })
         .unwrap_or(false);
     let after = status();
@@ -769,12 +813,10 @@ pub fn enter_controlled_ring3_trampoline(
 
 pub fn phase18_smoke_check() -> bool {
     let before = status();
-    let entered = enter_controlled_ring3_trampoline(
-        crate::security::Credentials::shell_user(),
-        "hello",
-    )
-    .map(|entered| entered.result.ring3_entered && entered.result.trapped_back)
-    .unwrap_or(false);
+    let entered =
+        enter_controlled_ring3_trampoline(crate::security::Credentials::shell_user(), "hello")
+            .map(|entered| entered.result.ring3_entered && entered.result.trapped_back)
+            .unwrap_or(false);
     let after = status();
     entered
         && after.ring3_entry_count > before.ring3_entry_count
@@ -786,13 +828,13 @@ pub fn run_user_syscall_probe(
     name: &str,
 ) -> Result<UserSyscallProgramImage, ProgramLoadError> {
     let ring3 = enter_controlled_ring3_trampoline(credentials, name)?;
-    let syscall_return =
-        crate::user_syscall::dispatch_from_user(crate::user_syscall::tick_probe_frame()).map_err(
-            |_| {
-                REJECTED_USER_SYSCALL_COUNT.fetch_add(1, Ordering::Relaxed);
-                ProgramLoadError::UserSyscallRejected
-            },
-        )?;
+    let syscall_return = crate::user_syscall::dispatch_from_user(
+        crate::user_syscall::tick_probe_frame(),
+    )
+    .map_err(|_| {
+        REJECTED_USER_SYSCALL_COUNT.fetch_add(1, Ordering::Relaxed);
+        ProgramLoadError::UserSyscallRejected
+    })?;
 
     USER_SYSCALL_COUNT.fetch_add(1, Ordering::Relaxed);
     if syscall_return.returned_to_user {
@@ -857,7 +899,13 @@ pub fn execute_minimal_user_elf_descriptor(
     USER_ELF_EXIT_COUNT.fetch_add(1, Ordering::Relaxed);
     record_user_elf_process(
         credentials,
-        &user_syscall.ring3.user_context.page_table.backed.mapped.prepared,
+        &user_syscall
+            .ring3
+            .user_context
+            .page_table
+            .backed
+            .mapped
+            .prepared,
         &user_syscall.ring3.user_context.page_table.backed.backed,
     );
 
@@ -906,9 +954,7 @@ pub fn build_hw_page_table_program(
 pub fn phase21_smoke_check() -> bool {
     let before = status();
     let built = build_hw_page_table_program(crate::security::Credentials::shell_user(), "hello")
-        .map(|built| {
-            built.hw.mapped_pages > 0 && built.inactive.page_table.cr3_switch_ready
-        })
+        .map(|built| built.hw.mapped_pages > 0 && built.inactive.page_table.cr3_switch_ready)
         .unwrap_or(false);
     let after = status();
     built && after.hw_page_table_count > before.hw_page_table_count
@@ -928,13 +974,18 @@ pub fn activate_hw_page_table_smoke(
         return Err(ProgramLoadError::Cr3ActivateRejected);
     }
     CR3_ACTIVATION_COUNT.fetch_add(1, Ordering::Relaxed);
-    record_cr3_activated_process(credentials, &built.inactive.backed.mapped.prepared, &built.inactive.backed.backed);
+    record_cr3_activated_process(
+        credentials,
+        &built.inactive.backed.mapped.prepared,
+        &built.inactive.backed.backed,
+    );
     Ok(())
 }
 
 pub fn phase22_smoke_check() -> bool {
     let before = status();
-    let ok = activate_hw_page_table_smoke(crate::security::Credentials::shell_user(), "hello").is_ok();
+    let ok =
+        activate_hw_page_table_smoke(crate::security::Credentials::shell_user(), "hello").is_ok();
     let after = status();
     ok && after.cr3_activation_count > before.cr3_activation_count
 }
@@ -978,8 +1029,12 @@ pub fn enter_hw_user_trap(
         crate::gdt::user_selectors(),
     )
     .map_err(|_| ProgramLoadError::HwTrapRejected)?;
-    crate::user_entry::enter_user_int80_trap(&built.hw, &context.entry, crate::gdt::user_selectors())
-        .map_err(|_| ProgramLoadError::HwTrapRejected)?;
+    crate::user_entry::enter_user_int80_trap(
+        &built.hw,
+        &context.entry,
+        crate::gdt::user_selectors(),
+    )
+    .map_err(|_| ProgramLoadError::HwTrapRejected)?;
     record_user_hw_trapped_process(
         credentials,
         &built.inactive.backed.mapped.prepared,
@@ -1036,8 +1091,10 @@ pub fn run_user_copy_probe_hw(
 ) -> Result<bool, ProgramLoadError> {
     let built = build_hw_page_table_program(credentials, name)?;
     let user_buf = crate::user_context::DEFAULT_USER_STACK_TOP.saturating_sub(128);
-    let ok = crate::user_paging::with_user_page_table(&built.hw, || crate::user_copy::probe_round_trip(user_buf))
-        .map_err(|_| ProgramLoadError::UserCopyRejected)?;
+    let ok = crate::user_paging::with_user_page_table(&built.hw, || {
+        crate::user_copy::probe_round_trip(user_buf)
+    })
+    .map_err(|_| ProgramLoadError::UserCopyRejected)?;
     if !ok {
         return Err(ProgramLoadError::UserCopyRejected);
     }
@@ -1046,7 +1103,8 @@ pub fn run_user_copy_probe_hw(
 
 pub fn phase26_smoke_check() -> bool {
     let before = crate::user_copy::status();
-    let ok = run_user_copy_probe_hw(crate::security::Credentials::shell_user(), "hello").unwrap_or(false);
+    let ok = run_user_copy_probe_hw(crate::security::Credentials::shell_user(), "hello")
+        .unwrap_or(false);
     let after = crate::user_copy::status();
     ok && after.0 > before.0
 }
@@ -1066,11 +1124,8 @@ pub fn back_mapped_program_with_relocs(
                 contents.as_bytes(),
                 mapped.prepared.load_plan.entry_point,
             );
-            let _ = crate::elf_reloc::apply_dynamic_needed(
-                &mut backed,
-                contents.as_bytes(),
-                &relocs,
-            );
+            let _ =
+                crate::elf_reloc::apply_dynamic_needed(&mut backed, contents.as_bytes(), &relocs);
             write_image_bytes_to_backed(
                 &mut backed,
                 contents.as_bytes(),
@@ -1100,18 +1155,11 @@ pub fn execute_hw_user_elf(
         return Err(ProgramLoadError::HwElfRejected);
     }
     let syscall = run_hw_syscall_probe(credentials, name)?;
-    let output = format!(
-        "hello: exit=0 tick={}",
-        syscall.return_value
-    );
+    let output = format!("hello: exit=0 tick={}", syscall.return_value);
     HW_ELF_EXECUTION_COUNT.fetch_add(1, Ordering::Relaxed);
     USER_ELF_EXECUTION_COUNT.fetch_add(1, Ordering::Relaxed);
     USER_ELF_EXIT_COUNT.fetch_add(1, Ordering::Relaxed);
-    record_user_hw_elf_process(
-        credentials,
-        name,
-        syscall.return_value,
-    );
+    record_user_hw_elf_process(credentials, name, syscall.return_value);
     let ring3 = enter_controlled_ring3_trampoline(credentials, name)?;
     Ok(UserElfExecution {
         user_syscall: UserSyscallProgramImage {
@@ -1174,17 +1222,19 @@ pub fn phase30_cr3_switch_smoke() -> bool {
         .map_err(|_| ())
         .ok();
     match (first, second) {
-        (Some(a), Some(b)) => crate::user_paging::switch_between_user_tables(a.hw.cr3_phys, b.hw.cr3_phys)
-            .unwrap_or(false),
+        (Some(a), Some(b)) => {
+            crate::user_paging::switch_between_user_tables(a.hw.cr3_phys, b.hw.cr3_phys)
+                .unwrap_or(false)
+        }
         _ => false,
     }
 }
 
 pub fn phase31_sched_cr3_smoke() -> bool {
-    let hello = build_hw_page_table_program(crate::security::Credentials::shell_user(), "hello")
-        .ok();
-    let exit42 = build_hw_page_table_program(crate::security::Credentials::shell_user(), "exit42")
-        .ok();
+    let hello =
+        build_hw_page_table_program(crate::security::Credentials::shell_user(), "hello").ok();
+    let exit42 =
+        build_hw_page_table_program(crate::security::Credentials::shell_user(), "exit42").ok();
     match (hello, exit42) {
         (Some(a), Some(b)) => {
             let ok = crate::user_paging::sched_cr3_switch_smoke(a.hw.cr3_phys, b.hw.cr3_phys);
@@ -1202,10 +1252,10 @@ pub fn phase32_user_frame_smoke() -> bool {
 }
 
 pub fn phase33_multi_elf_smoke() -> bool {
-    let hello = build_hw_page_table_program(crate::security::Credentials::shell_user(), "hello")
-        .ok();
-    let exit42 = build_hw_page_table_program(crate::security::Credentials::shell_user(), "exit42")
-        .ok();
+    let hello =
+        build_hw_page_table_program(crate::security::Credentials::shell_user(), "hello").ok();
+    let exit42 =
+        build_hw_page_table_program(crate::security::Credentials::shell_user(), "exit42").ok();
     let (Some(h), Some(e)) = (hello, exit42) else {
         return false;
     };
@@ -1214,12 +1264,14 @@ pub fn phase33_multi_elf_smoke() -> bool {
     let asid_h = h.inactive.backed.backed.address_space_id;
     let asid_e = e.inactive.backed.backed.address_space_id;
     let isolated = asid_h != asid_e || t1 != t2;
-    let hello_ok = execute_allowlisted_user_elf(crate::security::Credentials::shell_user(), "hello")
-        .map(|r| r.exit_code == 0)
-        .unwrap_or(false);
-    let exit_ok = execute_allowlisted_user_elf(crate::security::Credentials::shell_user(), "exit42")
-        .map(|r| r.exit_code == 42)
-        .unwrap_or(false);
+    let hello_ok =
+        execute_allowlisted_user_elf(crate::security::Credentials::shell_user(), "hello")
+            .map(|r| r.exit_code == 0)
+            .unwrap_or(false);
+    let exit_ok =
+        execute_allowlisted_user_elf(crate::security::Credentials::shell_user(), "exit42")
+            .map(|r| r.exit_code == 42)
+            .unwrap_or(false);
     t1.is_some() && t2.is_some() && isolated && hello_ok && exit_ok
 }
 
@@ -1234,10 +1286,12 @@ pub fn phase35_syscall_table_smoke() -> bool {
     if !crate::user_syscall_hw::dispatch_table_status().2 {
         crate::user_syscall_hw::mark_dispatch_table_ready();
     }
-    let tick_ok =
-        crate::user_syscall_hw::is_allowed_hw_syscall(crate::syscall::SyscallId::GetTickCount as u64);
-    let copy_ok =
-        crate::user_syscall_hw::is_allowed_hw_syscall(crate::syscall::SyscallId::UserCopyProbe as u64);
+    let tick_ok = crate::user_syscall_hw::is_allowed_hw_syscall(
+        crate::syscall::SyscallId::GetTickCount as u64,
+    );
+    let copy_ok = crate::user_syscall_hw::is_allowed_hw_syscall(
+        crate::syscall::SyscallId::UserCopyProbe as u64,
+    );
     let bad = !crate::user_syscall_hw::is_allowed_hw_syscall(999);
     if tick_ok && copy_ok {
         crate::user_syscall_hw::HW_SYSCALL_ALLOWED.fetch_add(1, Ordering::Relaxed);
@@ -1272,8 +1326,8 @@ pub fn storage_write_probe(user_buf: u64) -> Result<usize, ()> {
 
 pub fn phase36_storage_copyin_smoke() -> bool {
     let before_reads = STORAGE_COPYIN_READS.load(Ordering::Relaxed);
-    let built = build_hw_page_table_program(crate::security::Credentials::shell_user(), "hello")
-        .ok();
+    let built =
+        build_hw_page_table_program(crate::security::Credentials::shell_user(), "hello").ok();
     let Some(built) = built else {
         return false;
     };
@@ -1321,15 +1375,16 @@ pub fn execute_manifest_elf_gated(
 
 pub fn phase37_manifest_elf_smoke() -> bool {
     let discovered = discover_elf_manifests();
-    let executed = execute_manifest_elf_gated(crate::security::Credentials::shell_user(), "tickprobe")
-        .map(|r| r.exit_code == 0)
-        .unwrap_or(false);
+    let executed =
+        execute_manifest_elf_gated(crate::security::Credentials::shell_user(), "tickprobe")
+            .map(|r| r.exit_code == 0)
+            .unwrap_or(false);
     discovered >= 3 && executed
 }
 
 pub fn phase38_demand_zero_smoke() -> bool {
-    let built = build_hw_page_table_program(crate::security::Credentials::shell_user(), "hello")
-        .ok();
+    let built =
+        build_hw_page_table_program(crate::security::Credentials::shell_user(), "hello").ok();
     let Some(built) = built else {
         return false;
     };
@@ -1368,11 +1423,9 @@ pub fn phase41_shared_lib_smoke() -> bool {
 
 pub fn phase42_dyn_reloc_smoke() -> bool {
     let sample = crate::storage::phase11_sample_elf_image();
-    let Some(mut image) = back_mapped_program_with_relocs(
-        crate::security::Credentials::shell_user(),
-        "hello",
-    )
-    .ok() else {
+    let Some(mut image) =
+        back_mapped_program_with_relocs(crate::security::Credentials::shell_user(), "hello").ok()
+    else {
         return false;
     };
     let bytes = sample.as_bytes();
@@ -1400,11 +1453,15 @@ pub fn execute_trusted_manifest_elf(
         TRUST_EXEC_REJECTED.fetch_add(1, Ordering::Relaxed);
         return Err(ProgramLoadError::HwElfRejected);
     }
-    if let Some(manifest) = crate::storage::read_file(&program.source_path).ok().flatten() {
+    if let Some(manifest) = crate::storage::read_file(&program.source_path)
+        .ok()
+        .flatten()
+    {
         if let Some(manifest_parsed) = parse_manifest(&manifest).ok() {
-            if let (Some(digest), Some(image_path)) =
-                (manifest_parsed.digest_hex.as_ref(), program.image_path.as_ref())
-            {
+            if let (Some(digest), Some(image_path)) = (
+                manifest_parsed.digest_hex.as_ref(),
+                program.image_path.as_ref(),
+            ) {
                 let elf = crate::storage::read_file(image_path).ok().flatten();
                 if let Some(elf) = elf {
                     if !crate::image_digest::verify_digest_hex(elf.as_bytes(), digest) {
@@ -1432,17 +1489,12 @@ pub fn execute_trusted_manifest_elf(
 }
 
 pub fn phase43_trust_exec_smoke() -> bool {
-    let trusted = execute_trusted_manifest_elf(
-        crate::security::Credentials::shell_user(),
-        "systrust",
-    )
-    .map(|r| r.exit_code == 0)
-    .unwrap_or(false);
-    let rejected = execute_trusted_manifest_elf(
-        crate::security::Credentials::shell_user(),
-        "hello",
-    )
-    .is_err();
+    let trusted =
+        execute_trusted_manifest_elf(crate::security::Credentials::shell_user(), "systrust")
+            .map(|r| r.exit_code == 0)
+            .unwrap_or(false);
+    let rejected =
+        execute_trusted_manifest_elf(crate::security::Credentials::shell_user(), "hello").is_err();
     let (ok, rej) = trust_exec_status();
     trusted && rejected && ok > 0 && rej > 0
 }
@@ -1467,7 +1519,8 @@ pub fn phase46_fd_io_smoke() -> bool {
 }
 
 pub fn phase47_file_demand_smoke() -> bool {
-    let Some(built) = build_hw_page_table_program(crate::security::Credentials::shell_user(), "hello").ok()
+    let Some(built) =
+        build_hw_page_table_program(crate::security::Credentials::shell_user(), "hello").ok()
     else {
         return false;
     };
@@ -1563,11 +1616,7 @@ pub fn phase60_integration_smoke() -> bool {
     let (sh_loaded, sh_pages, _) = crate::shared_loader::status();
     let (plt_slots, plt_applied) = crate::elf_reloc::plt_status();
     let (digest_ok, digest_rej) = crate::image_digest::status();
-    let (cpus, runq_enq, _) = (
-        crate::smp::status().0,
-        crate::smp::runqueue_status().0,
-        (),
-    );
+    let (cpus, runq_enq, _) = (crate::smp::status().0, crate::smp::runqueue_status().0, ());
     procfd
         && dups > 0
         && relative > 0
@@ -1975,7 +2024,10 @@ fn write_image_bytes_to_backed(
 
 fn validate_manifest_image(
     manifest: &ProgramManifest,
-) -> (Option<crate::exec_image::ExecutableImage>, Option<crate::exec_image::ImageLoadError>) {
+) -> (
+    Option<crate::exec_image::ExecutableImage>,
+    Option<crate::exec_image::ImageLoadError>,
+) {
     if manifest.kind != ProgramKind::Elf64Image {
         return (None, None);
     }
@@ -2043,7 +2095,10 @@ fn record_prepared_process(
         metadata,
         load,
     ) {
-        let _ = crate::task::process::set_process_state(pid, crate::task::process::ProcessState::Blocked);
+        let _ = crate::task::process::set_process_state(
+            pid,
+            crate::task::process::ProcessState::Blocked,
+        );
     }
 }
 
@@ -2082,7 +2137,10 @@ fn record_mapped_process(
         metadata,
         load,
     ) {
-        let _ = crate::task::process::set_process_state(pid, crate::task::process::ProcessState::Blocked);
+        let _ = crate::task::process::set_process_state(
+            pid,
+            crate::task::process::ProcessState::Blocked,
+        );
     }
 }
 
@@ -2121,7 +2179,10 @@ fn record_frame_backed_process(
         metadata,
         load,
     ) {
-        let _ = crate::task::process::set_process_state(pid, crate::task::process::ProcessState::Blocked);
+        let _ = crate::task::process::set_process_state(
+            pid,
+            crate::task::process::ProcessState::Blocked,
+        );
     }
 }
 
@@ -2161,7 +2222,10 @@ fn record_page_table_process(
         metadata,
         load,
     ) {
-        let _ = crate::task::process::set_process_state(pid, crate::task::process::ProcessState::Blocked);
+        let _ = crate::task::process::set_process_state(
+            pid,
+            crate::task::process::ProcessState::Blocked,
+        );
     }
 }
 
@@ -2201,7 +2265,10 @@ fn record_user_context_process(
         metadata,
         load,
     ) {
-        let _ = crate::task::process::set_process_state(pid, crate::task::process::ProcessState::Blocked);
+        let _ = crate::task::process::set_process_state(
+            pid,
+            crate::task::process::ProcessState::Blocked,
+        );
     }
 }
 
@@ -2241,7 +2308,10 @@ fn record_ring3_trap_process(
         metadata,
         load,
     ) {
-        let _ = crate::task::process::set_process_state(pid, crate::task::process::ProcessState::Blocked);
+        let _ = crate::task::process::set_process_state(
+            pid,
+            crate::task::process::ProcessState::Blocked,
+        );
     }
 }
 
@@ -2281,7 +2351,10 @@ fn record_user_syscall_process(
         metadata,
         load,
     ) {
-        let _ = crate::task::process::set_process_state(pid, crate::task::process::ProcessState::Blocked);
+        let _ = crate::task::process::set_process_state(
+            pid,
+            crate::task::process::ProcessState::Blocked,
+        );
     }
 }
 
@@ -2382,7 +2455,10 @@ fn record_user_hw_syscall_process(
         metadata,
         load,
     ) {
-        let _ = crate::task::process::set_process_state(pid, crate::task::process::ProcessState::Blocked);
+        let _ = crate::task::process::set_process_state(
+            pid,
+            crate::task::process::ProcessState::Blocked,
+        );
     }
 }
 
@@ -2425,7 +2501,10 @@ fn record_user_hw_elf_process(
         metadata,
         load,
     ) {
-        let _ = crate::task::process::set_process_state(pid, crate::task::process::ProcessState::Blocked);
+        let _ = crate::task::process::set_process_state(
+            pid,
+            crate::task::process::ProcessState::Blocked,
+        );
     }
 }
 
@@ -2466,7 +2545,10 @@ fn record_load_state_process(
         metadata,
         load,
     ) {
-        let _ = crate::task::process::set_process_state(pid, crate::task::process::ProcessState::Blocked);
+        let _ = crate::task::process::set_process_state(
+            pid,
+            crate::task::process::ProcessState::Blocked,
+        );
         return Some(pid);
     }
     None
@@ -2507,7 +2589,10 @@ fn record_user_elf_process(
         metadata,
         load,
     ) {
-        let _ = crate::task::process::set_process_state(pid, crate::task::process::ProcessState::Blocked);
+        let _ = crate::task::process::set_process_state(
+            pid,
+            crate::task::process::ProcessState::Blocked,
+        );
     }
 }
 

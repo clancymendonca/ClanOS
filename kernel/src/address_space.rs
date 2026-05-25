@@ -2,7 +2,7 @@
 
 use alloc::vec::Vec;
 
-use crate::exec_image::{ExecutableImage, ExecutableFormat, SegmentFlags};
+use crate::exec_image::{ExecutableFormat, ExecutableImage, SegmentFlags};
 
 const USER_MIN: u64 = 0x1000;
 const USER_MAX: u64 = 0x0000_8000_0000_0000;
@@ -123,7 +123,9 @@ pub fn descriptor_for_load_plan(
     })
 }
 
-pub fn descriptor_for_mapped_image(mapped: &crate::mapping_stub::MappedImage) -> AddressSpaceDescriptor {
+pub fn descriptor_for_mapped_image(
+    mapped: &crate::mapping_stub::MappedImage,
+) -> AddressSpaceDescriptor {
     let regions = mapped
         .regions
         .iter()
@@ -191,7 +193,9 @@ fn kind_for_load_permissions(permissions: crate::load_plan::LoadPermissions) -> 
     }
 }
 
-fn segment_flags_for_load_permissions(permissions: crate::load_plan::LoadPermissions) -> SegmentFlags {
+fn segment_flags_for_load_permissions(
+    permissions: crate::load_plan::LoadPermissions,
+) -> SegmentFlags {
     SegmentFlags::from_bits(
         ((permissions.readable() as u8) * SegmentFlags::READ)
             | ((permissions.writable() as u8) * SegmentFlags::WRITE)
@@ -199,7 +203,10 @@ fn segment_flags_for_load_permissions(permissions: crate::load_plan::LoadPermiss
     )
 }
 
-fn reservation_for_regions(regions: &[VirtualRegion], stack_pages: usize) -> FrameReservationSummary {
+fn reservation_for_regions(
+    regions: &[VirtualRegion],
+    stack_pages: usize,
+) -> FrameReservationSummary {
     let mut summary = FrameReservationSummary {
         user_pages: stack_pages,
         stack_pages,

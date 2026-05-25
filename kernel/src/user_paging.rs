@@ -1,7 +1,7 @@
 //! Hardware user page tables, CR3 activation, and per-process switching (Phases 21-22, 30).
 
-use core::sync::atomic::{AtomicU64, Ordering};
 use bootloader::bootinfo::MemoryMap;
+use core::sync::atomic::{AtomicU64, Ordering};
 use lazy_static::lazy_static;
 use spin::Mutex;
 use x86_64::{
@@ -75,10 +75,9 @@ lazy_static! {
 }
 
 pub unsafe fn set_boot_frame_allocator(memory_map: &'static MemoryMap, skip_frames: usize) {
-    *PAGE_TABLE_FRAME_ALLOCATOR.lock() = Some(crate::memory::BootInfoFrameAllocator::init_from_index(
-        memory_map,
-        skip_frames,
-    ));
+    *PAGE_TABLE_FRAME_ALLOCATOR.lock() = Some(
+        crate::memory::BootInfoFrameAllocator::init_from_index(memory_map, skip_frames),
+    );
 }
 
 pub fn init(physical_memory_offset: VirtAddr) {
@@ -151,11 +150,7 @@ pub fn write_phys_bytes(phys: u64, offset: usize, bytes: &[u8]) {
     let addr = phys.saturating_add(offset as u64);
     let virt = phys_to_virt(PhysAddr::new(addr));
     unsafe {
-        core::ptr::copy_nonoverlapping(
-            bytes.as_ptr(),
-            virt.as_mut_ptr(),
-            bytes.len(),
-        );
+        core::ptr::copy_nonoverlapping(bytes.as_ptr(), virt.as_mut_ptr(), bytes.len());
     }
 }
 
@@ -235,7 +230,8 @@ fn map_default_user_stack(
             .ok_or(UserPagingError::FrameUnavailable)?;
         let page: Page<Size4KiB> = Page::containing_address(VirtAddr::new(addr));
         let phys = frame;
-        let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE | PageTableFlags::USER_ACCESSIBLE;
+        let flags =
+            PageTableFlags::PRESENT | PageTableFlags::WRITABLE | PageTableFlags::USER_ACCESSIBLE;
         unsafe {
             mapper
                 .map_to(page, phys, flags, frame_alloc)
@@ -321,8 +317,8 @@ pub fn activate_for_process(cr3_phys: u64) -> Result<(), UserPagingError> {
         if KERNEL_CR3.lock().is_none() {
             backup_kernel_cr3()?;
         }
-        let frame =
-            PhysFrame::from_start_address(PhysAddr::new(cr3_phys)).map_err(|_| UserPagingError::MapFailed)?;
+        let frame = PhysFrame::from_start_address(PhysAddr::new(cr3_phys))
+            .map_err(|_| UserPagingError::MapFailed)?;
         unsafe {
             Cr3::write(frame, Cr3::read().1);
         }
@@ -343,11 +339,7 @@ pub fn switch_between_user_tables(first: u64, second: u64) -> Result<bool, UserP
         let second_trans = verify_active_translation(0x400000);
         restore_kernel_page_table_inner()?;
         CR3_ISOLATION_CHECKS.fetch_add(1, Ordering::Relaxed);
-        Ok(
-            first != second
-                && first_trans.is_some()
-                && second_trans.is_some(),
-        )
+        Ok(first != second && first_trans.is_some() && second_trans.is_some())
     })
 }
 
@@ -449,8 +441,10 @@ pub fn map_demand_zero_page(cr3_phys: u64, virtual_address: u64) -> Result<(), U
         let frame = if let Some(frame) = frame_alloc.allocate_frame() {
             frame
         } else {
-            let owned = crate::frame_ownership::allocate_frame(crate::frame_ownership::FrameOwner::PageTable)
-                .map_err(|_| UserPagingError::FrameUnavailable)?;
+            let owned = crate::frame_ownership::allocate_frame(
+                crate::frame_ownership::FrameOwner::PageTable,
+            )
+            .map_err(|_| UserPagingError::FrameUnavailable)?;
             PhysFrame::from_start_address(PhysAddr::new(owned.start_address))
                 .map_err(|_| UserPagingError::FrameUnavailable)?
         };
@@ -522,9 +516,7 @@ pub fn unmap_user_page(cr3_phys: u64, virtual_address: u64) -> Result<(), UserPa
 }
 
 pub fn phase48_smoke() -> bool {
-    let bad = PageTableFlags::PRESENT
-        | PageTableFlags::WRITABLE
-        | PageTableFlags::USER_ACCESSIBLE;
+    let bad = PageTableFlags::PRESENT | PageTableFlags::WRITABLE | PageTableFlags::USER_ACCESSIBLE;
     let good = PageTableFlags::PRESENT
         | PageTableFlags::WRITABLE
         | PageTableFlags::USER_ACCESSIBLE
@@ -555,7 +547,11 @@ pub fn probe_stack_guard(pml4_phys: u64) -> bool {
     false
 }
 
-pub fn mprotect_page(cr3_phys: u64, virtual_address: u64, make_writable: bool) -> Result<(), UserPagingError> {
+pub fn mprotect_page(
+    cr3_phys: u64,
+    virtual_address: u64,
+    make_writable: bool,
+) -> Result<(), UserPagingError> {
     x86_64::instructions::interrupts::without_interrupts(|| {
         let page_base = virtual_address & !0xfff;
         let offset = phys_mem_offset();
@@ -571,7 +567,9 @@ pub fn mprotect_page(cr3_phys: u64, virtual_address: u64, make_writable: bool) -
         for &index in &indexes[..3] {
             let virt = offset + current.start_address().as_u64();
             let table: &PageTable = unsafe { &*(virt.as_ptr()) };
-            current = table[index].frame().map_err(|_| UserPagingError::MapFailed)?;
+            current = table[index]
+                .frame()
+                .map_err(|_| UserPagingError::MapFailed)?;
         }
         let virt = offset + current.start_address().as_u64();
         let table: &mut PageTable = unsafe { &mut *(virt.as_mut_ptr()) };
@@ -681,8 +679,9 @@ pub fn copy_anon_page_to_child(
     let new_frame = if let Some(frame) = frame_alloc.allocate_frame() {
         frame
     } else {
-        let owned = crate::frame_ownership::allocate_frame(crate::frame_ownership::FrameOwner::PageTable)
-            .map_err(|_| UserPagingError::FrameUnavailable)?;
+        let owned =
+            crate::frame_ownership::allocate_frame(crate::frame_ownership::FrameOwner::PageTable)
+                .map_err(|_| UserPagingError::FrameUnavailable)?;
         PhysFrame::from_start_address(PhysAddr::new(owned.start_address))
             .map_err(|_| UserPagingError::MapFailed)?
     };
@@ -722,8 +721,9 @@ pub fn fork_duplicate_cr3(parent_cr3: u64) -> Result<u64, UserPagingError> {
     let child_cr3 = if let Some(frame) = frame_alloc.allocate_frame() {
         frame.start_address().as_u64()
     } else {
-        let owned = crate::frame_ownership::allocate_frame(crate::frame_ownership::FrameOwner::PageTable)
-            .map_err(|_| UserPagingError::FrameUnavailable)?;
+        let owned =
+            crate::frame_ownership::allocate_frame(crate::frame_ownership::FrameOwner::PageTable)
+                .map_err(|_| UserPagingError::FrameUnavailable)?;
         owned.start_address
     };
     zero_page_table(child_cr3);
@@ -733,10 +733,13 @@ pub fn fork_duplicate_cr3(parent_cr3: u64) -> Result<u64, UserPagingError> {
     while addr < 0x410000 {
         if let Some(phys) = translate_hw_page(parent_cr3, addr) {
             let page = Page::<Size4KiB>::containing_address(VirtAddr::new(addr));
-            let parent_frame = PhysFrame::<Size4KiB>::from_start_address(PhysAddr::new(phys & !0xfff))
-                .map_err(|_| UserPagingError::MapFailed)?;
+            let parent_frame =
+                PhysFrame::<Size4KiB>::from_start_address(PhysAddr::new(phys & !0xfff))
+                    .map_err(|_| UserPagingError::MapFailed)?;
             let entry_flags = if addr >= 0x401000 {
-                PageTableFlags::PRESENT | PageTableFlags::USER_ACCESSIBLE | PageTableFlags::NO_EXECUTE
+                PageTableFlags::PRESENT
+                    | PageTableFlags::USER_ACCESSIBLE
+                    | PageTableFlags::NO_EXECUTE
             } else {
                 PageTableFlags::PRESENT | PageTableFlags::USER_ACCESSIBLE
             };
@@ -776,7 +779,12 @@ pub fn fork_duplicate_cr3(parent_cr3: u64) -> Result<u64, UserPagingError> {
 fn translate_hw(pml4_phys: u64, addr: VirtAddr) -> Option<PhysAddr> {
     let offset = phys_mem_offset();
     let frame = PhysFrame::from_start_address(PhysAddr::new(pml4_phys)).ok()?;
-    let table_indexes = [addr.p4_index(), addr.p3_index(), addr.p2_index(), addr.p1_index()];
+    let table_indexes = [
+        addr.p4_index(),
+        addr.p3_index(),
+        addr.p2_index(),
+        addr.p1_index(),
+    ];
     let mut current = frame;
     for &index in &table_indexes {
         let virt = offset + current.start_address().as_u64();

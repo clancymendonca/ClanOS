@@ -202,9 +202,13 @@ pub fn can_access(
 ) -> Result<AccessDecision, SecurityError> {
     let allowed = match access {
         AccessKind::Manage => credentials.can_manage(),
-        AccessKind::Write => credentials.can_manage() || (credentials.user == owner && mode.allows(access)),
+        AccessKind::Write => {
+            credentials.can_manage() || (credentials.user == owner && mode.allows(access))
+        }
         AccessKind::Read | AccessKind::Execute => {
-            credentials.can_manage() || mode.allows(access) || (credentials.user == owner && mode.allows(access))
+            credentials.can_manage()
+                || mode.allows(access)
+                || (credentials.user == owner && mode.allows(access))
         }
     };
 
@@ -224,8 +228,20 @@ pub fn phase10_smoke_check() -> bool {
     let admin = Credentials::admin();
     let owner = user.user;
     can_access(user, owner, FileMode::user_file(), AccessKind::Write).is_ok()
-        && can_access(user, UserId::from_raw(1), FileMode::system_executable(), AccessKind::Write).is_err()
-        && can_access(admin, UserId::from_raw(1), FileMode::system_executable(), AccessKind::Manage).is_ok()
+        && can_access(
+            user,
+            UserId::from_raw(1),
+            FileMode::system_executable(),
+            AccessKind::Write,
+        )
+        .is_err()
+        && can_access(
+            admin,
+            UserId::from_raw(1),
+            FileMode::system_executable(),
+            AccessKind::Manage,
+        )
+        .is_ok()
 }
 
 #[cfg(test)]

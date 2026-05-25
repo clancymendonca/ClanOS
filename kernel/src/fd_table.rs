@@ -134,7 +134,10 @@ pub fn dup_fd_for_process(pid: ProcessId, fd: u32) -> Result<u32, ()> {
             FD_REJECTED.fetch_add(1, Ordering::Relaxed);
             return Err(());
         }
-        let path = table[idx].as_ref().map(|slot| slot.path.clone()).ok_or(())?;
+        let path = table[idx]
+            .as_ref()
+            .map(|slot| slot.path.clone())
+            .ok_or(())?;
         for (new_idx, slot) in table.iter_mut().enumerate() {
             if slot.is_none() {
                 *slot = Some(FdSlotStorage { path, flags: 0 });
@@ -215,12 +218,7 @@ pub fn read_fd(fd: u32, user_buf: u64, max_len: u64) -> Result<u64, ()> {
         .ok_or_else(|| {
             FD_REJECTED.fetch_add(1, Ordering::Relaxed);
         })?;
-    let sample: alloc::vec::Vec<u8> = contents
-        .as_bytes()
-        .iter()
-        .take(len)
-        .copied()
-        .collect();
+    let sample: alloc::vec::Vec<u8> = contents.as_bytes().iter().take(len).copied().collect();
     crate::user_copy::copy_to_user(&sample, user_buf).map_err(|_| {
         FD_REJECTED.fetch_add(1, Ordering::Relaxed);
     })?;
@@ -283,7 +281,12 @@ pub fn dup_fd(fd: u32) -> Result<u32, ()> {
     dup_fd_for_process(pid, fd)
 }
 
-pub fn read_fd_for_process(pid: ProcessId, fd: u32, user_buf: u64, max_len: u64) -> Result<u64, ()> {
+pub fn read_fd_for_process(
+    pid: ProcessId,
+    fd: u32,
+    user_buf: u64,
+    max_len: u64,
+) -> Result<u64, ()> {
     let len = core::cmp::min(max_len, 64) as usize;
     if len == 0 || user_buf == 0 {
         return Err(());
@@ -316,7 +319,11 @@ pub fn fcntl(fd: u32, cmd: u64, arg: u64) -> Result<u64, ()> {
                 .or_else(|| process::smoke_process_id())
                 .ok_or(())?;
             let flags = process::with_process_mut(pid, |process| {
-                process.fds_mut().get(fd as usize).and_then(|slot| slot.as_ref()).map(|slot| slot.flags)
+                process
+                    .fds_mut()
+                    .get(fd as usize)
+                    .and_then(|slot| slot.as_ref())
+                    .map(|slot| slot.flags)
             })
             .flatten()
             .ok_or(())?;
@@ -406,7 +413,8 @@ pub fn phase64_smoke() -> bool {
         return false;
     };
     let _ = close_file_for_process(parent, fd);
-    let child_open = process::with_process_mut(child, |p| p.fds_mut()[0].is_some()).unwrap_or(false);
+    let child_open =
+        process::with_process_mut(child, |p| p.fds_mut()[0].is_some()).unwrap_or(false);
     if child_open {
         FORK_INHERITED.fetch_add(1, Ordering::Relaxed);
         FORK_ISOLATED.fetch_add(1, Ordering::Relaxed);
@@ -452,8 +460,11 @@ pub fn phase76_smoke() -> bool {
 
 pub fn phase45_smoke() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
-    let Some(pid) = process::create_kernel_process_as("fd-smoke-a", tick, crate::security::Credentials::shell_user())
-    else {
+    let Some(pid) = process::create_kernel_process_as(
+        "fd-smoke-a",
+        tick,
+        crate::security::Credentials::shell_user(),
+    ) else {
         return false;
     };
     process::set_smoke_process_id(Some(pid));
@@ -468,8 +479,11 @@ pub fn phase45_smoke() -> bool {
 
 pub fn phase46_smoke() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
-    let Some(pid) = process::create_kernel_process_as("fd-io-smoke", tick, crate::security::Credentials::shell_user())
-    else {
+    let Some(pid) = process::create_kernel_process_as(
+        "fd-io-smoke",
+        tick,
+        crate::security::Credentials::shell_user(),
+    ) else {
         return false;
     };
     process::set_smoke_process_id(Some(pid));
@@ -503,7 +517,8 @@ pub fn phase51_smoke() -> bool {
     let Some(pid_a) = process::create_kernel_process_as("proc-fd-a", tick, creds) else {
         return false;
     };
-    let Some(pid_b) = process::create_kernel_process_as("proc-fd-b", tick.saturating_add(1), creds) else {
+    let Some(pid_b) = process::create_kernel_process_as("proc-fd-b", tick.saturating_add(1), creds)
+    else {
         return false;
     };
     let fd_a = open_file_for_process(pid_a, "/bin/hello").ok();
@@ -512,8 +527,8 @@ pub fn phase51_smoke() -> bool {
         return false;
     }
     let close_a = close_file_for_process(pid_a, fd_a.unwrap()).is_ok();
-    let still_open = process::with_process_mut(pid_b, |p| p.fds_mut()[0].is_some())
-        .unwrap_or(false);
+    let still_open =
+        process::with_process_mut(pid_b, |p| p.fds_mut()[0].is_some()).unwrap_or(false);
     if close_a && still_open {
         PROC_FD_ISOLATED.store(1, Ordering::Relaxed);
     }

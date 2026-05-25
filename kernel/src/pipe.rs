@@ -240,7 +240,8 @@ pub fn phase95_smoke() -> bool {
         return false;
     };
     let _ = write_pipe_kernel(pipe_id, b"pipe95");
-    let Some(built) = crate::task::program_loader::build_hw_page_table_program(creds, "pipeprobe").ok()
+    let Some(built) =
+        crate::task::program_loader::build_hw_page_table_program(creds, "pipeprobe").ok()
     else {
         return false;
     };

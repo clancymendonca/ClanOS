@@ -5,8 +5,8 @@
 //! yet ready.
 
 use super::{Task, TaskId, TaskState};
-use alloc::{collections::BTreeMap, sync::Arc, task::Wake, vec::Vec};
 use crate::performance::metrics::TICK_COUNTER;
+use alloc::{collections::BTreeMap, sync::Arc, task::Wake, vec::Vec};
 use core::{
     sync::atomic::{AtomicUsize, Ordering},
     task::{Context, Poll, Waker},
@@ -165,7 +165,8 @@ impl Executor {
             // Fairness checkpoint: periodically break to allow other ready tasks a chance to run
             let now = TICK_COUNTER.load(Ordering::Relaxed) as usize;
             let last_check = LAST_FAIRNESS_CHECK_TICK.load(Ordering::Relaxed);
-            let fairness_interval = crate::task::scheduler::fairness_check_interval_ticks() as usize;
+            let fairness_interval =
+                crate::task::scheduler::fairness_check_interval_ticks() as usize;
             if now.saturating_sub(last_check) >= fairness_interval {
                 LAST_FAIRNESS_CHECK_TICK.store(now, Ordering::Relaxed);
                 if !task_queue.is_empty() {

@@ -65,5 +65,7 @@ pub fn phase32_smoke() -> bool {
     mark_preempted();
     let _ = crate::task::scheduler::yield_now();
     let resumed = resume_saved_frame();
-    resumed.map(|f| f.rip == 0x400000 && f.rsp == 0x7ffff000).unwrap_or(false)
+    resumed
+        .map(|f| f.rip == 0x400000 && f.rsp == 0x7ffff000)
+        .unwrap_or(false)
 }

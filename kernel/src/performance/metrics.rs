@@ -5,11 +5,8 @@
 //! * `PerformanceCounters` – a snapshot of performance metrics readable from
 //!   any kernel code.
 
+use crate::{performance::process_metrics::ProcessMetricsGlobal, task::scheduler};
 use core::sync::atomic::{AtomicU64, Ordering};
-use crate::{
-    performance::process_metrics::ProcessMetricsGlobal,
-    task::scheduler,
-};
 
 /// Global timer-tick counter, incremented by the PIT IRQ handler.
 pub static TICK_COUNTER: AtomicU64 = AtomicU64::new(0);
@@ -44,7 +41,8 @@ impl PerformanceCounters {
         // Serialise the TSC read to prevent out-of-order execution.
         let tsc = rdtsc_serialised();
         let timer_ticks = TICK_COUNTER.load(Ordering::Relaxed);
-        let (_, _, total_preemptions, fairness_violations) = ProcessMetricsGlobal::global_snapshot();
+        let (_, _, total_preemptions, fairness_violations) =
+            ProcessMetricsGlobal::global_snapshot();
         let scheduler_lock_contention = scheduler::scheduler_lock_contention();
         Self {
             tsc,

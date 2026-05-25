@@ -5,8 +5,11 @@
 //! translates scancodes to key events with the `pc-keyboard` crate, and
 //! prints printable characters to the VGA console.
 
-use alloc::{string::{String, ToString}, vec::Vec};
 use crate::{print, println};
+use alloc::{
+    string::{String, ToString},
+    vec::Vec,
+};
 use conquer_once::spin::OnceCell;
 use core::{
     pin::Pin,
@@ -28,12 +31,9 @@ static SCANCODE_QUEUE: OnceCell<ArrayQueue<u8>> = OnceCell::uninit();
 static WAKER: AtomicWaker = AtomicWaker::new();
 
 lazy_static! {
-    static ref KEYBOARD: Mutex<Keyboard<layouts::Us104Key, ScancodeSet1>> =
-        Mutex::new(Keyboard::new(
-            layouts::Us104Key,
-            ScancodeSet1,
-            HandleControl::Ignore,
-        ));
+    static ref KEYBOARD: Mutex<Keyboard<layouts::Us104Key, ScancodeSet1>> = Mutex::new(
+        Keyboard::new(layouts::Us104Key, ScancodeSet1, HandleControl::Ignore,)
+    );
     static ref CONSOLE_LINE: Mutex<String> = Mutex::new(String::new());
 }
 

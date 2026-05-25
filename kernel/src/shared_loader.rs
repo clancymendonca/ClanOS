@@ -34,7 +34,11 @@ pub fn shared_lib_base() -> u64 {
 
 pub fn resolve_shared_path(name: &str) -> String {
     let lib_path = format!("/lib/{name}.elf");
-    if crate::storage::read_file(&lib_path).ok().flatten().is_some() {
+    if crate::storage::read_file(&lib_path)
+        .ok()
+        .flatten()
+        .is_some()
+    {
         return lib_path;
     }
     format!("/bin/{name}.elf")
@@ -50,11 +54,7 @@ pub fn needed_library_names(main_image: &[u8]) -> alloc::vec::Vec<&'static str> 
     alloc::vec!["libc_stub"]
 }
 
-fn map_shared_at(
-    backed: &mut FrameBackedImage,
-    base: u64,
-    path: &str,
-) -> Result<(), ()> {
+fn map_shared_at(backed: &mut FrameBackedImage, base: u64, path: &str) -> Result<(), ()> {
     let lib_bytes = crate::storage::read_file(path)
         .ok()
         .flatten()
@@ -76,8 +76,7 @@ fn map_shared_at(
         );
     }
 
-    let permissions =
-        LoadPermissions::from_bits(LoadPermissions::READ | LoadPermissions::EXECUTE);
+    let permissions = LoadPermissions::from_bits(LoadPermissions::READ | LoadPermissions::EXECUTE);
     let page = FrameBackedPage {
         virtual_address: base,
         frame,

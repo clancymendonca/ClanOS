@@ -4,14 +4,14 @@
 //! multi-process kernel support. Processes wrap kernel tasks with isolated
 //! kernel stacks and state tracking.
 
+use crate::fd_table::{FdSlotStorage, MAX_FDS};
+use crate::kernel_object::{CapSlotStorage, MAX_CAPS};
+use crate::performance::process_metrics::{self, EventType, ProcessMetricsGlobal};
+use crate::security::Credentials;
+use crate::vma::VmaRegion;
 use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use crate::fd_table::{FdSlotStorage, MAX_FDS};
-use crate::kernel_object::{CapSlotStorage, MAX_CAPS};
-use crate::vma::VmaRegion;
-use crate::performance::process_metrics::{self, EventType, ProcessMetricsGlobal};
-use crate::security::Credentials;
 use core::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use lazy_static::lazy_static;
 use spin::Mutex;
@@ -591,7 +591,8 @@ impl ProcessRegistry {
     /// Reap terminated processes and reclaim resources.
     pub fn reap_terminated(&mut self) -> u64 {
         let before = self.processes.len();
-        self.processes.retain(|_, p| !matches!(p.state(), ProcessState::Terminated));
+        self.processes
+            .retain(|_, p| !matches!(p.state(), ProcessState::Terminated));
         (before - self.processes.len()) as u64
     }
 }
@@ -770,7 +771,10 @@ pub fn load_exec_argv_from_user(pid: ProcessId, argv_ptr: u64) -> Result<(), ()>
         }
         let mut str_buf = [0u8; crate::user_path::MAX_USER_PATH_LEN];
         if crate::user_copy::copy_from_user(entry, &mut str_buf).is_ok() {
-            let len = str_buf.iter().position(|&b| b == 0).unwrap_or(str_buf.len());
+            let len = str_buf
+                .iter()
+                .position(|&b| b == 0)
+                .unwrap_or(str_buf.len());
             if let Ok(s) = core::str::from_utf8(&str_buf[..len]) {
                 argv.push(String::from(s));
             }
@@ -783,7 +787,11 @@ pub fn load_exec_argv_from_user(pid: ProcessId, argv_ptr: u64) -> Result<(), ()>
     if has_argv {
         EXEC_ARGV_OK.fetch_add(1, Ordering::Relaxed);
     }
-    if has_argv { Ok(()) } else { Err(()) }
+    if has_argv {
+        Ok(())
+    } else {
+        Err(())
+    }
 }
 
 pub fn exec_lite_with_argv(user_path: u64, argv_ptr: u64) -> Result<(), ()> {
@@ -892,7 +900,8 @@ pub fn phase91_smoke() -> bool {
     let child_cr3 = match crate::user_paging::fork_duplicate_cr3(parent_cr3) {
         Ok(child) if child != parent_cr3 => child,
         _ => {
-            let Ok(other) = crate::task::program_loader::build_hw_page_table_program(creds, "exit42")
+            let Ok(other) =
+                crate::task::program_loader::build_hw_page_table_program(creds, "exit42")
             else {
                 return false;
             };
@@ -927,7 +936,9 @@ pub fn phase94_smoke() -> bool {
     set_smoke_process_id(Some(pid));
     set_current_process_id(Some(pid));
     let mut argv_ok = false;
-    if let Some(built) = crate::task::program_loader::build_hw_page_table_program(creds, "hello").ok() {
+    if let Some(built) =
+        crate::task::program_loader::build_hw_page_table_program(creds, "hello").ok()
+    {
         let _ = set_process_cr3(pid, built.hw.cr3_phys);
         let user_buf = crate::user_context::DEFAULT_USER_STACK_TOP.saturating_sub(128);
         let argv_ptr = user_buf + 64;
@@ -971,7 +982,8 @@ pub fn phase86_smoke() -> bool {
     };
     let _ = crate::fd_table::fcntl(fd, crate::fd_table::F_SETFD, crate::fd_table::FD_CLOEXEC);
     let exec_ok = exec_lite(0).is_ok();
-    let slot_cleared = with_process_mut(pid, |p| p.fds_mut()[fd as usize].is_none()).unwrap_or(false);
+    let slot_cleared =
+        with_process_mut(pid, |p| p.fds_mut()[fd as usize].is_none()).unwrap_or(false);
     set_smoke_process_id(None);
     set_current_process_id(None);
     let (execs, cloexec_closed) = exec_lite_status();
@@ -1000,9 +1012,12 @@ pub fn create_kernel_process_as_with_image(
     owner: Credentials,
     image: ProcessImageMetadata,
 ) -> Option<ProcessId> {
-    let created = PROCESS_REGISTRY
-        .lock()
-        .create_process_as_with_image(name, created_tick, owner, Some(image));
+    let created = PROCESS_REGISTRY.lock().create_process_as_with_image(
+        name,
+        created_tick,
+        owner,
+        Some(image),
+    );
     record_process_create(created)
 }
 
@@ -1098,8 +1113,7 @@ pub fn get_all_processes_with_owner(
     PROCESS_REGISTRY.lock().all_processes_with_owner()
 }
 
-pub fn get_all_processes_with_details(
-) -> Vec<(
+pub fn get_all_processes_with_details() -> Vec<(
     ProcessId,
     &'static str,
     ProcessState,

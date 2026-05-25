@@ -22,7 +22,10 @@ pub fn run_program(name: &str, args: &[&str]) -> Result<String, &'static str> {
                     Err(_) => return Err("unsupported executable image"),
                 }
             }
-            match crate::task::program_loader::execute_minimal_user_elf_descriptor(credentials, name) {
+            match crate::task::program_loader::execute_minimal_user_elf_descriptor(
+                credentials,
+                name,
+            ) {
                 Ok(execution) => {
                     crate::task::program_loader::record_launch_success();
                     return Ok(execution.output);
@@ -79,8 +82,9 @@ fn dispatch_builtin(entry: &str, args: &[&str]) -> Result<String, &'static str> 
             Ok(out)
         }
         "time" => {
-            let ticks = crate::syscall::invoke_raw(crate::syscall::SyscallId::GetTickCount as u64, 0)
-                .map_err(|_| "syscall failed")?;
+            let ticks =
+                crate::syscall::invoke_raw(crate::syscall::SyscallId::GetTickCount as u64, 0)
+                    .map_err(|_| "syscall failed")?;
             Ok(format!(
                 "uptime_ticks={} uptime_secs={}",
                 ticks,
@@ -149,10 +153,14 @@ fn record_program_process(
         trust: program.trust,
         owner: credentials,
     };
-    if let Some(pid) =
-        crate::task::process::create_kernel_process_as_with_image("program", tick, credentials, image)
-    {
-        let _ = crate::task::process::set_process_state(pid, crate::task::process::ProcessState::Ready);
+    if let Some(pid) = crate::task::process::create_kernel_process_as_with_image(
+        "program",
+        tick,
+        credentials,
+        image,
+    ) {
+        let _ =
+            crate::task::process::set_process_state(pid, crate::task::process::ProcessState::Ready);
         let _ = crate::task::process::terminate_process(pid, 0);
     }
 }

@@ -12,6 +12,7 @@ pub mod scheduler;
 pub mod timer;
 pub mod userspace;
 
+use crate::performance::metrics::TICK_COUNTER;
 use alloc::boxed::Box;
 use core::{
     future::Future,
@@ -19,7 +20,6 @@ use core::{
     sync::atomic::{AtomicU64, Ordering},
     task::{Context, Poll},
 };
-use crate::performance::metrics::TICK_COUNTER;
 
 /// Unique identifier for a kernel task.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

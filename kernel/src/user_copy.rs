@@ -91,9 +91,8 @@ pub fn user_copy_probe(user_buf: u64) -> Result<u64, ()> {
 
 pub fn probe_round_trip(user_buf: u64) -> bool {
     let sample = b"ares-copyin-ok";
-    copy_to_user(sample, user_buf).is_ok()
-        && {
-            let mut buf = [0u8; 14];
-            copy_from_user(user_buf, &mut buf).is_ok() && &buf[..sample.len()] == sample
-        }
+    copy_to_user(sample, user_buf).is_ok() && {
+        let mut buf = [0u8; 14];
+        copy_from_user(user_buf, &mut buf).is_ok() && &buf[..sample.len()] == sample
+    }
 }

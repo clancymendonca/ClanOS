@@ -1,8 +1,8 @@
 //! Scheduler signaling primitives for preemption groundwork.
 
 use super::context::{switch_context, CpuContext, RunnableContext};
-use alloc::{collections::VecDeque, vec::Vec};
 use crate::performance::process_metrics::{self, EventType, ProcessMetricsGlobal};
+use alloc::{collections::VecDeque, vec::Vec};
 use core::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use lazy_static::lazy_static;
 use spin::Mutex;
@@ -176,9 +176,12 @@ impl ContextScheduler {
         }
 
         // Record context switch on current task
-        self.tasks[current].metrics.switches = self.tasks[current].metrics.switches.saturating_add(1);
-        self.tasks[current].metrics.preemption_successes = 
-            self.tasks[current].metrics.preemption_successes.saturating_add(1);
+        self.tasks[current].metrics.switches =
+            self.tasks[current].metrics.switches.saturating_add(1);
+        self.tasks[current].metrics.preemption_successes = self.tasks[current]
+            .metrics
+            .preemption_successes
+            .saturating_add(1);
 
         // Record context switch on next task
         self.tasks[next].metrics.switches = self.tasks[next].metrics.switches.saturating_add(1);
@@ -193,17 +196,17 @@ impl ContextScheduler {
             )
         } else {
             let (left, right) = self.tasks.split_at_mut(current);
-            (
-                &mut right[0].runnable.context,
-                &left[next].runnable.context,
-            )
+            (&mut right[0].runnable.context, &left[next].runnable.context)
         };
 
         self.switches = self.switches.saturating_add(1);
         self.last_switch_tick = now_tick;
         crate::smp::scheduler_account_preempt();
         crate::user_paging::apply_scheduler_cr3_for_next(next_cr3);
-        Some((current_ctx as *mut CpuContext, next_ctx as *const CpuContext))
+        Some((
+            current_ctx as *mut CpuContext,
+            next_ctx as *const CpuContext,
+        ))
     }
 
     fn bind_cr3(&mut self, task_id: usize, cr3: u64) -> bool {
@@ -218,7 +221,7 @@ impl ContextScheduler {
     fn update_cpu_ticks(&mut self, ticks: u64) {
         if let Some(current) = self.current {
             if current < self.tasks.len() {
-                self.tasks[current].metrics.cpu_ticks = 
+                self.tasks[current].metrics.cpu_ticks =
                     self.tasks[current].metrics.cpu_ticks.saturating_add(ticks);
             }
         }
@@ -421,8 +424,7 @@ pub fn on_timer_interrupt_context_detailed(
     LAST_IRQ_RFLAGS.store(interrupted_rflags, Ordering::Relaxed);
     LAST_IRQ_HAS_RSP.store(has_rsp, Ordering::Relaxed);
 
-    if !is_canonical_address(interrupted_rip)
-        || (has_rsp && !is_canonical_address(interrupted_rsp))
+    if !is_canonical_address(interrupted_rip) || (has_rsp && !is_canonical_address(interrupted_rsp))
     {
         IRQ_FRAME_INVALID.fetch_add(1, Ordering::Relaxed);
     }
@@ -669,7 +671,11 @@ fn log_phase5_fairness_if_due() {
 
     crate::serial_println!(
         "Phase5-Fairness: T1={}, T2={}, T3={}, T4={}, score={:.3}",
-        counters[0], counters[1], counters[2], counters[3], fairness_score
+        counters[0],
+        counters[1],
+        counters[2],
+        counters[3],
+        fairness_score
     );
 
     crate::serial_println!(

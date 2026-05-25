@@ -1,9 +1,6 @@
 //! Phase 15 frame-backed executable image records.
 
-use alloc::{
-    string::String,
-    vec::Vec,
-};
+use alloc::{string::String, vec::Vec};
 
 use crate::{
     address_space::{AddressSpaceId, MappingState},

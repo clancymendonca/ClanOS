@@ -13,8 +13,7 @@ use core::{panic::PanicInfo, sync::atomic::Ordering};
 use kernel::{
     allocator, block, device, hlt_loop, memory,
     performance::{metrics::TICK_COUNTER, process_metrics},
-    security,
-    syscall,
+    security, syscall,
     task::{process, scheduler},
 };
 use x86_64::VirtAddr;
@@ -74,7 +73,10 @@ fn process_registry_lifecycle() {
 
     assert!(process::process_count() >= before_count + 1);
 
-    assert!(process::set_process_state(pid, process::ProcessState::Ready));
+    assert!(process::set_process_state(
+        pid,
+        process::ProcessState::Ready
+    ));
     let ready = process::get_ready_processes();
     assert!(ready.iter().any(|p| *p == pid));
 
@@ -127,7 +129,10 @@ fn syscall_invalid_paths_are_rejected() {
 #[test_case]
 fn process_lifecycle_unknown_pid_operations_fail() {
     let missing = process::ProcessId::from_raw(u64::MAX);
-    assert!(!process::set_process_state(missing, process::ProcessState::Ready));
+    assert!(!process::set_process_state(
+        missing,
+        process::ProcessState::Ready
+    ));
     assert!(!process::add_process_cpu_ticks(missing, 1));
     assert!(!process::record_context_switch(missing));
     assert!(!process::terminate_process(missing, -1));
@@ -143,8 +148,8 @@ fn storage_and_userspace_smoke_flow() {
         .expect("README should exist");
     assert!(readme.contains("AresOS"));
 
-    let output = kernel::task::userspace::run_program("echo", &["ok", "flow"])
-        .expect("echo should run");
+    let output =
+        kernel::task::userspace::run_program("echo", &["ok", "flow"]).expect("echo should run");
     assert_eq!(output, "ok flow");
 
     let fsinfo = kernel::task::userspace::run_program("fsinfo", &[])
@@ -155,8 +160,7 @@ fn storage_and_userspace_smoke_flow() {
 #[test_case]
 fn phase7_storage_persists_across_remount() {
     kernel::storage::format().expect("format should succeed");
-    kernel::storage::write_file("/phase7.txt", "persistent")
-        .expect("write should succeed");
+    kernel::storage::write_file("/phase7.txt", "persistent").expect("write should succeed");
     kernel::storage::remount().expect("remount should succeed");
 
     let contents = kernel::storage::read_file("/phase7.txt")
@@ -181,12 +185,10 @@ fn phase7_storage_syscall_wrappers_cover_file_lifecycle() {
             .expect("storage read syscall wrapper should succeed"),
         Some("through-syscall".into())
     );
-    assert!(
-        syscall::storage_list_files()
-            .expect("storage list syscall wrapper should succeed")
-            .iter()
-            .any(|path| path == "/syscall.txt")
-    );
+    assert!(syscall::storage_list_files()
+        .expect("storage list syscall wrapper should succeed")
+        .iter()
+        .any(|path| path == "/syscall.txt"));
     syscall::storage_delete_file("/syscall.txt")
         .expect("storage delete syscall wrapper should succeed");
     assert_eq!(
@@ -256,7 +258,9 @@ fn phase9_loader_discovers_bin_programs() {
     kernel::storage::format().expect("format should seed executable manifests");
     let programs = kernel::task::program_loader::discover_programs();
     assert!(programs.iter().any(|program| program.name == "echo"));
-    assert!(programs.iter().any(|program| program.source_path == "/bin/fsinfo"));
+    assert!(programs
+        .iter()
+        .any(|program| program.source_path == "/bin/fsinfo"));
 }
 
 #[test_case]
@@ -422,7 +426,10 @@ fn phase11_loader_discovers_and_validates_image_programs() {
     kernel::storage::format().expect("format should seed image manifests");
     let program = kernel::task::program_loader::program_info("hello")
         .expect("hello image manifest should be discoverable");
-    assert_eq!(program.kind, kernel::task::program_loader::ProgramKind::Elf64Image);
+    assert_eq!(
+        program.kind,
+        kernel::task::program_loader::ProgramKind::Elf64Image
+    );
     assert_eq!(program.image_path.as_deref(), Some("/bin/hello.elf"));
     assert!(program.image.is_some());
     let image = kernel::task::program_loader::validate_program_image(
@@ -508,8 +515,7 @@ fn phase12_load_plan_rejects_unsafe_or_invalid_regions() {
         size: kernel::load_plan::PAGE_SIZE,
         page_count: 1,
         permissions: kernel::load_plan::LoadPermissions::from_bits(
-            kernel::load_plan::LoadPermissions::WRITE
-                | kernel::load_plan::LoadPermissions::EXECUTE,
+            kernel::load_plan::LoadPermissions::WRITE | kernel::load_plan::LoadPermissions::EXECUTE,
         ),
         actions: alloc::vec::Vec::new(),
     };
@@ -532,8 +538,7 @@ fn phase12_load_plan_rejects_unsafe_or_invalid_regions() {
             file_size: 4,
             memory_size: 0x1000,
             flags: kernel::exec_image::SegmentFlags::from_bits(
-                kernel::exec_image::SegmentFlags::READ
-                    | kernel::exec_image::SegmentFlags::EXECUTE,
+                kernel::exec_image::SegmentFlags::READ | kernel::exec_image::SegmentFlags::EXECUTE,
             ),
         }],
     };
@@ -608,7 +613,10 @@ fn phase13_mapping_stub_generates_frame_tokens_and_accounting() {
     assert_eq!(mapped.regions[0].pages[0].frame.as_u64(), 130_000);
     assert_eq!(mapped.copied_bytes, 4);
     assert_eq!(mapped.zero_filled_bytes, 4092);
-    assert_eq!(mapped.state, kernel::address_space::MappingState::MappedStub);
+    assert_eq!(
+        mapped.state,
+        kernel::address_space::MappingState::MappedStub
+    );
 }
 
 #[test_case]
@@ -693,9 +701,8 @@ fn phase13_loader_map_path_process_metadata_and_syscalls() {
     assert!(after.copied_bytes > before.copied_bytes);
     assert!(after.zero_filled_bytes > before.zero_filled_bytes);
 
-    let has_mapped_record = process::get_all_processes_with_details()
-        .iter()
-        .any(|(_, name, state, _, owner, _, load)| {
+    let has_mapped_record = process::get_all_processes_with_details().iter().any(
+        |(_, name, state, _, owner, _, load)| {
             *name == "image-mapped-stub"
                 && *state == process::ProcessState::Blocked
                 && *owner == security::Credentials::shell_user()
@@ -708,7 +715,8 @@ fn phase13_loader_map_path_process_metadata_and_syscalls() {
                             && load.zero_filled_bytes == mapped.mapped.zero_filled_bytes
                     })
                     .unwrap_or(false)
-        });
+        },
+    );
     assert!(has_mapped_record);
 
     assert!(syscall::invoke_raw(syscall::SyscallId::MappedImageCount as u64, 0).unwrap() > 0);
@@ -782,9 +790,7 @@ fn phase15_frame_backing_consumes_owned_frames_and_accounts_actions() {
     );
     assert_eq!(backed.backed.regions[0].pages[0].copied_bytes, 4);
     assert_eq!(backed.backed.regions[0].pages[0].zero_filled_bytes, 4092);
-    assert!(
-        kernel::frame_ownership::status().allocated_frames > frame_before.allocated_frames
-    );
+    assert!(kernel::frame_ownership::status().allocated_frames > frame_before.allocated_frames);
 }
 
 #[test_case]
@@ -800,9 +806,8 @@ fn phase15_loader_status_process_metadata_and_syscalls_report_backing() {
     assert!(after.frame_backed_image_count > before.frame_backed_image_count);
     assert!(after.total_frame_backed_pages > before.total_frame_backed_pages);
 
-    let has_backed_record = process::get_all_processes_with_details()
-        .iter()
-        .any(|(_, name, state, _, owner, _, load)| {
+    let has_backed_record = process::get_all_processes_with_details().iter().any(
+        |(_, name, state, _, owner, _, load)| {
             *name == "image-frame-backed"
                 && *state == process::ProcessState::Blocked
                 && *owner == security::Credentials::shell_user()
@@ -814,7 +819,8 @@ fn phase15_loader_status_process_metadata_and_syscalls_report_backing() {
                             && load.copied_bytes == backed.backed.copied_bytes
                     })
                     .unwrap_or(false)
-        });
+        },
+    );
     assert!(has_backed_record);
 
     assert!(syscall::invoke_raw(syscall::SyscallId::FrameBackedImageCount as u64, 0).unwrap() > 0);
@@ -843,7 +849,10 @@ fn phase16_inactive_page_table_translates_backed_pages() {
     )
     .expect("inactive page table should build");
     let page = built.backed.backed.regions[0].pages[0].virtual_address;
-    assert_eq!(built.page_table.mapped_pages, built.backed.backed.total_pages);
+    assert_eq!(
+        built.page_table.mapped_pages,
+        built.backed.backed.total_pages
+    );
     assert!(built.page_table.kernel_shared);
     assert!(!built.page_table.cr3_switch_ready);
     assert_eq!(
@@ -869,9 +878,8 @@ fn phase16_loader_process_metadata_syscalls_and_smoke_work() {
     assert!(after.user_page_table_count > before.user_page_table_count);
     assert!(after.total_user_page_table_pages > before.total_user_page_table_pages);
 
-    let has_page_table_record = process::get_all_processes_with_details()
-        .iter()
-        .any(|(_, name, state, _, owner, _, load)| {
+    let has_page_table_record = process::get_all_processes_with_details().iter().any(
+        |(_, name, state, _, owner, _, load)| {
             *name == "image-page-table"
                 && *state == process::ProcessState::Blocked
                 && *owner == security::Credentials::shell_user()
@@ -882,11 +890,14 @@ fn phase16_loader_process_metadata_syscalls_and_smoke_work() {
                             && load.mapping_id == Some(built.backed.backed.mapping_id)
                     })
                     .unwrap_or(false)
-        });
+        },
+    );
     assert!(has_page_table_record);
 
     assert!(syscall::invoke_raw(syscall::SyscallId::UserPageTableCount as u64, 0).unwrap() > 0);
-    assert!(syscall::invoke_raw(syscall::SyscallId::TotalUserPageTablePages as u64, 0).unwrap() > 0);
+    assert!(
+        syscall::invoke_raw(syscall::SyscallId::TotalUserPageTablePages as u64, 0).unwrap() > 0
+    );
     assert_eq!(
         syscall::invoke_raw(syscall::SyscallId::UserPageTableCount as u64, 1),
         Err(syscall::SyscallError::InvalidArgument)
@@ -910,7 +921,13 @@ fn phase17_user_selectors_and_entry_context_are_valid() {
     assert_eq!(prepared.context.entry.rflags & 0x200, 0x200);
     assert_eq!(
         prepared.context.entry.rip,
-        prepared.page_table.backed.mapped.prepared.load_plan.entry_point
+        prepared
+            .page_table
+            .backed
+            .mapped
+            .prepared
+            .load_plan
+            .entry_point
     );
 }
 
@@ -926,9 +943,8 @@ fn phase17_loader_process_metadata_syscalls_and_smoke_work() {
     let after = kernel::task::program_loader::status();
     assert!(after.user_context_count > before.user_context_count);
 
-    let has_context_record = process::get_all_processes_with_details()
-        .iter()
-        .any(|(_, name, state, _, owner, _, load)| {
+    let has_context_record = process::get_all_processes_with_details().iter().any(
+        |(_, name, state, _, owner, _, load)| {
             *name == "image-user-context"
                 && *state == process::ProcessState::Blocked
                 && *owner == security::Credentials::shell_user()
@@ -939,7 +955,8 @@ fn phase17_loader_process_metadata_syscalls_and_smoke_work() {
                             && load.entry_point == prepared.context.entry.rip
                     })
                     .unwrap_or(false)
-        });
+        },
+    );
     assert!(has_context_record);
 
     assert!(syscall::invoke_raw(syscall::SyscallId::UserContextCount as u64, 0).unwrap() > 0);
@@ -960,7 +977,10 @@ fn phase18_controlled_ring3_trampoline_enters_and_traps_back() {
     .expect("controlled ring3 trampoline should run");
     assert!(entered.result.ring3_entered);
     assert!(entered.result.trapped_back);
-    assert_eq!(entered.result.trap_vector, kernel::interrupts::USER_TRAP_VECTOR);
+    assert_eq!(
+        entered.result.trap_vector,
+        kernel::interrupts::USER_TRAP_VECTOR
+    );
 }
 
 #[test_case]
@@ -976,9 +996,8 @@ fn phase18_process_metadata_syscalls_and_smoke_work() {
     assert!(after.ring3_entry_count > before.ring3_entry_count);
     assert!(after.ring3_trap_count > before.ring3_trap_count);
 
-    let has_trap_record = process::get_all_processes_with_details()
-        .iter()
-        .any(|(_, name, state, _, owner, _, load)| {
+    let has_trap_record = process::get_all_processes_with_details().iter().any(
+        |(_, name, state, _, owner, _, load)| {
             *name == "image-ring3-trap"
                 && *state == process::ProcessState::Blocked
                 && *owner == security::Credentials::shell_user()
@@ -989,7 +1008,8 @@ fn phase18_process_metadata_syscalls_and_smoke_work() {
                             && load.entry_point == entered.result.entry_rip
                     })
                     .unwrap_or(false)
-        });
+        },
+    );
     assert!(has_trap_record);
 
     assert!(syscall::invoke_raw(syscall::SyscallId::Ring3EntryCount as u64, 0).unwrap() > 0);
@@ -1003,8 +1023,9 @@ fn phase18_process_metadata_syscalls_and_smoke_work() {
 
 #[test_case]
 fn phase19_user_syscall_abi_dispatches_and_returns() {
-    let returned = kernel::user_syscall::dispatch_from_user(kernel::user_syscall::tick_probe_frame())
-        .expect("user syscall frame should dispatch");
+    let returned =
+        kernel::user_syscall::dispatch_from_user(kernel::user_syscall::tick_probe_frame())
+            .expect("user syscall frame should dispatch");
     assert_eq!(returned.syscall_id, syscall::SyscallId::GetTickCount as u64);
     assert_eq!(returned.error, None);
     assert!(returned.returned_to_user);
@@ -1024,9 +1045,8 @@ fn phase19_loader_process_metadata_syscalls_and_smoke_work() {
     assert!(after.user_syscall_count > before.user_syscall_count);
     assert!(after.user_syscall_return_count > before.user_syscall_return_count);
 
-    let has_syscall_record = process::get_all_processes_with_details()
-        .iter()
-        .any(|(_, name, state, _, owner, _, load)| {
+    let has_syscall_record = process::get_all_processes_with_details().iter().any(
+        |(_, name, state, _, owner, _, load)| {
             *name == "image-user-syscall"
                 && *state == process::ProcessState::Blocked
                 && *owner == security::Credentials::shell_user()
@@ -1034,7 +1054,8 @@ fn phase19_loader_process_metadata_syscalls_and_smoke_work() {
                     .as_ref()
                     .map(|load| load.state == process::ProcessLoadState::UserSyscallReturned)
                     .unwrap_or(false)
-        });
+        },
+    );
     assert!(has_syscall_record);
 
     assert!(syscall::invoke_raw(syscall::SyscallId::UserSyscallCount as u64, 0).unwrap() > 0);
@@ -1069,9 +1090,8 @@ fn phase20_loader_process_metadata_syscalls_and_smoke_work() {
     assert!(after.user_elf_execution_count > before.user_elf_execution_count);
     assert!(after.user_elf_exit_count > before.user_elf_exit_count);
 
-    let has_elf_record = process::get_all_processes_with_details()
-        .iter()
-        .any(|(_, name, state, _, owner, _, load)| {
+    let has_elf_record = process::get_all_processes_with_details().iter().any(
+        |(_, name, state, _, owner, _, load)| {
             *name == "image-user-elf"
                 && *state == process::ProcessState::Blocked
                 && *owner == security::Credentials::shell_user()
@@ -1079,7 +1099,8 @@ fn phase20_loader_process_metadata_syscalls_and_smoke_work() {
                     .as_ref()
                     .map(|load| load.state == process::ProcessLoadState::UserElfExited)
                     .unwrap_or(false)
-        });
+        },
+    );
     assert!(has_elf_record);
 
     assert!(syscall::invoke_raw(syscall::SyscallId::UserElfExecutionCount as u64, 0).unwrap() > 0);
@@ -1572,10 +1593,7 @@ fn phase120_cap_compat_smoke_works() {
         kernel::kernel_object::phase112_cap_lifecycle_smoke(),
         "phase112"
     );
-    assert!(
-        kernel::kernel_object::phase113_rights_smoke(),
-        "phase113"
-    );
+    assert!(kernel::kernel_object::phase113_rights_smoke(), "phase113");
     assert!(
         kernel::kernel_object::phase114_storage_grant_smoke(),
         "phase114"

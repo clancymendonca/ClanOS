@@ -3,7 +3,10 @@
 //! This module lets tasks sleep for a duration without busy waiting.
 
 use crate::{
-    performance::{metrics::TICK_COUNTER, process_metrics::{self, EventType, ProcessMetricsGlobal}},
+    performance::{
+        metrics::TICK_COUNTER,
+        process_metrics::{self, EventType, ProcessMetricsGlobal},
+    },
     println,
 };
 use core::{
@@ -218,10 +221,14 @@ pub async fn log_preemption_fairness() {
             1.0
         };
 
-            crate::serial_println!(
-                "Phase5-Fairness: T1={}, T2={}, T3={}, T4={}, score={:.3}",
-                kernel_tasks[0], kernel_tasks[1], kernel_tasks[2], kernel_tasks[3], fairness_score
-            );
+        crate::serial_println!(
+            "Phase5-Fairness: T1={}, T2={}, T3={}, T4={}, score={:.3}",
+            kernel_tasks[0],
+            kernel_tasks[1],
+            kernel_tasks[2],
+            kernel_tasks[3],
+            fairness_score
+        );
 
         if fairness_score > 1.10 {
             ProcessMetricsGlobal::record_fairness_violation();

@@ -5,11 +5,7 @@ use core::sync::atomic::{AtomicU64, Ordering};
 use x86_64::structures::idt::InterruptStackFrame;
 use x86_64::VirtAddr;
 
-use crate::{
-    gdt::UserSelectors,
-    user_context::UserEntryFrame,
-    user_paging::HwPageTableHandle,
-};
+use crate::{gdt::UserSelectors, user_context::UserEntryFrame, user_paging::HwPageTableHandle};
 
 static IRETQ_ENTRIES: AtomicU64 = AtomicU64::new(0);
 static IRETQ_TRAPPED: AtomicU64 = AtomicU64::new(0);
@@ -31,7 +27,6 @@ pub fn status() -> (u64, u64, u64, u64) {
 pub fn user_bringup_active() -> bool {
     USER_BRINGUP.load(Ordering::Relaxed) != 0
 }
-
 
 pub fn handle_user_fault(stack_frame: &mut InterruptStackFrame, from_vector_80: bool) -> bool {
     let bringup = USER_BRINGUP.load(Ordering::Relaxed);
@@ -300,7 +295,8 @@ fn enter_user_common(
     }
     IRETQ_ENTRIES.fetch_add(1, Ordering::Relaxed);
 
-    let before_trap = IRETQ_TRAPPED.load(Ordering::Relaxed) + USER_TRAP_RETURNS.load(Ordering::Relaxed);
+    let before_trap =
+        IRETQ_TRAPPED.load(Ordering::Relaxed) + USER_TRAP_RETURNS.load(Ordering::Relaxed);
 
     let trapped = crate::user_paging::with_user_page_table(hw, || {
         if use_iretq {
@@ -323,7 +319,8 @@ fn enter_user_common(
                 core::arch::asm!("call {0}", in(reg) rip);
             }
         }
-        let after_trap = IRETQ_TRAPPED.load(Ordering::Relaxed) + USER_TRAP_RETURNS.load(Ordering::Relaxed);
+        let after_trap =
+            IRETQ_TRAPPED.load(Ordering::Relaxed) + USER_TRAP_RETURNS.load(Ordering::Relaxed);
         after_trap > before_trap
     })
     .map_err(|_| UserEntryError::Paging)?;
@@ -342,11 +339,17 @@ pub enum UserEntryError {
     StubWriteFailed,
 }
 
-fn write_user_stub_at_entry(hw: &HwPageTableHandle, rip: u64, bytes: &[u8]) -> Result<(), UserEntryError> {
-    let phys = crate::user_paging::translate_hw_page(hw.cr3_phys, rip).ok_or(UserEntryError::StubWriteFailed)?;
+fn write_user_stub_at_entry(
+    hw: &HwPageTableHandle,
+    rip: u64,
+    bytes: &[u8],
+) -> Result<(), UserEntryError> {
+    let phys = crate::user_paging::translate_hw_page(hw.cr3_phys, rip)
+        .ok_or(UserEntryError::StubWriteFailed)?;
     let offset = (rip & 0xfff) as usize;
     crate::user_paging::write_phys_bytes(phys, offset, bytes);
-    let virt = crate::user_paging::phys_to_virt(x86_64::PhysAddr::new(phys.saturating_add(offset as u64)));
+    let virt =
+        crate::user_paging::phys_to_virt(x86_64::PhysAddr::new(phys.saturating_add(offset as u64)));
     let written = unsafe { core::slice::from_raw_parts(virt.as_ptr() as *const u8, bytes.len()) };
     if written != bytes {
         return Err(UserEntryError::StubWriteFailed);

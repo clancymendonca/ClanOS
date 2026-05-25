@@ -106,7 +106,11 @@ impl FrameRegistry {
         if !self.initialized {
             return Err(FrameOwnershipError::NotInitialized);
         }
-        let Some(record) = self.records.iter_mut().find(|record| record.owner.is_none()) else {
+        let Some(record) = self
+            .records
+            .iter_mut()
+            .find(|record| record.owner.is_none())
+        else {
             self.failed_allocation_count = self.failed_allocation_count.saturating_add(1);
             return Err(FrameOwnershipError::Exhausted);
         };
@@ -161,8 +165,13 @@ pub fn init_from_memory_map(
     skip_allocated_frames: usize,
 ) -> Result<(), FrameOwnershipError> {
     let mut addresses = Vec::new();
-    for region in memory_map.iter().filter(|region| region.region_type == MemoryRegionType::Usable) {
-        for address in (region.range.start_addr()..region.range.end_addr()).step_by(PAGE_SIZE as usize) {
+    for region in memory_map
+        .iter()
+        .filter(|region| region.region_type == MemoryRegionType::Usable)
+    {
+        for address in
+            (region.range.start_addr()..region.range.end_addr()).step_by(PAGE_SIZE as usize)
+        {
             if addresses.len() >= skip_allocated_frames.saturating_add(MAX_TRACKED_FRAMES) {
                 break;
             }
@@ -237,7 +246,10 @@ mod tests {
         let _frame = registry
             .allocate(FrameOwner::Image)
             .expect("first frame should allocate");
-        assert_eq!(registry.allocate(FrameOwner::Image), Err(FrameOwnershipError::Exhausted));
+        assert_eq!(
+            registry.allocate(FrameOwner::Image),
+            Err(FrameOwnershipError::Exhausted)
+        );
         let status = registry.status();
         assert_eq!(status.allocated_frames, 1);
         assert_eq!(status.failed_allocation_count, 1);

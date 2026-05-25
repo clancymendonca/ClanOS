@@ -163,7 +163,12 @@ pub fn run_hw_syscall_probe_rdi(
         if arg0_rdi == 0 {
             user_entry::write_user_stub_syscall_int80(hw, entry.rip, syscall_id as u64)?;
         } else {
-            user_entry::write_user_stub_int80_syscall_rdi(hw, entry.rip, syscall_id as u64, arg0_rdi)?;
+            user_entry::write_user_stub_int80_syscall_rdi(
+                hw,
+                entry.rip,
+                syscall_id as u64,
+                arg0_rdi,
+            )?;
         }
     } else if arg0_rdi == 0 {
         user_entry::write_user_stub_int80_syscall(hw, entry.rip, syscall_id as u64)?;
@@ -175,13 +180,15 @@ pub fn run_hw_syscall_probe_rdi(
     let before = HW_SYSCALLS.load(Ordering::Relaxed);
     user_entry::enter_user_syscall_hw(hw, entry, selectors)?;
     if HW_SYSCALLS.load(Ordering::Relaxed) > before {
-        Ok(user_syscall::last_hw_syscall_return().unwrap_or(UserSyscallReturn {
-            syscall_id: syscall_id as u64,
-            arg0: 0,
-            return_value: 0,
-            error: None,
-            returned_to_user: true,
-        }))
+        Ok(
+            user_syscall::last_hw_syscall_return().unwrap_or(UserSyscallReturn {
+                syscall_id: syscall_id as u64,
+                arg0: 0,
+                return_value: 0,
+                error: None,
+                returned_to_user: true,
+            }),
+        )
     } else {
         Err(UserEntryError::NoTrap)
     }
@@ -251,13 +258,8 @@ pub fn phase71_smoke() -> bool {
         code_selector: selectors.code.0,
         stack_selector: selectors.data.0,
     };
-    let probe_ok = run_hw_syscall_probe(
-        &built.hw,
-        &entry,
-        selectors,
-        SyscallId::GetTickCount,
-    )
-    .is_ok();
+    let probe_ok =
+        run_hw_syscall_probe(&built.hw, &entry, selectors, SyscallId::GetTickCount).is_ok();
     let (probes, sysret_ok) = sysret_status();
     probe_ok && probes > 0 && sysret_ok > 0
 }
@@ -279,13 +281,15 @@ pub fn run_hw_probe_syscall(
         if syscall_id == SyscallId::Mprotect {
             record_ring3_mprotect();
         }
-        Ok(user_syscall::last_hw_syscall_return().unwrap_or(UserSyscallReturn {
-            syscall_id: syscall_id as u64,
-            arg0: 0,
-            return_value: 0,
-            error: None,
-            returned_to_user: true,
-        }))
+        Ok(
+            user_syscall::last_hw_syscall_return().unwrap_or(UserSyscallReturn {
+                syscall_id: syscall_id as u64,
+                arg0: 0,
+                return_value: 0,
+                error: None,
+                returned_to_user: true,
+            }),
+        )
     } else {
         Err(UserEntryError::NoTrap)
     }

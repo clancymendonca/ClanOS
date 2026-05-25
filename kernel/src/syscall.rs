@@ -89,12 +89,9 @@ pub enum SyscallId {
     Poll = 82,
 }
 
-static LAST_EXIT_CODE: core::sync::atomic::AtomicU64 =
-    core::sync::atomic::AtomicU64::new(0);
-static LAST_EXIT_RECORDED: core::sync::atomic::AtomicU64 =
-    core::sync::atomic::AtomicU64::new(0);
-static WAIT_COMPLETED: core::sync::atomic::AtomicU64 =
-    core::sync::atomic::AtomicU64::new(0);
+static LAST_EXIT_CODE: core::sync::atomic::AtomicU64 = core::sync::atomic::AtomicU64::new(0);
+static LAST_EXIT_RECORDED: core::sync::atomic::AtomicU64 = core::sync::atomic::AtomicU64::new(0);
+static WAIT_COMPLETED: core::sync::atomic::AtomicU64 = core::sync::atomic::AtomicU64::new(0);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SyscallError {
@@ -113,7 +110,8 @@ pub fn invoke_with_args(id: u64, arg0: u64, arg1: u64, arg2: u64) -> Result<u64,
             if arg0 != 0 {
                 return Err(SyscallError::InvalidArgument);
             }
-            Ok(crate::performance::metrics::TICK_COUNTER.load(core::sync::atomic::Ordering::Relaxed))
+            Ok(crate::performance::metrics::TICK_COUNTER
+                .load(core::sync::atomic::Ordering::Relaxed))
         }
         x if x == SyscallId::GetProcessCount as u64 => {
             if arg0 != 0 {
@@ -484,32 +482,21 @@ pub fn invoke_with_args(id: u64, arg0: u64, arg1: u64, arg2: u64) -> Result<u64,
                 .map(u64::from)
                 .map_err(|_| SyscallError::InvalidArgument)
         }
-        x if x == SyscallId::CloseFile as u64 => {
-            crate::fd_table::close_file(arg0 as u32)
-                .map(|_| 0)
-                .map_err(|_| SyscallError::InvalidArgument)
-        }
-        x if x == SyscallId::ReadFd as u64 => {
-            crate::fd_table::read_fd(arg0 as u32, arg1, arg2)
-                .map_err(|_| SyscallError::InvalidArgument)
-        }
-        x if x == SyscallId::WriteFd as u64 => {
-            crate::fd_table::write_fd(arg0 as u32, arg1, arg2)
-                .map_err(|_| SyscallError::InvalidArgument)
-        }
-        x if x == SyscallId::DupFd as u64 => {
-            crate::fd_table::dup_fd(arg0 as u32)
-                .map(u64::from)
-                .map_err(|_| SyscallError::InvalidArgument)
-        }
-        x if x == SyscallId::Mprotect as u64 => {
-            crate::user_paging::mprotect_user_page(arg0, arg1)
-                .map(|_| 0)
-                .map_err(|_| SyscallError::InvalidArgument)
-        }
+        x if x == SyscallId::CloseFile as u64 => crate::fd_table::close_file(arg0 as u32)
+            .map(|_| 0)
+            .map_err(|_| SyscallError::InvalidArgument),
+        x if x == SyscallId::ReadFd as u64 => crate::fd_table::read_fd(arg0 as u32, arg1, arg2)
+            .map_err(|_| SyscallError::InvalidArgument),
+        x if x == SyscallId::WriteFd as u64 => crate::fd_table::write_fd(arg0 as u32, arg1, arg2)
+            .map_err(|_| SyscallError::InvalidArgument),
+        x if x == SyscallId::DupFd as u64 => crate::fd_table::dup_fd(arg0 as u32)
+            .map(u64::from)
+            .map_err(|_| SyscallError::InvalidArgument),
+        x if x == SyscallId::Mprotect as u64 => crate::user_paging::mprotect_user_page(arg0, arg1)
+            .map(|_| 0)
+            .map_err(|_| SyscallError::InvalidArgument),
         x if x == SyscallId::Mmap as u64 => {
-            crate::mmap::mmap_syscall(arg0, arg1, arg2)
-                .map_err(|_| SyscallError::InvalidArgument)
+            crate::mmap::mmap_syscall(arg0, arg1, arg2).map_err(|_| SyscallError::InvalidArgument)
         }
         x if x == SyscallId::WritePathProbe as u64 => {
             if arg0 == 0 || arg1 == 0 {
@@ -518,29 +505,24 @@ pub fn invoke_with_args(id: u64, arg0: u64, arg1: u64, arg2: u64) -> Result<u64,
             crate::user_path::write_path_probe(arg0, arg1)
                 .map_err(|_| SyscallError::InvalidArgument)
         }
-        x if x == SyscallId::Chdir as u64 => {
-            crate::user_path::chdir_from_user(arg0)
-                .map(|_| 0)
-                .map_err(|_| SyscallError::InvalidArgument)
-        }
-        x if x == SyscallId::Munmap as u64 => {
-            crate::mmap::munmap_syscall(arg0, arg1)
-                .map(|_| 0)
-                .map_err(|_| SyscallError::InvalidArgument)
-        }
+        x if x == SyscallId::Chdir as u64 => crate::user_path::chdir_from_user(arg0)
+            .map(|_| 0)
+            .map_err(|_| SyscallError::InvalidArgument),
+        x if x == SyscallId::Munmap as u64 => crate::mmap::munmap_syscall(arg0, arg1)
+            .map(|_| 0)
+            .map_err(|_| SyscallError::InvalidArgument),
         x if x == SyscallId::ForkLite as u64 => {
             let pid = crate::task::process::current_process_id()
                 .or_else(|| crate::task::process::smoke_process_id())
                 .ok_or(SyscallError::InvalidArgument)?;
-            let tick = crate::performance::metrics::TICK_COUNTER.load(core::sync::atomic::Ordering::Relaxed);
+            let tick = crate::performance::metrics::TICK_COUNTER
+                .load(core::sync::atomic::Ordering::Relaxed);
             crate::task::process::fork_lite(pid, tick)
                 .map(|child| child.as_u64())
                 .ok_or(SyscallError::InvalidArgument)
         }
-        x if x == SyscallId::Fcntl as u64 => {
-            crate::fd_table::fcntl(arg0 as u32, arg1, arg2)
-                .map_err(|_| SyscallError::InvalidArgument)
-        }
+        x if x == SyscallId::Fcntl as u64 => crate::fd_table::fcntl(arg0 as u32, arg1, arg2)
+            .map_err(|_| SyscallError::InvalidArgument),
         x if x == SyscallId::WaitLite as u64 => {
             let parent = crate::task::process::current_process_id()
                 .or_else(|| crate::task::process::smoke_process_id())
@@ -549,14 +531,11 @@ pub fn invoke_with_args(id: u64, arg0: u64, arg1: u64, arg2: u64) -> Result<u64,
                 .map(|code| code as u64)
                 .map_err(|_| SyscallError::InvalidArgument)
         }
-        x if x == SyscallId::GetCwd as u64 => {
-            crate::user_path::getcwd_to_user(arg0)
-                .map(|n| n as u64)
-                .map_err(|_| SyscallError::InvalidArgument)
-        }
+        x if x == SyscallId::GetCwd as u64 => crate::user_path::getcwd_to_user(arg0)
+            .map(|n| n as u64)
+            .map_err(|_| SyscallError::InvalidArgument),
         x if x == SyscallId::Pipe as u64 => {
-            crate::pipe::pipe_syscall(arg0, arg1)
-                .map_err(|_| SyscallError::InvalidArgument)
+            crate::pipe::pipe_syscall(arg0, arg1).map_err(|_| SyscallError::InvalidArgument)
         }
         x if x == SyscallId::ExecLite as u64 => {
             crate::task::process::exec_lite_with_argv(arg0, arg1)
@@ -564,8 +543,7 @@ pub fn invoke_with_args(id: u64, arg0: u64, arg1: u64, arg2: u64) -> Result<u64,
                 .map_err(|_| SyscallError::InvalidArgument)
         }
         x if x == SyscallId::Poll as u64 => {
-            crate::pipe::poll_syscall(arg0, arg1)
-                .map_err(|_| SyscallError::InvalidArgument)
+            crate::pipe::poll_syscall(arg0, arg1).map_err(|_| SyscallError::InvalidArgument)
         }
         _ => Err(SyscallError::InvalidSyscall),
     }

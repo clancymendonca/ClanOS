@@ -51,11 +51,9 @@ pub fn invoke_native(
                 .map(u64::from)
                 .map_err(cap_error_to_syscall)
         }
-        NativeSyscallId::CapClose => {
-            kernel_object::close_cap_for_process(pid, arg0 as u32)
-                .map(|_| 0)
-                .map_err(cap_error_to_syscall)
-        }
+        NativeSyscallId::CapClose => kernel_object::close_cap_for_process(pid, arg0 as u32)
+            .map(|_| 0)
+            .map_err(cap_error_to_syscall),
         NativeSyscallId::CapTransfer => {
             let to_pid = ProcessId::from_raw(arg1);
             kernel_object::cap_transfer_move(pid, arg0 as u32, to_pid)

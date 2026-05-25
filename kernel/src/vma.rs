@@ -105,7 +105,10 @@ pub fn truncate_region(pid: ProcessId, base: u64, len: u64) -> bool {
         }) {
             let region = regions.remove(idx);
             let tail_base = base.saturating_add(len);
-            let tail_len = region.base.saturating_add(region.len).saturating_sub(tail_base);
+            let tail_len = region
+                .base
+                .saturating_add(region.len)
+                .saturating_sub(tail_base);
             if tail_len > 0 {
                 regions.push(VmaRegion {
                     base: tail_base,

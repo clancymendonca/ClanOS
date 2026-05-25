@@ -22,22 +22,30 @@ fn run_phase31_to_40_smokes() {
     let (bound, switches, skips, restore_ok) = kernel::user_paging::sched_cr3_status();
     println!(
         "Phase31-SchedCr3: bound={}, switches={}, restore_ok={}",
-        bound, switches.max(skips), restore_ok && phase31_ok
+        bound,
+        switches.max(skips),
+        restore_ok && phase31_ok
     );
     kernel::serial_println!(
         "Phase31-SchedCr3: bound={}, switches={}, restore_ok={}",
-        bound, switches.max(skips), restore_ok && phase31_ok
+        bound,
+        switches.max(skips),
+        restore_ok && phase31_ok
     );
 
     let phase32_ok = kernel::task::program_loader::phase32_user_frame_smoke();
     let (saves, resumes, preempted) = kernel::user_hw_frame::status();
     println!(
         "Phase32-UserFrame: saves={}, resumes={}, preempted_ok={}",
-        saves, resumes, preempted && phase32_ok
+        saves,
+        resumes,
+        preempted && phase32_ok
     );
     kernel::serial_println!(
         "Phase32-UserFrame: saves={}, resumes={}, preempted_ok={}",
-        saves, resumes, preempted && phase32_ok
+        saves,
+        resumes,
+        preempted && phase32_ok
     );
 
     let phase33_ok = kernel::task::program_loader::phase33_multi_elf_smoke();
@@ -58,7 +66,9 @@ fn run_phase31_to_40_smokes() {
     );
     kernel::serial_println!(
         "Phase34-ExitWait: exits={}, waits={}, codes_ok={}",
-        exits, waits, phase34_ok
+        exits,
+        waits,
+        phase34_ok
     );
 
     let phase35_ok = kernel::task::program_loader::phase35_syscall_table_smoke();
@@ -69,7 +79,9 @@ fn run_phase31_to_40_smokes() {
     );
     kernel::serial_println!(
         "Phase35-SyscallTable: allowed={}, rejected={}, dispatch_ok={}",
-        allowed, rejected, phase35_ok
+        allowed,
+        rejected,
+        phase35_ok
     );
 
     let phase36_ok = kernel::task::program_loader::phase36_storage_copyin_smoke();
@@ -80,7 +92,9 @@ fn run_phase31_to_40_smokes() {
     );
     kernel::serial_println!(
         "Phase36-StorageCopyin: reads={}, roundtrip_ok={}, rejected={}",
-        reads, phase36_ok, rej
+        reads,
+        phase36_ok,
+        rej
     );
 
     let phase37_ok = kernel::task::program_loader::phase37_manifest_elf_smoke();
@@ -91,7 +105,10 @@ fn run_phase31_to_40_smokes() {
     );
     kernel::serial_println!(
         "Phase37-ManifestElf: discovered={}, executed={}, rejected={}, ok={}",
-        disc, exec, rej, phase37_ok
+        disc,
+        exec,
+        rej,
+        phase37_ok
     );
 
     let phase38_ok = kernel::task::program_loader::phase38_demand_zero_smoke();
@@ -102,18 +119,25 @@ fn run_phase31_to_40_smokes() {
     );
     kernel::serial_println!(
         "Phase38-DemandZero: faults={}, mapped={}, rejected={}, ok={}",
-        faults, mapped, rejected, phase38_ok
+        faults,
+        mapped,
+        rejected,
+        phase38_ok
     );
 
     let phase39_ok = kernel::task::program_loader::phase39_dynamic_smoke();
     let (needed, linked, reloc_ok) = kernel::elf_reloc::dynamic_status();
     println!(
         "Phase39-Dynamic: needed={}, linked={}, reloc_ok={}",
-        needed, linked, reloc_ok && phase39_ok
+        needed,
+        linked,
+        reloc_ok && phase39_ok
     );
     kernel::serial_println!(
         "Phase39-Dynamic: needed={}, linked={}, reloc_ok={}",
-        needed, linked, reloc_ok && phase39_ok
+        needed,
+        linked,
+        reloc_ok && phase39_ok
     );
 
     let phase33_ok_for40 = phase33_ok;
@@ -151,7 +175,9 @@ fn run_phase41_to_50_smokes() {
     );
     kernel::serial_println!(
         "Phase41-SharedLib: loaded={}, pages={}, ok={}",
-        loaded, pages, phase41_ok
+        loaded,
+        pages,
+        phase41_ok
     );
 
     let phase42_ok = kernel::task::program_loader::phase42_dyn_reloc_smoke();
@@ -162,7 +188,9 @@ fn run_phase41_to_50_smokes() {
     );
     kernel::serial_println!(
         "Phase42-DynReloc: imports={}, applied={}, ok={}",
-        imports, applied, phase42_ok
+        imports,
+        applied,
+        phase42_ok
     );
 
     let phase43_ok = kernel::task::program_loader::phase43_trust_exec_smoke();
@@ -173,7 +201,9 @@ fn run_phase41_to_50_smokes() {
     );
     kernel::serial_println!(
         "Phase43-TrustExec: executed={}, rejected={}, ok={}",
-        trust_ok, trust_rej, phase43_ok
+        trust_ok,
+        trust_rej,
+        phase43_ok
     );
 
     let phase44_ok = kernel::task::program_loader::phase44_user_path_smoke();
@@ -184,7 +214,9 @@ fn run_phase41_to_50_smokes() {
     );
     kernel::serial_println!(
         "Phase44-UserPath: reads={}, rejected={}, ok={}",
-        reads, path_rej, phase44_ok
+        reads,
+        path_rej,
+        phase44_ok
     );
 
     let phase45_ok = kernel::task::program_loader::phase45_file_fd_smoke();
@@ -195,7 +227,9 @@ fn run_phase41_to_50_smokes() {
     );
     kernel::serial_println!(
         "Phase45-FileFd: opens={}, closes={}, ok={}",
-        opens, closes, phase45_ok
+        opens,
+        closes,
+        phase45_ok
     );
 
     let phase46_ok = kernel::task::program_loader::phase46_fd_io_smoke();
@@ -206,7 +240,9 @@ fn run_phase41_to_50_smokes() {
     );
     kernel::serial_println!(
         "Phase46-FdIO: reads={}, writes={}, ok={}",
-        fd_reads, fd_writes, phase46_ok
+        fd_reads,
+        fd_writes,
+        phase46_ok
     );
 
     let phase47_ok = kernel::task::program_loader::phase47_file_demand_smoke();
@@ -217,7 +253,10 @@ fn run_phase41_to_50_smokes() {
     );
     kernel::serial_println!(
         "Phase47-FileDemand: faults={}, loaded={}, rejected={}, ok={}",
-        faults, file_loaded, file_rej, phase47_ok
+        faults,
+        file_loaded,
+        file_rej,
+        phase47_ok
     );
 
     let phase48_ok = kernel::task::program_loader::phase48_wx_policy_smoke();
@@ -228,18 +267,24 @@ fn run_phase41_to_50_smokes() {
     );
     kernel::serial_println!(
         "Phase48-WxPolicy: checked={}, rejected={}, ok={}",
-        wx_checked, wx_rejected, phase48_ok
+        wx_checked,
+        wx_rejected,
+        phase48_ok
     );
 
     let phase49_ok = kernel::task::program_loader::phase49_smp_smoke();
     let (cpus, aps, flush_ok) = kernel::smp::status();
     println!(
         "Phase49-Smp: cpus={}, aps={}, flush_ok={}",
-        cpus, aps, flush_ok > 0 && phase49_ok
+        cpus,
+        aps,
+        flush_ok > 0 && phase49_ok
     );
     kernel::serial_println!(
         "Phase49-Smp: cpus={}, aps={}, flush_ok={}",
-        cpus, aps, flush_ok > 0 && phase49_ok
+        cpus,
+        aps,
+        flush_ok > 0 && phase49_ok
     );
 
     let phase50_ok = kernel::task::program_loader::phase50_integration_smoke();
@@ -298,7 +343,9 @@ fn run_phase51_to_60_smokes() {
     );
     kernel::serial_println!(
         "Phase52-FdDup: dups={}, relative={}, ok={}",
-        dups, relative, phase52_ok
+        dups,
+        relative,
+        phase52_ok
     );
 
     let phase53_ok = kernel::task::program_loader::phase53_mprotect_smoke();
@@ -309,7 +356,10 @@ fn run_phase51_to_60_smokes() {
     );
     kernel::serial_println!(
         "Phase53-Mprotect: applied={}, rejected={}, guard_faults={}, ok={}",
-        applied, rejected, guard, phase53_ok
+        applied,
+        rejected,
+        guard,
+        phase53_ok
     );
 
     let phase54_ok = kernel::task::program_loader::phase54_mmap_smoke();
@@ -320,7 +370,10 @@ fn run_phase51_to_60_smokes() {
     );
     kernel::serial_println!(
         "Phase54-Mmap: anon_pages={}, file_pages={}, rejected={}, ok={}",
-        anon, file, rej, phase54_ok
+        anon,
+        file,
+        rej,
+        phase54_ok
     );
 
     let phase55_ok = kernel::task::program_loader::phase55_write_path_smoke();
@@ -331,7 +384,9 @@ fn run_phase51_to_60_smokes() {
     );
     kernel::serial_println!(
         "Phase55-WritePath: writes={}, verified={}, ok={}",
-        writes, verified, phase55_ok
+        writes,
+        verified,
+        phase55_ok
     );
 
     let phase56_ok = kernel::task::program_loader::phase56_multi_shlib_smoke();
@@ -342,7 +397,9 @@ fn run_phase51_to_60_smokes() {
     );
     kernel::serial_println!(
         "Phase56-MultiShlib: loaded={}, pages={}, ok={}",
-        loaded, pages, phase56_ok
+        loaded,
+        pages,
+        phase56_ok
     );
 
     let phase57_ok = kernel::task::program_loader::phase57_plt_reloc_smoke();
@@ -353,7 +410,9 @@ fn run_phase51_to_60_smokes() {
     );
     kernel::serial_println!(
         "Phase57-PltReloc: slots={}, applied={}, ok={}",
-        slots, plt_applied, phase57_ok
+        slots,
+        plt_applied,
+        phase57_ok
     );
 
     let phase58_ok = kernel::task::program_loader::phase58_digest_trust_smoke();
@@ -364,7 +423,9 @@ fn run_phase51_to_60_smokes() {
     );
     kernel::serial_println!(
         "Phase58-DigestTrust: verified={}, rejected={}, ok={}",
-        verified, rejected, phase58_ok
+        verified,
+        rejected,
+        phase58_ok
     );
 
     let phase59_ok = kernel::task::program_loader::phase59_runqueue_smoke();
@@ -379,7 +440,9 @@ fn run_phase51_to_60_smokes() {
     );
     kernel::serial_println!(
         "Phase59-Runqueues: cpus={}, enqueued={}, ok={}",
-        cpus, enqueued, phase59_ok
+        cpus,
+        enqueued,
+        phase59_ok
     );
 
     let phase60_ok = kernel::task::program_loader::phase60_integration_smoke();
@@ -420,7 +483,9 @@ fn run_phase61_to_70_smokes() {
     );
     kernel::serial_println!(
         "Phase61-Chdir: normalized={}, chdirs={}, ok={}",
-        normalized, chdirs, phase61_ok
+        normalized,
+        chdirs,
+        phase61_ok
     );
 
     let phase62_ok = kernel::task::program_loader::phase62_munmap_smoke();
@@ -431,7 +496,9 @@ fn run_phase61_to_70_smokes() {
     );
     kernel::serial_println!(
         "Phase62-Munmap: unmapped={}, rejected={}, ok={}",
-        unmapped, munmap_rej, phase62_ok
+        unmapped,
+        munmap_rej,
+        phase62_ok
     );
 
     let phase63_ok = kernel::task::program_loader::phase63_vma_smoke();
@@ -442,7 +509,9 @@ fn run_phase61_to_70_smokes() {
     );
     kernel::serial_println!(
         "Phase63-Vma: regions={}, overlaps_rejected={}, ok={}",
-        vma_regions, vma_overlap, phase63_ok
+        vma_regions,
+        vma_overlap,
+        phase63_ok
     );
 
     let phase64_ok = kernel::task::program_loader::phase64_forklite_smoke();
@@ -453,7 +522,9 @@ fn run_phase61_to_70_smokes() {
     );
     kernel::serial_println!(
         "Phase64-ForkLite: inherited={}, isolated={}, ok={}",
-        inherited, isolated, phase64_ok
+        inherited,
+        isolated,
+        phase64_ok
     );
 
     let phase65_ok = kernel::task::program_loader::phase65_ring3_syscall_smoke();
@@ -479,7 +550,10 @@ fn run_phase61_to_70_smokes() {
     );
     kernel::serial_println!(
         "Phase66-Fcntl: getfd={}, dupfd={}, rejected={}, ok={}",
-        fcntl_getfd, fcntl_dup, fcntl_rej, phase66_ok
+        fcntl_getfd,
+        fcntl_dup,
+        fcntl_rej,
+        phase66_ok
     );
 
     let phase67_ok = kernel::task::program_loader::phase67_lazy_plt_smoke();
@@ -490,7 +564,9 @@ fn run_phase61_to_70_smokes() {
     );
     kernel::serial_println!(
         "Phase67-LazyPlt: lazy={}, bound={}, ok={}",
-        plt_lazy, plt_bound, phase67_ok
+        plt_lazy,
+        plt_bound,
+        phase67_ok
     );
 
     let phase68_ok = kernel::task::program_loader::phase68_tlb_shootdown_smoke();
@@ -502,7 +578,9 @@ fn run_phase61_to_70_smokes() {
     );
     kernel::serial_println!(
         "Phase68-TlbShootdown: cpus={}, shootdowns={}, ok={}",
-        cpus, shootdowns, phase68_ok
+        cpus,
+        shootdowns,
+        phase68_ok
     );
 
     let phase69_ok = kernel::task::program_loader::phase69_ap_idle_smoke();
@@ -513,7 +591,9 @@ fn run_phase61_to_70_smokes() {
     );
     kernel::serial_println!(
         "Phase69-ApIdle: aps={}, idle_ticks={}, ok={}",
-        aps, idle_ticks, phase69_ok
+        aps,
+        idle_ticks,
+        phase69_ok
     );
 
     let phase70_ok = kernel::task::program_loader::phase70_integration_smoke();
@@ -569,7 +649,8 @@ fn run_phase71_to_80_smokes() {
     );
     kernel::serial_println!(
         "Phase72-Ring3Chdir: chdirs={}, ok={}",
-        ring3_chdirs, phase72_ok
+        ring3_chdirs,
+        phase72_ok
     );
 
     let phase73_ok = kernel::task::program_loader::phase73_munmap_len_smoke();
@@ -580,7 +661,9 @@ fn run_phase71_to_80_smokes() {
     );
     kernel::serial_println!(
         "Phase73-MunmapLen: unmapped_pages={}, partial_regions={}, ok={}",
-        unmapped_pages, partial_regions, phase73_ok
+        unmapped_pages,
+        partial_regions,
+        phase73_ok
     );
 
     let phase74_ok = kernel::task::program_loader::phase74_waitlite_smoke();
@@ -591,7 +674,9 @@ fn run_phase71_to_80_smokes() {
     );
     kernel::serial_println!(
         "Phase74-WaitLite: waited={}, rejected={}, ok={}",
-        waited, wait_rejected, phase74_ok
+        waited,
+        wait_rejected,
+        phase74_ok
     );
 
     let phase75_ok = kernel::task::program_loader::phase75_syscallprobe_smoke();
@@ -617,7 +702,10 @@ fn run_phase71_to_80_smokes() {
     );
     kernel::serial_println!(
         "Phase76-Fcntl: setfd={}, getfd={}, rejected={}, ok={}",
-        setfd, getfd, fcntl_rej, phase76_ok
+        setfd,
+        getfd,
+        fcntl_rej,
+        phase76_ok
     );
 
     let phase77_ok = kernel::task::program_loader::phase77_ring3_lazy_plt_smoke();
@@ -629,7 +717,10 @@ fn run_phase71_to_80_smokes() {
     );
     kernel::serial_println!(
         "Phase77-Ring3LazyPlt: lazy={}, bound={}, ring3={}, ok={}",
-        plt_lazy, plt_bound, ring3_plt, phase77_ok
+        plt_lazy,
+        plt_bound,
+        ring3_plt,
+        phase77_ok
     );
 
     let phase78_ok = kernel::task::program_loader::phase78_ipi_tlb_smoke();
@@ -641,7 +732,9 @@ fn run_phase71_to_80_smokes() {
     );
     kernel::serial_println!(
         "Phase78-IpiTlb: cpus={}, ipis={}, ok={}",
-        cpus, ipis, phase78_ok
+        cpus,
+        ipis,
+        phase78_ok
     );
 
     let phase79_ok = kernel::task::program_loader::phase79_ap_trampoline_smoke();
@@ -652,7 +745,9 @@ fn run_phase71_to_80_smokes() {
     );
     kernel::serial_println!(
         "Phase79-ApTrampoline: aps={}, idle_ticks={}, ok={}",
-        aps, idle_ticks, phase79_ok
+        aps,
+        idle_ticks,
+        phase79_ok
     );
 
     let phase80_ok = kernel::task::program_loader::phase80_integration_smoke();
@@ -702,14 +797,8 @@ fn run_phase81_to_90_smokes() {
 
     let phase82_ok = kernel::task::program_loader::phase82_getcwd_smoke();
     let getcwd_reads = kernel::user_path::getcwd_status();
-    println!(
-        "Phase82-Getcwd: reads={}, ok={}",
-        getcwd_reads, phase82_ok
-    );
-    kernel::serial_println!(
-        "Phase82-Getcwd: reads={}, ok={}",
-        getcwd_reads, phase82_ok
-    );
+    println!("Phase82-Getcwd: reads={}, ok={}", getcwd_reads, phase82_ok);
+    kernel::serial_println!("Phase82-Getcwd: reads={}, ok={}", getcwd_reads, phase82_ok);
 
     let phase83_ok = kernel::task::program_loader::phase83_chdirprobe_smoke();
     println!(
@@ -734,7 +823,9 @@ fn run_phase81_to_90_smokes() {
     );
     kernel::serial_println!(
         "Phase84-VmaSplit: splits={}, unmapped={}, ok={}",
-        splits, unmapped, phase84_ok
+        splits,
+        unmapped,
+        phase84_ok
     );
 
     let phase85_ok = kernel::task::program_loader::phase85_fork_dup_smoke();
@@ -745,7 +836,9 @@ fn run_phase81_to_90_smokes() {
     );
     kernel::serial_println!(
         "Phase85-ForkDup: children={}, duplicated={}, ok={}",
-        children, duplicated, phase85_ok
+        children,
+        duplicated,
+        phase85_ok
     );
 
     let phase86_ok = kernel::task::program_loader::phase86_exec_lite_smoke();
@@ -756,7 +849,9 @@ fn run_phase81_to_90_smokes() {
     );
     kernel::serial_println!(
         "Phase86-ExecLite: execs={}, cloexec_closed={}, ok={}",
-        execs, cloexec_closed, phase86_ok
+        execs,
+        cloexec_closed,
+        phase86_ok
     );
 
     let phase87_ok = kernel::task::program_loader::phase87_pipe_lite_smoke();
@@ -767,7 +862,9 @@ fn run_phase81_to_90_smokes() {
     );
     kernel::serial_println!(
         "Phase87-PipeLite: pipes={}, bytes={}, ok={}",
-        pipes, bytes, phase87_ok
+        pipes,
+        bytes,
+        phase87_ok
     );
 
     let phase88_ok = kernel::task::program_loader::phase88_ring3_plt_fault_smoke();
@@ -778,7 +875,9 @@ fn run_phase81_to_90_smokes() {
     );
     kernel::serial_println!(
         "Phase88-Ring3PltFault: faults={}, bound={}, ok={}",
-        faults, bound, phase88_ok
+        faults,
+        bound,
+        phase88_ok
     );
 
     let phase89_ok = kernel::task::program_loader::phase89_ipi_send_smoke();
@@ -789,7 +888,9 @@ fn run_phase81_to_90_smokes() {
     );
     kernel::serial_println!(
         "Phase89-IpiSend: sent={}, acked={}, ok={}",
-        sent, acked, phase89_ok
+        sent,
+        acked,
+        phase89_ok
     );
 
     let phase90_ok = kernel::task::program_loader::phase90_integration_smoke();
@@ -845,7 +946,9 @@ fn run_phase91_to_100_smokes() {
     );
     kernel::serial_println!(
         "Phase92-PollLite: polls={}, ready={}, ok={}",
-        polls, poll_ready, phase92_ok
+        polls,
+        poll_ready,
+        phase92_ok
     );
 
     let phase93_ok = kernel::task::program_loader::phase93_mmap_gap_smoke();
@@ -876,7 +979,9 @@ fn run_phase91_to_100_smokes() {
     );
     kernel::serial_println!(
         "Phase95-PipeProbe: hw_pipes={}, bytes={}, ok={}",
-        hw_pipes, bytes, phase95_ok
+        hw_pipes,
+        bytes,
+        phase95_ok
     );
 
     let phase96_ok = kernel::task::program_loader::phase96_vma_coalesce_smoke();
@@ -887,7 +992,8 @@ fn run_phase91_to_100_smokes() {
     );
     kernel::serial_println!(
         "Phase96-VmaCoalesce: coalesced={}, ok={}",
-        coalesced, phase96_ok
+        coalesced,
+        phase96_ok
     );
 
     let phase97_ok = kernel::task::program_loader::phase97_work_steal_smoke();
@@ -908,7 +1014,9 @@ fn run_phase91_to_100_smokes() {
     );
     kernel::serial_println!(
         "Phase99-LapicIcr: writes={}, sent={}, ok={}",
-        icr_writes, icr_sent, phase99_ok
+        icr_writes,
+        icr_sent,
+        phase99_ok
     );
 
     let phase100_ok = kernel::task::program_loader::phase100_integration_smoke();
@@ -963,7 +1071,12 @@ fn run_phase111_to_120_smokes() {
     );
     kernel::serial_println!(
         "Phase120-CapCompat: cap_table={}, rights={}, grant={}, broker={}, compat={}, ok={}",
-        cap_table, rights, grant, broker, compat, phase120_ok
+        cap_table,
+        rights,
+        grant,
+        broker,
+        compat,
+        phase120_ok
     );
 }
 
@@ -976,7 +1089,10 @@ fn run_phase21_to_30_smokes() {
     );
     kernel::serial_println!(
         "Phase21-HwPageTables: built={}, verified={}, rejected={}, tables_ok={}",
-        hw_built, hw_verified, hw_rejected, phase21_ok
+        hw_built,
+        hw_verified,
+        hw_rejected,
+        phase21_ok
     );
     let phase22_ok = kernel::task::program_loader::phase22_smoke_check();
     let (cr3_act, cr3_restore, _, _, _, _, _) = kernel::user_paging::status();
@@ -986,7 +1102,9 @@ fn run_phase21_to_30_smokes() {
     );
     kernel::serial_println!(
         "Phase22-Cr3: activations={}, restores={}, verify_ok={}",
-        cr3_act, cr3_restore, phase22_ok
+        cr3_act,
+        cr3_restore,
+        phase22_ok
     );
     let phase23_ok = kernel::task::program_loader::phase23_smoke_check();
     let (iretq_entries, iretq_trapped, _, _) = kernel::user_entry::status();
@@ -996,7 +1114,9 @@ fn run_phase21_to_30_smokes() {
     );
     kernel::serial_println!(
         "Phase23-Iretq: entries={}, trapped={}, entry_ok={}",
-        iretq_entries, iretq_trapped, phase23_ok
+        iretq_entries,
+        iretq_trapped,
+        phase23_ok
     );
     let phase24_ok = kernel::task::program_loader::phase24_smoke_check();
     let (trap_count, trap_returns, _, _) = kernel::user_entry::status();
@@ -1006,7 +1126,9 @@ fn run_phase21_to_30_smokes() {
     );
     kernel::serial_println!(
         "Phase24-UserTrap: traps={}, returns={}, vector_ok={}",
-        trap_count, trap_returns, phase24_ok
+        trap_count,
+        trap_returns,
+        phase24_ok
     );
     kernel::user_syscall_hw::init_syscall_msrs();
     let phase25_ok = kernel::task::program_loader::phase25_smoke_check();
@@ -1017,7 +1139,9 @@ fn run_phase21_to_30_smokes() {
     );
     kernel::serial_println!(
         "Phase25-SyscallHw: syscalls={}, sysrets={}, hw_ok={}",
-        hw_syscalls, hw_sysrets, phase25_ok
+        hw_syscalls,
+        hw_sysrets,
+        phase25_ok
     );
     let phase26_ok = kernel::task::program_loader::phase26_smoke_check();
     let (copy_ok_count, copy_rejected) = kernel::user_copy::status();
@@ -1027,7 +1151,9 @@ fn run_phase21_to_30_smokes() {
     );
     kernel::serial_println!(
         "Phase26-Copyin: copies={}, rejected={}, copy_ok={}",
-        copy_ok_count, copy_rejected, phase26_ok
+        copy_ok_count,
+        copy_rejected,
+        phase26_ok
     );
     let phase27_ok = kernel::task::program_loader::phase27_smoke_check();
     let (reloc_applied, reloc_rejected) = kernel::elf_reloc::status();
@@ -1037,15 +1163,15 @@ fn run_phase21_to_30_smokes() {
     );
     kernel::serial_println!(
         "Phase27-Reloc: applied={}, rejected={}, reloc_ok={}",
-        reloc_applied, reloc_rejected, phase27_ok
+        reloc_applied,
+        reloc_rejected,
+        phase27_ok
     );
     let phase28_ok = kernel::task::program_loader::phase28_smoke_check();
     let hw_elf_status = kernel::task::program_loader::status();
     println!(
         "Phase28-HwHello: executions={}, exits={}, hello_hw_ok={}",
-        hw_elf_status.hw_elf_execution_count,
-        hw_elf_status.user_elf_exit_count,
-        phase28_ok
+        hw_elf_status.hw_elf_execution_count, hw_elf_status.user_elf_exit_count, phase28_ok
     );
     kernel::serial_println!(
         "Phase28-HwHello: executions={}, exits={}, hello_hw_ok={}",
@@ -1060,7 +1186,8 @@ fn run_phase21_to_30_smokes() {
     );
     kernel::serial_println!(
         "Phase29-Allowlist: programs=2, exit42_ok={}, hello_ok={}",
-        phase29_ok, phase28_ok
+        phase29_ok,
+        phase28_ok
     );
     let phase30_ok = kernel::task::program_loader::phase30_cr3_switch_smoke();
     let (_, _, _, _, _, cr3_switches, isolated) = kernel::user_paging::status();
@@ -1070,7 +1197,9 @@ fn run_phase21_to_30_smokes() {
     );
     kernel::serial_println!(
         "Phase30-Cr3Switch: switches={}, isolated={}, switch_ok={}",
-        cr3_switches, isolated, phase30_ok
+        cr3_switches,
+        isolated,
+        phase30_ok
     );
     kernel::task::program_loader::set_hw_user_elf_ready();
 }
@@ -1101,7 +1230,8 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     }
     kernel::task::keyboard::init_scancode_queue();
     kernel::storage::init();
-    let boot_tick = kernel::performance::metrics::TICK_COUNTER.load(core::sync::atomic::Ordering::Relaxed);
+    let boot_tick =
+        kernel::performance::metrics::TICK_COUNTER.load(core::sync::atomic::Ordering::Relaxed);
     let _ = kernel::task::process::create_kernel_process("shell", boot_tick);
 
     println!("Memory subsystem initialised.");
@@ -1443,19 +1573,19 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     ));
     executor.spawn(Task::named("task-registry", timer::log_task_registry()));
     executor.spawn(Task::named("task-watchdog", timer::task_watchdog()));
-    
+
     if cfg!(feature = "preemption") {
-        executor.spawn(Task::named("fairness-monitor", timer::log_preemption_fairness()));
+        executor.spawn(Task::named(
+            "fairness-monitor",
+            timer::log_preemption_fairness(),
+        ));
     }
 
     let stats = executor.stats();
     let context_names = kernel::task::scheduler::context_task_names();
     println!(
         "Tasks: active={}, sleeping={}, ready={}, completed={}",
-        stats.active_tasks,
-        stats.sleeping_tasks,
-        stats.ready_queue_depth,
-        stats.completed_tasks
+        stats.active_tasks, stats.sleeping_tasks, stats.ready_queue_depth, stats.completed_tasks
     );
     println!("Context tasks: {:?}", context_names);
     println!("Kernel ready. Entering event loop.");
