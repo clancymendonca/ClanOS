@@ -461,6 +461,13 @@ pub fn invoke_with_args(id: u64, arg0: u64, arg1: u64, arg2: u64) -> Result<u64,
             if arg0 == 0 {
                 return Err(SyscallError::InvalidArgument);
             }
+            let pid = crate::task::process::current_process_id()
+                .or_else(|| crate::task::process::smoke_process_id());
+            if let Some(pid) = pid {
+                if crate::task::process::native_blocks_path_probe(pid) {
+                    return Err(SyscallError::InvalidArgument);
+                }
+            }
             let user_buf = if arg1 == 0 {
                 crate::user_context::DEFAULT_USER_STACK_TOP.saturating_sub(128)
             } else {

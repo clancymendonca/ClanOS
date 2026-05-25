@@ -8,6 +8,7 @@ use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use crate::fd_table::{FdSlotStorage, MAX_FDS};
+use crate::kernel_object::{CapSlotStorage, MAX_CAPS};
 use crate::vma::VmaRegion;
 use crate::performance::process_metrics::{self, EventType, ProcessMetricsGlobal};
 use crate::security::Credentials;
@@ -141,6 +142,13 @@ impl ProcessState {
     }
 }
 
+/// Compat (ELF/FD/path) vs native capability process (phases 116–117).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ProcessMode {
+    Compat,
+    Native,
+}
+
 /// Process metadata and lifecycle tracking.
 #[derive(Debug, Clone)]
 pub struct Process {
@@ -174,6 +182,10 @@ pub struct Process {
     wait_status: Option<i32>,
     /// Per-process file descriptors (Phase 51+).
     fds: [Option<FdSlotStorage>; MAX_FDS],
+    /// Per-process capability handles (Phase 111+).
+    caps: [Option<CapSlotStorage>; MAX_CAPS],
+    /// Native vs compat authority surface (Phase 116+).
+    mode: ProcessMode,
     /// Current working directory for relative opens (Phase 52+).
     cwd: String,
     /// Virtual memory areas (Phase 63+).
@@ -210,6 +222,8 @@ impl Process {
             cr3_phys: None,
             wait_status: None,
             fds: [const { None }; MAX_FDS],
+            caps: [const { None }; MAX_CAPS],
+            mode: ProcessMode::Compat,
             cwd: String::from("/"),
             vma_regions: Vec::new(),
             exec_argv: Vec::new(),
@@ -226,6 +240,22 @@ impl Process {
 
     pub fn fds_mut(&mut self) -> &mut [Option<FdSlotStorage>; MAX_FDS] {
         &mut self.fds
+    }
+
+    pub fn caps(&self) -> &[Option<CapSlotStorage>; MAX_CAPS] {
+        &self.caps
+    }
+
+    pub fn caps_mut(&mut self) -> &mut [Option<CapSlotStorage>; MAX_CAPS] {
+        &mut self.caps
+    }
+
+    pub fn mode(&self) -> ProcessMode {
+        self.mode
+    }
+
+    pub fn set_mode(&mut self, mode: ProcessMode) {
+        self.mode = mode;
     }
 
     pub fn cwd(&self) -> &str {
@@ -1112,6 +1142,28 @@ pub fn set_process_wait_status(pid: ProcessId, code: i32) -> bool {
 
 pub fn process_wait_status(pid: ProcessId) -> Option<i32> {
     PROCESS_REGISTRY.lock().wait_status_of(pid)
+}
+
+pub fn process_mode(pid: ProcessId) -> ProcessMode {
+    with_process_mut(pid, |p| p.mode()).unwrap_or(ProcessMode::Compat)
+}
+
+pub fn set_process_mode(pid: ProcessId, mode: ProcessMode) -> bool {
+    with_process_mut(pid, |p| {
+        p.set_mode(mode);
+        true
+    })
+    .is_some()
+}
+
+/// Phase 117: native processes must not use path enumeration probes.
+pub fn native_blocks_path_probe(pid: ProcessId) -> bool {
+    process_mode(pid) == ProcessMode::Native
+}
+
+pub fn create_process_for_smoke(name: &'static str) -> Option<ProcessId> {
+    let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
+    PROCESS_REGISTRY.lock().create_process(name, tick)
 }
 
 #[cfg(test)]

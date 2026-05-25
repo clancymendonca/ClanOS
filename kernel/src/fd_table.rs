@@ -98,6 +98,10 @@ pub fn open_pipe_for_process(pid: ProcessId, path: &str) -> Result<u32, ()> {
 }
 
 pub fn open_file_for_process(pid: ProcessId, path: &str) -> Result<u32, ()> {
+    crate::path_broker::resolve_open_compat(pid, path)
+}
+
+pub fn open_file_for_process_inner(pid: ProcessId, path: &str) -> Result<u32, ()> {
     let path = resolve_path_for_process(pid, path).map_err(|_| {
         FD_REJECTED.fetch_add(1, Ordering::Relaxed);
     })?;

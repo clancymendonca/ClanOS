@@ -52,6 +52,10 @@ pub mod smp;
 pub mod vma;
 pub mod pipe;
 pub mod governance;
+pub mod kernel_object;
+pub mod native_syscall;
+pub mod path_broker;
+pub mod storage_broker;
 pub mod vga_buffer;
 
 use core::panic::PanicInfo;
