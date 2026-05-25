@@ -31,7 +31,7 @@ jobs:
             ~/.cargo/bin/bootimage
             ~/.cargo/bin/bootimage-runner
             ~/.cargo/bin/cargo-bootimage
-          key: bootimage-tools-${{ runner.os }}-v1
+          key: bootimage-tools-${{ runner.os }}-0.9.0-v1
 
       - name: Install system dependencies
         run: |
@@ -41,7 +41,7 @@ jobs:
       - name: Install bootimage
         run: |
           if ! command -v bootimage >/dev/null 2>&1; then
-            cargo install bootimage --version 0.9.11 --locked
+            cargo install bootimage --version 0.9.0 --locked
           fi
 
       - name: Verify formatting
