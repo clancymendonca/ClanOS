@@ -65,7 +65,7 @@ def validate(samples: list[Sample], max_latency_ms: int) -> tuple[bool, list[str
     if last.pts <= first.pts:
         errors.append("reschedule point counter did not advance")
 
-    observed_max = max(sample.max_est_ms for sample in samples)
+    observed_max = max(sample.est_ms for sample in samples)
     if observed_max > max_latency_ms:
         errors.append(f"estimated preemption latency too high: {observed_max}ms > {max_latency_ms}ms")
 
@@ -109,7 +109,7 @@ def main() -> int:
     ok, errors = validate(samples, args.max_latency_ms)
     first = samples[0]
     last = samples[-1]
-    observed_max_est_ms = max(sample.max_est_ms for sample in samples)
+    observed_max_est_ms = max(sample.est_ms for sample in samples)
 
     print(
         "Summary: "
