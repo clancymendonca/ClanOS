@@ -26,14 +26,20 @@ KERNEL_CMD = [
 
 
 def cleanup_qemu_processes() -> None:
-    if os.name != "nt":
-        return
-    subprocess.run(
-        ["taskkill", "/IM", "qemu-system-x86_64.exe", "/F"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        check=False,
-    )
+    if os.name == "nt":
+        subprocess.run(
+            ["taskkill", "/IM", "qemu-system-x86_64.exe", "/F"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+    else:
+        subprocess.run(
+            ["pkill", "-9", "qemu-system-x86_64"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
 
 
 def run_kernel(timeout: int = DEFAULT_SMOKE_TIMEOUT) -> tuple[int, str]:

@@ -8,6 +8,8 @@ import subprocess
 import sys
 import time
 
+from smoke_qemu import cleanup_qemu_processes
+
 PHASE6_SMOKE_RE = re.compile(
     r"Phase6-Smoke:\s+mounted=(true|false),\s+list_ok=(true|false),\s+cat_ok=(true|false),\s+run_ok=(true|false)"
 )
@@ -56,17 +58,6 @@ def run_command(cmd: list[str], timeout: int | None = None) -> tuple[int, str]:
             output, _ = process.communicate(timeout=5)
         cleanup_qemu_processes()
         return 124, output
-
-
-def cleanup_qemu_processes() -> None:
-    if os.name != "nt":
-        return
-    subprocess.run(
-        ["taskkill", "/IM", "qemu-system-x86_64.exe", "/F"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        check=False,
-    )
 
 
 def check_phase6_smoke_output(text: str) -> bool:
@@ -666,6 +657,16 @@ def main() -> int:
             [
                 "python",
                 "scripts/phase110_constitutional_check.py",
+                "--timeout",
+                str(max(args.smoke_timeout, 300)),
+            ],
+            None,
+        ),
+        (
+            "phase120-cap-integration-check",
+            [
+                "python",
+                "scripts/phase120_cap_integration_check.py",
                 "--timeout",
                 str(max(args.smoke_timeout, 300)),
             ],

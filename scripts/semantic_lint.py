@@ -159,6 +159,50 @@ def check_abi_allowlist(repo: Path, errors: list[str]) -> None:
             errors.append(f"kernel allowlist missing IDs in ABI_SYSCALL.md: {sorted(missing_kernel)}")
 
 
+def check_cap_implementation(repo: Path, errors: list[str]) -> None:
+    required = [
+        repo / "kernel" / "src" / "kernel_object.rs",
+        repo / "kernel" / "src" / "native_syscall.rs",
+        repo / "kernel" / "src" / "path_broker.rs",
+        repo / "kernel" / "src" / "storage_broker.rs",
+    ]
+    for path in required:
+        if not path.is_file():
+            errors.append(f"phases 111-120: missing {path.relative_to(repo)}")
+
+
+def parse_native_syscall_enum(native_rs: Path) -> set[int]:
+    text = native_rs.read_text(encoding="utf-8")
+    ids: set[int] = set()
+    in_enum = False
+    for line in text.splitlines():
+        if "pub enum NativeSyscallId" in line:
+            in_enum = True
+            continue
+        if in_enum and line.strip().startswith("}"):
+            break
+        m = SYSCALL_ENUM_RE.search(line)
+        if in_enum and m:
+            ids.add(int(m.group(2)))
+    return ids
+
+
+def check_native_syscall_ids(repo: Path, errors: list[str]) -> None:
+    native_rs = repo / "kernel" / "src" / "native_syscall.rs"
+    kernel_ids = parse_native_syscall_enum(native_rs)
+    abi = repo / "docs" / "ABI_SYSCALL.md"
+    abi_text = abi.read_text(encoding="utf-8")
+    start = abi_text.find("## Native syscall IDs (phase 112)")
+    if start < 0:
+        return
+    chunk = abi_text[start : start + 800]
+    doc_ids = set(int(m.group(1)) for m in ABI_TABLE_ID_RE.finditer(chunk))
+    if doc_ids and kernel_ids != doc_ids:
+        errors.append(
+            f"native syscall IDs mismatch: doc={sorted(doc_ids)} kernel={sorted(kernel_ids)}"
+        )
+
+
 def print_minimization_audit() -> None:
     rows = [
         ("Constitutional", "AXIOMS", "10 axioms"),
@@ -192,6 +236,11 @@ def main() -> int:
     try:
         check_abi_allowlist(repo, errors)
     except RuntimeError as exc:
+        errors.append(str(exc))
+    check_cap_implementation(repo, errors)
+    try:
+        check_native_syscall_ids(repo, errors)
+    except OSError as exc:
         errors.append(str(exc))
 
     print_minimization_audit()
