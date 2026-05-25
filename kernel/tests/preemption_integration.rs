@@ -1553,3 +1553,11 @@ fn phase99_lapic_icr_smoke_works() {
 fn phase_100_integration_smoke_works() {
     assert!(kernel::task::program_loader::phase100_integration_smoke());
 }
+
+#[test_case]
+fn phase110_constitutional_smoke_works() {
+    assert!(kernel::governance::phase110_constitutional_smoke());
+    assert!(kernel::governance::CONSTITUTIONAL_FOUNDATION_RATIFIED);
+    assert!(kernel::governance::IMMUTABLE_OBJECT_IDENTITY);
+    assert_eq!(kernel::governance::NATIVE_SYSCALL_ID_BASE, 256);
+}

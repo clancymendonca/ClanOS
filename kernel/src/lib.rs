@@ -51,6 +51,7 @@ pub mod image_digest;
 pub mod smp;
 pub mod vma;
 pub mod pipe;
+pub mod governance;
 pub mod vga_buffer;
 
 use core::panic::PanicInfo;
