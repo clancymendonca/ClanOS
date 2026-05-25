@@ -963,6 +963,31 @@ Checklist: `docs/phase-99-checklist.md`
 
 Checklist: `docs/phase-100-checklist.md`
 
+### Phases 101–110 — Constitutional Semantic Foundation (documentation)
+
+Phases 1–100 answered whether the OS can exist. Phases 101–110 freeze **semantic constitutionalism**: axioms, rights algebra, temporal visibility, IPC guarantees, governance gates G1–G5, and `ares-semantics-v1` — before native implementation (111+).
+
+Status: complete (validated 2026-05-25 — semantic lint + Phase 110 constitutional smoke)
+
+Checklist index: `docs/phase-101-checklist.md` … `docs/phase-110-checklist.md`
+
+Validation:
+
+```
+python scripts/semantic_lint.py
+python scripts/phase110_constitutional_check.py --timeout 300
+```
+
+Key guides:
+
+* [NATIVE_MODEL.md](docs/NATIVE_MODEL.md) — post-Unix capability civilization
+* [AXIOMS.md](docs/AXIOMS.md) — constitutional axioms A1–A10 (A7+A10 anti-entropy pair)
+* [ROADMAP_POST100.md](docs/ROADMAP_POST100.md) — phases 101–150 table
+
+### Phases 111–150 — Native platform (planned)
+
+Capabilities, brokers, endpoints, service-centric scheduling — implementation blocked until phase 110 constitutional sign-off. See [ROADMAP_POST100.md](docs/ROADMAP_POST100.md).
+
 ---
 
 # Documentation
@@ -1266,11 +1291,17 @@ Run Phase 4 wrapper-mode preemption soak check:
 
 # Vision
 
-AresOS is not intended to replace existing operating systems.
+AresOS is an experimental **post-Unix capability system** with **semantic constitutionalism** — not “Linux but smaller.”
 
-Instead, it exists to answer a question:
+Phases 1–100 built kernel mechanics (paging, ELF, syscalls, SMP groundwork). The long-term challenge is **preserving semantic coherence across decades**, not only shipping features.
 
-**What happens when you build a system entirely on your own terms?**
+**Preserving semantic coherence is harder than building the kernel.**
+
+* **Native:** capabilities, async endpoints, no ambient paths, service-centric design — see [NATIVE_MODEL.md](docs/NATIVE_MODEL.md)
+* **Compat:** ELF, FDs, paths, POSIX (future shim) — substrate, not architectural truth
+* **Governance:** [AXIOMS.md](docs/AXIOMS.md) (especially A7 semantic laws override convenience, A10 minimization), gates G1–G5, [SEMANTIC_SPECS.md](docs/SEMANTIC_SPECS.md)
+
+**What happens when you build a civilization on the OS on your own terms — and write the laws before the code?**
 
 ---
 

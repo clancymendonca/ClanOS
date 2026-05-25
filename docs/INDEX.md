@@ -107,6 +107,55 @@ Central index for phase checklists, deep-dive guides, and validation commands. T
 | 99 | LAPIC ICR write stub | [phase-99-checklist.md](phase-99-checklist.md) |
 | 100 | Integration (91–99) | [phase-100-checklist.md](phase-100-checklist.md) |
 
+## Post-100 Constitutional Architecture
+
+Governance framework for semantic integrity — documentation pass phases **101–110** complete; implementation **111+** gated on phase 110 sign-off.
+
+| Guide | Role |
+|-------|------|
+| [ROADMAP_POST100.md](ROADMAP_POST100.md) | Phases 101–150 + beyond 150 |
+| [NATIVE_MODEL.md](NATIVE_MODEL.md) | Post-Unix native definition, hierarchy, layers |
+| [AXIOMS.md](AXIOMS.md) | Constitutional axioms A1–A10, gates G1–G5 |
+| [KERNEL_OBJECT_MODEL.md](KERNEL_OBJECT_MODEL.md) | Universal objects; immutable identity + generation (G1) |
+| [RIGHTS_ALGEBRA.md](RIGHTS_ALGEBRA.md) | Authority calculus (G2) |
+| [TEMPORAL_SEMANTICS.md](TEMPORAL_SEMANTICS.md) | Visibility; meta-semantics outline (G5) |
+| [SEMANTIC_SPECS.md](SEMANTIC_SPECS.md) | Architecture-preservation cases R-/E-/T-/M-/S- |
+| [SEMANTIC_JURISDICTION.md](SEMANTIC_JURISDICTION.md) | Who may define semantics |
+| [SEMANTIC_LINT.md](SEMANTIC_LINT.md) | Semantic static analysis roadmap |
+| [SEMANTIC_OBSERVABILITY.md](SEMANTIC_OBSERVABILITY.md) | Law-linked diagnostics (outline post-170) |
+| [ABI_SYSCALL.md](ABI_SYSCALL.md) | Compat `ares-abi-v1` |
+| [ABI_MEMORY.md](ABI_MEMORY.md) | VMA, mmap, COW (compat) |
+| [ABI_IPC.md](ABI_IPC.md) | Endpoint guarantees (G3) |
+| [ABI_ASYNC.md](ABI_ASYNC.md) | Async OS contract |
+| [ABI_RUNTIME.md](ABI_RUNTIME.md) | Language-neutral native runtime |
+| [ABI_DRIVER.md](ABI_DRIVER.md) | Distrustful drivers |
+| [ABI_SECURITY.md](ABI_SECURITY.md) | No ambient authority |
+| [ABI_STABILITY.md](ABI_STABILITY.md) | `ares-abi-v*` + `ares-semantics-v*` |
+| [NATIVE_DEVELOPER_EXPERIENCE.md](NATIVE_DEVELOPER_EXPERIENCE.md) | UX vs compat retreat |
+
+## Phase Checklists (101–150)
+
+| Phase | Topic | Checklist |
+|------:|-------|-----------|
+| 101 | Compat syscall ABI freeze | [phase-101-checklist.md](phase-101-checklist.md) |
+| 102 | Memory contract | [phase-102-checklist.md](phase-102-checklist.md) |
+| 103 | IPC endpoint guarantees | [phase-103-checklist.md](phase-103-checklist.md) |
+| 104 | Async OS contract | [phase-104-checklist.md](phase-104-checklist.md) |
+| 105 | Security + axioms | [phase-105-checklist.md](phase-105-checklist.md) |
+| 106 | Kernel object model | [phase-106-checklist.md](phase-106-checklist.md) |
+| 107 | Rights algebra | [phase-107-checklist.md](phase-107-checklist.md) |
+| 108 | Temporal semantics | [phase-108-checklist.md](phase-108-checklist.md) |
+| 109 | Semantic index + lint + jurisdiction | [phase-109-checklist.md](phase-109-checklist.md) |
+| 110 | Constitutional sign-off | [phase-110-checklist.md](phase-110-checklist.md) |
+| 111–119 | Capabilities + compat bridge | [phase-111-checklist.md](phase-111-checklist.md) … [phase-119-checklist.md](phase-119-checklist.md) |
+| 120 | Integration (111–119) | [phase-120-checklist.md](phase-120-checklist.md) |
+| 121–129 | Platform brokers | [phase-121-checklist.md](phase-121-checklist.md) … [phase-129-checklist.md](phase-129-checklist.md) |
+| 130 | Integration (121–129) | [phase-130-checklist.md](phase-130-checklist.md) |
+| 131–139 | Immutable + async IPC | [phase-131-checklist.md](phase-131-checklist.md) … [phase-139-checklist.md](phase-139-checklist.md) |
+| 140 | Integration (131–139) | [phase-140-checklist.md](phase-140-checklist.md) |
+| 141–149 | Scheduler, drivers, QoS | [phase-141-checklist.md](phase-141-checklist.md) … [phase-149-checklist.md](phase-149-checklist.md) |
+| 150 | Four-layer review | [phase-150-checklist.md](phase-150-checklist.md) |
+
 ## Deep-Dive Guides
 
 | Guide | Phases |
@@ -140,6 +189,15 @@ Quick checks:
 cargo check -p kernel
 cargo test -p kernel --features preemption --test preemption_integration
 ```
+
+Post-100 constitutional foundation (phases 101–110):
+
+```bash
+python scripts/semantic_lint.py
+python scripts/phase110_constitutional_check.py --timeout 300
+```
+
+Matrix entries: `semantic-lint-check`, `phase110-constitutional-check`
 
 Full QEMU matrix (serial; allow ~2+ hours on Windows):
 
