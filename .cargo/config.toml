@@ -3,6 +3,7 @@ build-std = ["core", "compiler_builtins", "alloc"]
 build-std-features = ["compiler-builtins-mem"]
 target-applies-to-host = false
 panic-abort-tests = true
+json-target-spec = true
 
 [build]
 target = "x86_64-unknown-none"
