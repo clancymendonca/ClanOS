@@ -64,14 +64,24 @@ Native errors (future) will use a separate enum bound to `ares-semantics-v*`.
 
 ---
 
-## Native ID space (reserved — documentation only)
+## Native ID space (kernel smokes; ring-3 allowlist deferred to phase 128 G4)
 
 | Range | Owner |
 |-------|--------|
 | 1–82 | **Compat** (frozen `ares-abi-v1`) |
-| 256+ (draft) | **Native** caps, endpoints, async wait — phase 107 doc; implementation 111+ |
+| 256+ | **Native** caps, endpoints, async wait |
 
 Native syscalls must not expose path-string `open` for native processes ([ABI_SECURITY.md](ABI_SECURITY.md)).
+
+## Native syscall IDs (phase 112)
+
+Kernel-only dispatch via [`kernel/src/native_syscall.rs`](../kernel/src/native_syscall.rs) — not in `ALLOWED_HW_SYSCALLS` until phase 128.
+
+| ID | Name | Notes |
+|----|------|-------|
+| 256 | `CapCreate` | Mint cap `(arg0=ObjectId, arg1=rights mask)` |
+| 257 | `CapClose` | Close cap slot `arg0` |
+| 258 | `CapTransfer` | Move cap `arg0` to process `arg1` |
 
 ---
 
