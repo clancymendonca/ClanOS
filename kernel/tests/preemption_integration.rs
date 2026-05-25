@@ -1561,3 +1561,44 @@ fn phase110_constitutional_smoke_works() {
     assert!(kernel::governance::IMMUTABLE_OBJECT_IDENTITY);
     assert_eq!(kernel::governance::NATIVE_SYSCALL_ID_BASE, 256);
 }
+
+#[test_case]
+fn phase120_cap_compat_smoke_works() {
+    assert!(
+        kernel::kernel_object::phase111_kernel_object_smoke(),
+        "phase111"
+    );
+    assert!(
+        kernel::kernel_object::phase112_cap_lifecycle_smoke(),
+        "phase112"
+    );
+    assert!(
+        kernel::kernel_object::phase113_rights_smoke(),
+        "phase113"
+    );
+    assert!(
+        kernel::kernel_object::phase114_storage_grant_smoke(),
+        "phase114"
+    );
+    assert!(
+        kernel::path_broker::phase115_path_broker_smoke(),
+        "phase115"
+    );
+    assert!(
+        kernel::kernel_object::phase116_ambient_deny_smoke(),
+        "phase116"
+    );
+    assert!(
+        kernel::kernel_object::phase117_namespace_smoke(),
+        "phase117"
+    );
+    assert!(
+        kernel::storage_broker::phase118_broker_mint_smoke(),
+        "phase118"
+    );
+    assert!(
+        kernel::kernel_object::phase119_compat_bridge_smoke(),
+        "phase119"
+    );
+    assert!(kernel::governance::phase120_cap_compat_smoke());
+}

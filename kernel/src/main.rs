@@ -954,6 +954,19 @@ fn run_phase101_to_110_smokes() {
     );
 }
 
+fn run_phase111_to_120_smokes() {
+    let phase120_ok = kernel::governance::phase120_cap_compat_smoke();
+    let (cap_table, rights, grant, broker, compat) = kernel::governance::phase120_status();
+    println!(
+        "Phase120-CapCompat: cap_table={}, rights={}, grant={}, broker={}, compat={}, ok={}",
+        cap_table, rights, grant, broker, compat, phase120_ok
+    );
+    kernel::serial_println!(
+        "Phase120-CapCompat: cap_table={}, rights={}, grant={}, broker={}, compat={}, ok={}",
+        cap_table, rights, grant, broker, compat, phase120_ok
+    );
+}
+
 fn run_phase21_to_30_smokes() {
     let phase21_ok = kernel::task::program_loader::phase21_smoke_check();
     let (hw_built, hw_verified, hw_rejected, _, _, _, _) = kernel::user_paging::status();
@@ -1274,6 +1287,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     run_phase81_to_90_smokes();
     run_phase91_to_100_smokes();
     run_phase101_to_110_smokes();
+    run_phase111_to_120_smokes();
     kernel::serial_println!("Boot: phase21-100 smokes done");
     let phase15_backing_ok = kernel::task::program_loader::phase15_smoke_check();
     let backing_status = kernel::task::program_loader::status();
