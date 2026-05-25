@@ -38,10 +38,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y qemu-system-x86 nasm
 
-      - name: Install bootimage tools
+      - name: Install bootimage
         run: |
           if ! command -v bootimage >/dev/null 2>&1; then
-            cargo install bootimage bootloader --locked
+            cargo install bootimage --version 0.9.11 --locked
           fi
 
       - name: Verify formatting
