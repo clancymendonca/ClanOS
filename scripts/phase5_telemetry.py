@@ -12,24 +12,9 @@ from collections.abc import Callable
 from queue import Empty, Queue
 from typing import TypeVar
 
-from smoke_qemu import cleanup_qemu_processes
+from smoke_qemu import KERNEL_CMD, cleanup_qemu_processes
 
 T = TypeVar("T")
-
-KERNEL_CMD = [
-    "cargo",
-    "run",
-    "-p",
-    "kernel",
-    "--features",
-    "preemption",
-    "--",
-    "-serial",
-    "stdio",
-    "-display",
-    "none",
-    "-no-reboot",
-]
 
 
 def terminate_process_tree(process: subprocess.Popen[bytes]) -> None:

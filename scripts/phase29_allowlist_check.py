@@ -7,7 +7,7 @@ def cleanup():
     if os.name == "nt":
         subprocess.run(["taskkill", "/IM", "qemu-system-x86_64.exe", "/F"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
 def run_kernel(timeout):
-    p = subprocess.Popen(["cargo", "run", "-p", "kernel", "--features", "preemption", "--", "-serial", "stdio", "-display", "none", "-no-reboot"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=os.environ.copy())
+    p = subprocess.Popen(["cargo", "run", "-p", "kernel", "--features", "preemption"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=os.environ.copy())
     try:
         o, _ = p.communicate(timeout=timeout); return p.returncode or 0, o
     except subprocess.TimeoutExpired:

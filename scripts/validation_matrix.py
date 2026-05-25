@@ -104,7 +104,7 @@ def main() -> int:
         ),
         (
             "phase6-smoke-qemu",
-            ["cargo", "run", "-p", "kernel", "--features", "preemption", "--", "-serial", "stdio", "-display", "none", "-no-reboot"],
+            ["cargo", "run", "-p", "kernel", "--features", "preemption"],
             args.smoke_timeout,
         ),
         (

@@ -126,13 +126,7 @@ def main() -> int:
         "-p",
         "kernel",
         "--features",
-        "irq-exit-wrapper-experimental",
-        "--",
-        "-serial",
-        "stdio",
-        "-display",
-        "none",
-        "-no-reboot",
+        "irq-exit-wrapper-experimental"
     ]
 
     print(f"Starting soak run for {args.duration}s")

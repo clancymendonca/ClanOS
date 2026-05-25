@@ -9,20 +9,8 @@ import subprocess
 
 DEFAULT_SMOKE_TIMEOUT = 120
 
-KERNEL_CMD = [
-    "cargo",
-    "run",
-    "-p",
-    "kernel",
-    "--features",
-    "preemption",
-    "--",
-    "-serial",
-    "stdio",
-    "-display",
-    "none",
-    "-no-reboot",
-]
+# QEMU serial/display/no-reboot come from [package.metadata.bootimage] run-command.
+KERNEL_CMD = ["cargo", "run", "-p", "kernel", "--features", "preemption"]
 
 
 def cleanup_qemu_processes() -> None:
