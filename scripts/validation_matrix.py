@@ -657,6 +657,21 @@ def main() -> int:
             None,
         ),
         (
+            "semantic-lint-check",
+            ["python", "scripts/semantic_lint.py"],
+            None,
+        ),
+        (
+            "phase110-constitutional-check",
+            [
+                "python",
+                "scripts/phase110_constitutional_check.py",
+                "--timeout",
+                str(max(args.smoke_timeout, 300)),
+            ],
+            None,
+        ),
+        (
             "phase5-soak-check",
             [
                 "python",
