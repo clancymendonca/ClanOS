@@ -13,8 +13,8 @@ use x86_64::{
 
 /// Virtual address at which the kernel heap begins.
 pub const HEAP_START: usize = 0x_4444_4444_0000;
-/// Size of the kernel heap (1 MiB).
-pub const HEAP_SIZE: usize = 1024 * 1024;
+/// Size of the kernel heap (4 MiB).
+pub const HEAP_SIZE: usize = 4 * 1024 * 1024;
 
 #[global_allocator]
 static ALLOCATOR: LockedHeap = LockedHeap::empty();
