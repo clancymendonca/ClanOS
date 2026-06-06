@@ -1405,20 +1405,6 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         frame_status.failed_allocation_count,
         phase14_frames_ok
     );
-    kernel::serial_println!("Boot: phase21-50 smokes start");
-    x86_64::instructions::interrupts::without_interrupts(|| {
-        run_phase21_to_30_smokes();
-        run_phase31_to_40_smokes();
-        run_phase41_to_50_smokes();
-        run_phase51_to_60_smokes();
-        run_phase61_to_70_smokes();
-    });
-    run_phase71_to_80_smokes();
-    run_phase81_to_90_smokes();
-    run_phase91_to_100_smokes();
-    run_phase101_to_110_smokes();
-    run_phase111_to_120_smokes();
-    kernel::serial_println!("Boot: phase21-100 smokes done");
     let phase15_backing_ok = kernel::task::program_loader::phase15_smoke_check();
     let backing_status = kernel::task::program_loader::status();
     let backing_frames = kernel::frame_ownership::status();
@@ -1529,6 +1515,21 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         user_elf_status.rejected_user_elf_count,
         phase20_user_elf_ok
     );
+
+    kernel::serial_println!("Boot: phase21-50 smokes start");
+    x86_64::instructions::interrupts::without_interrupts(|| {
+        run_phase21_to_30_smokes();
+        run_phase31_to_40_smokes();
+        run_phase41_to_50_smokes();
+        run_phase51_to_60_smokes();
+        run_phase61_to_70_smokes();
+    });
+    run_phase71_to_80_smokes();
+    run_phase81_to_90_smokes();
+    run_phase91_to_100_smokes();
+    run_phase101_to_110_smokes();
+    run_phase111_to_120_smokes();
+    kernel::serial_println!("Boot: phase21-100 smokes done");
 
     // Display performance counters at startup.
     let counters = PerformanceCounters::read();
