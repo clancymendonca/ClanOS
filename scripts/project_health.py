@@ -33,6 +33,15 @@ def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8") if path.exists() else ""
 
 
+def strip_toml_string(val: str) -> str:
+    val = val.strip()
+    if val.startswith('"""') and val.endswith('"""'):
+        return val[3:-3]
+    if val.startswith('"') and val.endswith('"'):
+        return val[1:-1]
+    return val
+
+
 def parse_toml_tables(text: str, table_name: str) -> list[dict]:
     """Minimal TOML array-of-tables parser for [[table_name]] blocks."""
     blocks: list[dict] = []
@@ -51,8 +60,8 @@ def parse_toml_tables(text: str, table_name: str) -> list[dict]:
             if val.startswith("[") and val.endswith("]"):
                 inner = val[1:-1].strip()
                 block[key] = [v.strip().strip('"') for v in inner.split(",") if v.strip()]
-            elif val.startswith('"') and val.endswith('"'):
-                block[key] = val[1:-1]
+            elif val.startswith('"'):
+                block[key] = strip_toml_string(val)
             elif val == "null":
                 block[key] = None
             elif val in ("true", "false"):

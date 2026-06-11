@@ -83,6 +83,103 @@ pub fn phase129_scoped_grants_smoke() -> bool {
     crate::native_manifest::phase129_scoped_grants_smoke()
 }
 
+pub fn phase201_virtio_blk_smoke() -> bool {
+    crate::virtio_blk::phase201_virtio_blk_smoke()
+}
+
+pub fn phase131_build_integrity_smoke() -> bool {
+    crate::build_integrity::phase131_image_identity_smoke()
+}
+
+pub fn phase132_repro_smoke() -> bool {
+    crate::build_integrity::phase132_repro_build_smoke()
+}
+
+pub fn phase133_rollback_smoke() -> bool {
+    crate::build_integrity::phase133_rollback_smoke()
+}
+
+pub fn phase134_endpoint_smoke() -> bool {
+    crate::ipc_endpoints::phase134_endpoint_smoke()
+}
+
+pub fn phase135_audit_wire_smoke() -> bool {
+    crate::audit_wire::phase135_audit_correlation_smoke()
+}
+
+pub fn phase136_wait_set_smoke() -> bool {
+    crate::audit_wire::phase136_wait_set_smoke()
+}
+
+pub fn phase137_error_taxonomy_smoke() -> bool {
+    crate::audit_wire::phase137_error_taxonomy_wire_smoke()
+}
+
+pub fn phase138_schema_smoke() -> bool {
+    crate::audit_wire::phase138_schema_registry_smoke()
+}
+
+pub fn phase140_ipc_integration_smoke() -> bool {
+    let Some(pid) = crate::kernel_object::ensure_smoke_process() else {
+        return false;
+    };
+    let ep = crate::ipc_endpoints::create_endpoint();
+    let mut ok = true;
+    for i in 0..64u8 {
+        ok &= crate::ipc_endpoints::send(ep, pid, &[i]).is_ok();
+    }
+    let bridge_zero = crate::ipc_interim_bridge::ipc_bridge_compat_internal_count() == 0;
+    phase131_build_integrity_smoke()
+        && phase134_endpoint_smoke()
+        && phase135_audit_wire_smoke()
+        && phase138_schema_smoke()
+        && ok
+        && bridge_zero
+}
+
+pub fn phase401_virtio_net_smoke() -> bool {
+    crate::virtio_net::phase401_virtio_net_smoke()
+}
+
+pub fn phase402_compat_socket_smoke() -> bool {
+    crate::compat_socket::phase402_compat_socket_smoke()
+}
+
+pub fn phase403_network_broker_smoke() -> bool {
+    crate::network_broker::phase403_network_broker_functional_smoke()
+}
+
+pub fn phase404_network_epoch_smoke() -> bool {
+    phase401_virtio_net_smoke() && phase402_compat_socket_smoke() && phase403_network_broker_smoke()
+}
+
+pub fn phase141_scheduler_smoke() -> bool {
+    crate::service_scheduler::phase141_service_scheduler_smoke()
+}
+
+pub fn phase142_smp_smoke() -> bool {
+    crate::service_scheduler::phase142_smp_readiness_smoke()
+}
+
+pub fn phase145_compositor_smoke() -> bool {
+    crate::compositor::phase145_compositor_smoke()
+}
+
+pub fn phase147_oom_smoke() -> bool {
+    crate::oom_policy::phase147_oom_smoke()
+}
+
+pub fn phase149_epoch5_integration_smoke() -> bool {
+    phase141_scheduler_smoke()
+        && phase142_smp_smoke()
+        && phase145_compositor_smoke()
+        && phase147_oom_smoke()
+}
+
+pub fn phase150_milestone_smoke() -> bool {
+    crate::milestone150::phase150_milestone_smoke()
+}
+
 pub fn phase130_platform_integration_smoke() -> bool {
     phase121_service_loader_smoke()
         && crate::ipc_interim_bridge::phase_interim_ipc_smoke()

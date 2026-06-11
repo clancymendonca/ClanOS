@@ -1080,6 +1080,58 @@ fn run_phase111_to_120_smokes() {
     );
 }
 
+fn run_phase201_virtio_smoke() {
+    let ok = kernel::governance::phase201_virtio_blk_smoke();
+    let (pci, probes, driver_backed) = kernel::virtio_blk::status();
+    println!(
+        "Phase201-VirtioBlk: pci_found={}, probes={}, driver_backed={}, ok={}",
+        pci, probes, driver_backed, ok
+    );
+    kernel::serial_println!(
+        "Phase201-VirtioBlk: pci_found={}, probes={}, driver_backed={}, ok={}",
+        pci,
+        probes,
+        driver_backed,
+        ok
+    );
+}
+
+fn run_phase131_to_140_smokes() {
+    let p131 = kernel::governance::phase131_build_integrity_smoke();
+    let p132 = kernel::governance::phase132_repro_smoke();
+    let p133 = kernel::governance::phase133_rollback_smoke();
+    let p134 = kernel::governance::phase134_endpoint_smoke();
+    let bridge = kernel::ipc_interim_bridge::ipc_bridge_compat_internal_count();
+    let p135 = kernel::governance::phase135_audit_wire_smoke();
+    let p136 = kernel::governance::phase136_wait_set_smoke();
+    let p137 = kernel::governance::phase137_error_taxonomy_smoke();
+    let p138 = kernel::governance::phase138_schema_smoke();
+    let p140 = kernel::governance::phase140_ipc_integration_smoke();
+    kernel::serial_println!(
+        "Phase140-IPC: p131={}, p132={}, p133={}, p134={}, bridge={}, p135={}, p136={}, p137={}, p138={}, ok={}",
+        p131, p132, p133, p134, bridge, p135, p136, p137, p138, p140
+    );
+}
+
+fn run_epoch4_network_smokes() {
+    let ok = kernel::governance::phase404_network_epoch_smoke();
+    let (tcp, udp, sel) = kernel::compat_socket::compat_socket_calls();
+    kernel::serial_println!(
+        "Phase404-Network: tcp={}, udp={}, select={}, ok={}",
+        tcp, udp, sel, ok
+    );
+}
+
+fn run_epoch5_scheduler_smokes() {
+    let ok = kernel::governance::phase149_epoch5_integration_smoke();
+    kernel::serial_println!("Phase149-Epoch5: ok={}", ok);
+}
+
+fn run_milestone150_smoke() {
+    let ok = kernel::governance::phase150_milestone_smoke();
+    kernel::serial_println!("Phase150-Milestone: ok={}", ok);
+}
+
 fn run_phase122_to_130_smokes() {
     let p122 = kernel::governance::phase122_storage_broker_smoke();
     let p123 = kernel::governance::phase123_permission_broker_smoke();
@@ -1572,7 +1624,12 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     run_phase111_to_120_smokes();
     run_phase121_smoke();
     run_phase122_to_130_smokes();
-    kernel::serial_println!("Boot: phase21-100 smokes done");
+    run_phase201_virtio_smoke();
+    run_phase131_to_140_smokes();
+    run_epoch4_network_smokes();
+    run_epoch5_scheduler_smokes();
+    run_milestone150_smoke();
+    kernel::serial_println!("Boot: phase21-150 smokes done");
 
     // Display performance counters at startup.
     let counters = PerformanceCounters::read();

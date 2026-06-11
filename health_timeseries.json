@@ -24,5 +24,68 @@
     "threat_nodes_deferred": 3,
     "gpg_signed": false,
     "notes": "Solo MV team sign-off; GPG deferred. Living authority: gap_registry.toml."
+  },
+  {
+    "epoch": 1,
+    "phase": "epoch-1-gate",
+    "timestamp": "2026-06-11T14:00:00Z",
+    "gate_commit": "044d4ef",
+    "gap_registry_open": 330,
+    "threat_nodes_open": 11,
+    "ipc_bridge_compat_internal": "active",
+    "notes": "Phases 121–130 brokers + interim IPC bridge."
+  },
+  {
+    "epoch": 2,
+    "phase": "epoch-2-gate",
+    "timestamp": "2026-06-11T16:00:00Z",
+    "gap_registry_open": 330,
+    "threat_nodes_open": 11,
+    "virtio_blk_stub": true,
+    "ares_rt_host_demo": true,
+    "notes": "virtio-blk then userland; BUILD_INTEGRITY manifest + install_userland.py."
+  },
+  {
+    "epoch": 3,
+    "phase": "epoch-3-gate",
+    "timestamp": "2026-06-11T17:00:00Z",
+    "gap_registry_open": 330,
+    "threat_nodes_open": 11,
+    "ipc_bridge_compat_internal": 0,
+    "notes": "Phases 131–140: signed image stub, native endpoints, audit wire."
+  },
+  {
+    "epoch": 4,
+    "phase": "epoch-4-gate",
+    "timestamp": "2026-06-11T17:30:00Z",
+    "gap_registry_open": 330,
+    "threat_nodes_open": 11,
+    "network_broker_functional": true,
+    "notes": "virtio-net, compat TCP/UDP/select, functional network broker."
+  },
+  {
+    "epoch": 5,
+    "phase": "epoch-5-gate",
+    "timestamp": "2026-06-11T17:45:00Z",
+    "gap_registry_open": 330,
+    "threat_nodes_open": 11,
+    "e00_priority_ceiling": 200,
+    "notes": "Scheduler, SMP readiness, compositor IPC, OOM MEM_BUDGET enforcement."
+  },
+  {
+    "epoch": 6,
+    "phase": "milestone-150",
+    "timestamp": "2026-06-11T18:00:00Z",
+    "gap_registry_open": 330,
+    "threat_nodes_open": 11,
+    "ipc_bridge_compat_internal": 0,
+    "boot_smokes": [
+      "Phase201-VirtioBlk",
+      "Phase140-IPC",
+      "Phase404-Network",
+      "Phase149-Epoch5",
+      "Phase150-Milestone"
+    ],
+    "notes": "Four-layer boundary review; QEMU config v1; plan superseded by gap_registry + CHARTER."
   }
 ]
