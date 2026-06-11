@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -40,7 +41,11 @@ def run_audit() -> tuple[int, str]:
 
 
 def main() -> int:
+    audit_required = os.environ.get("AUDIT_REQUIRED", "").lower() in ("1", "true", "yes")
     if not cargo_audit_available():
+        if audit_required:
+            print("cargo_audit_check: AUDIT_REQUIRED but cargo-audit not installed", file=sys.stderr)
+            return 1
         print("cargo_audit_check: SKIP — cargo-audit not installed")
         print(install_hint())
         print("Policy: advisory-only until cargo-audit present in CI image")

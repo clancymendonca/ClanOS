@@ -2638,9 +2638,9 @@ id = 239
 summary = """Userspace allocator surface"""
 fix = """Threat node + mitigation: hardened allocator / Rust safe / defer post-150"""
 when = """Epoch 10"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-10-target"""
+implementing_doc = """scripts/sdk_smoke_check.py"""
 split_into = []
 superseded_by_commit = null
 
@@ -3364,9 +3364,9 @@ id = 305
 summary = """Boot attestation chain"""
 fix = """Deferred post-150 + unattested-boot node **or** epoch-6 measurement plan"""
 when = """Epoch 10"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-10-target"""
+implementing_doc = """scripts/sdk_smoke_check.py"""
 split_into = []
 superseded_by_commit = null
 
