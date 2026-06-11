@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
 STUB = re.compile(r"\[CROSS-REF:.*?— TBD\]", re.I)
 STATUS_HEADER = re.compile(r"^status:\s*\S+", re.M)
+SUPERSEDED_BY = re.compile(r"status:\s*superseded-by:\s*(\S+)", re.I)
 
 # Epoch-0 authoritative corpus — must carry `status:` in yaml frontmatter or header block.
 AUTHORITATIVE_DOCS = [
@@ -52,6 +53,19 @@ AUTHORITATIVE_DOCS = [
 ]
 
 
+def check_superseded_pointers() -> list[str]:
+    errors: list[str] = []
+    for path in DOCS.glob("**/*.md"):
+        text = path.read_text(encoding="utf-8")
+        for target in SUPERSEDED_BY.findall(text):
+            canon = ROOT / target
+            if not canon.exists():
+                errors.append(
+                    f"{path.relative_to(ROOT)}: superseded-by target missing: {target}"
+                )
+    return errors
+
+
 def check_status_headers() -> list[str]:
     errors: list[str] = []
     for rel in AUTHORITATIVE_DOCS:
@@ -74,6 +88,7 @@ def main() -> int:
         text = path.read_text(encoding="utf-8")
         if STUB.search(text):
             errors.append(f"{path.relative_to(ROOT)}: unresolved CROSS-REF TBD stub")
+    errors.extend(check_superseded_pointers())
     errors.extend(check_status_headers())
     if errors:
         for e in errors:

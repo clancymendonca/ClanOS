@@ -1,6 +1,11 @@
 //! Kernel entry point.
 
 #![no_std]
+#![deny(warnings)]
+// Warning resolution (scope-freeze commit):
+// W1: unused assignment in user_entry::write_user_stub_hw_syscall_rdi — initial len=0 never read; both branches assign before use, refactored to if/else initializer.
+// W2: unnecessary unsafe in user_paging::unmap_user_page — mapper.unmap/flush safe inside existing unsafe mapper_for_phys scope.
+// W3: unnecessary unsafe in user_syscall_hw::init_syscall_msrs — &raw const SYSCALL_STACK does not require unsafe in current edition.
 #![no_main]
 
 extern crate alloc;
@@ -1118,7 +1123,10 @@ fn run_epoch4_network_smokes() {
     let (tcp, udp, sel) = kernel::compat_socket::compat_socket_calls();
     kernel::serial_println!(
         "Phase404-Network: tcp={}, udp={}, select={}, ok={}",
-        tcp, udp, sel, ok
+        tcp,
+        udp,
+        sel,
+        ok
     );
 }
 
@@ -1143,6 +1151,12 @@ fn run_post150_milestone_smokes() {
     kernel::serial_println!("Phase300-Milestone: ok={}", m300);
     let m350 = kernel::governance::phase350_milestone_smoke();
     kernel::serial_println!("Phase350-Milestone: ok={}", m350);
+    let p351 = kernel::compositor::phase351_compositor_desktop_smoke();
+    kernel::serial_println!("Phase351-Desktop: ok={}", p351);
+    let m375 = kernel::post351::phase375_milestone_smoke();
+    kernel::serial_println!("Phase375-Milestone: ok={}", m375);
+    let m400 = kernel::post351::phase400_milestone_smoke();
+    kernel::serial_println!("Phase400-Milestone: ok={}", m400);
 }
 
 fn run_phase122_to_130_smokes() {
@@ -1336,6 +1350,8 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     }
     kernel::task::keyboard::init_scancode_queue();
     kernel::storage::init();
+    kernel::mouse::init();
+    kernel::userland_install::install_native_packages();
     let boot_tick =
         kernel::performance::metrics::TICK_COUNTER.load(core::sync::atomic::Ordering::Relaxed);
     let _ = kernel::task::process::create_kernel_process("shell", boot_tick);
@@ -1638,6 +1654,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     run_phase121_smoke();
     run_phase122_to_130_smokes();
     run_phase201_virtio_smoke();
+    let _ = kernel::storage::ensure_filesystem_on_active();
     run_phase131_to_140_smokes();
     run_epoch4_network_smokes();
     run_epoch5_scheduler_smokes();
@@ -1645,6 +1662,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     run_post150_milestone_smokes();
     kernel::phase_catalog::run_completed_phase_smokes();
     kernel::serial_println!("Boot: phase21-150 smokes done");
+    kernel::desktop_runtime::boot_desktop();
 
     // Display performance counters at startup.
     let counters = PerformanceCounters::read();
@@ -1681,6 +1699,10 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     // Run the async executor with the keyboard task.
     let mut executor = Executor::new();
     executor.spawn(Task::named("keyboard", keyboard::print_keypresses()));
+    executor.spawn(Task::named(
+        "desktop-refresh",
+        kernel::desktop_runtime::refresh_loop(),
+    ));
     executor.spawn(Task::named("uptime", timer::log_uptime()));
     executor.spawn(Task::named("scheduler-stats", timer::log_scheduler_stats()));
     executor.spawn(Task::named(
@@ -1705,6 +1727,8 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     );
     println!("Context tasks: {:?}", context_names);
     println!("Kernel ready. Entering event loop.");
+    kernel::serial_println!("AresOS shell ready — type here: help | run demo-hello | ls | desktop");
+    kernel::serial_println!("(Use this terminal for commands; QEMU window shows the desktop.)");
     executor.run();
 }
 

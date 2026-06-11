@@ -1,9 +1,11 @@
 # AresOS Design North Star
 
 ```yaml
-status: authoritative
+status: superseded-by: docs/architecture/DESIGN_NORTH_STAR.md
 semantics_version: 1.0.0
 ```
+
+> **Canonical:** [`docs/architecture/DESIGN_NORTH_STAR.md`](architecture/DESIGN_NORTH_STAR.md). This flat copy retains epoch scorecard rows until migration squash reconciles content.
 
 Falsifiable targets for phases 121–150. See [`CHARTER.md`](../CHARTER.md), [`THREAT_MODEL.md`](THREAT_MODEL.md).
 

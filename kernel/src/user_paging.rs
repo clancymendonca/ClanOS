@@ -505,10 +505,8 @@ pub fn unmap_user_page(cr3_phys: u64, virtual_address: u64) -> Result<(), UserPa
             UNMAP_REJECTED.fetch_add(1, Ordering::Relaxed);
             return Err(UserPagingError::MapFailed);
         }
-        unsafe {
-            let (_frame, flush) = mapper.unmap(page).map_err(|_| UserPagingError::MapFailed)?;
-            flush.flush();
-        }
+        let (_frame, flush) = mapper.unmap(page).map_err(|_| UserPagingError::MapFailed)?;
+        flush.flush();
         UNMAP_APPLIED.fetch_add(1, Ordering::Relaxed);
         crate::smp::request_tlb_shootdown();
         Ok(())

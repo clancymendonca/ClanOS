@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0.0",
+  "epoch": "track1-doc-migration",
+  "KOM": {
+    "doc_id": "KOM",
+    "canonical_path": "docs/architecture/KERNEL_OBJECT_MODEL.md",
+    "migrated_at_commit": "4f4e8ae",
+    "status_header_hash": "4d27d658f74177581b4432824c778c5760b1dc54dc0f70bbb5833573c1bbed92",
+    "section_count": 21,
+    "mermaid_diagram_count": 4,
+    "cross_ref_count": 21,
+    "semantics_version": "1.3.0"
+  }
+}

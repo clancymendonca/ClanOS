@@ -1,0 +1,34 @@
+# Track 1 doc migration epoch sign-off manifest (filled at squash gate)
+# Schema: epoch_signoffs/schema.toml
+
+[epoch]
+id = "track1-doc-migration"
+scope_freeze_commit = "8f0052b9a327c4779a93efbba8bccb6754593e1f"
+gate_squash_commit = ""
+
+[signoff]
+reviewer = "solo-dev"
+multi_domain_justification = "team size below three-person quorum threshold per CHARTER.md §Minimum viable team"
+date = ""
+
+[[domains]]
+name = "security"
+reviewer = "solo-dev"
+docs_reviewed = ["TM", "TN", "AUD", "CIS", "UAD", "SCP", "BLD", "SEC"]
+justification = "sole maintainer holds security domain per CHARTER minimum-viable-team allowance"
+
+[[domains]]
+name = "kernel_abi"
+reviewer = "solo-dev"
+docs_reviewed = ["KOM", "FE", "SM", "RA", "TS", "GC", "MSB", "ATP", "VSA", "DRM", "SUN", "CTP", "WSR", "IVN", "ANS", "AAR", "ACP", "CRG"]
+justification = "sole maintainer holds kernel/ABI domain per CHARTER minimum-viable-team allowance"
+
+[[domains]]
+name = "process"
+reviewer = "solo-dev"
+docs_reviewed = ["ET", "PC", "KS", "DNS", "FML", "PCH", "EFP", "DPP", "CSN", "DLD", "CTR", "FZT", "LVP"]
+justification = "sole maintainer holds process domain per CHARTER minimum-viable-team allowance"
+
+[triage]
+activated = false
+note = "If max_wall_clock_days exceeded, gate on KOM+FE+SM only; remainder → track1b"
