@@ -1,13 +1,14 @@
 # Formal Model (Tier D)
 
 ```yaml
-status: draft
-semantics_version: 0.1.0-stub
+status: ratified-stub
+semantics_version: 0.2.0-epoch13
+framework: selective-verus
 ```
 
-Tier D formal semantics — deferred until framework decision in [DECISION_LOG.md](DECISION_LOG.md). Epoch 13 (phases 311–320).
+Tier D formal semantics — epoch 13 graduation. Framework decision: **selective Verus** on cap transfer + checkpoint paths; Kani tier B elsewhere per [PROOF_COVERAGE.md](PROOF_COVERAGE.md).
 
-Blocked by `prereq_graph.toml` edge: `formal_model_tier_d` → `formal_semantics_framework_decision`.
+Prereq satisfied: `formal_semantics_framework_decision` recorded in epoch-13 signoff.
 
 ---
 

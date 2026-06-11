@@ -372,9 +372,9 @@ id = 33
 summary = """Verus trigger informal"""
 fix = """Objective triggers in PROOF_COVERAGE (H_max, critical TOCTOU nodes)"""
 when = """Epoch 13"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-13-target"""
+implementing_doc = """docs/FORMAL_MODEL.md"""
 split_into = []
 superseded_by_commit = null
 
@@ -416,9 +416,9 @@ id = 37
 summary = """Suspend vs checkpoint ambiguous"""
 fix = """**Suspend = frozen-in-memory** (no checkpoint); checkpoint **post-150** re-eval"""
 when = """Epoch 13"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-13-target"""
+implementing_doc = """docs/FORMAL_MODEL.md"""
 split_into = []
 superseded_by_commit = null
 
@@ -867,9 +867,9 @@ id = 78
 summary = """Post-150 checkpoint threats"""
 fix = """Note serialized cap state, generation across power cycle — dormancy surface"""
 when = """Epoch 13"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-13-target"""
+implementing_doc = """docs/FORMAL_MODEL.md"""
 split_into = []
 superseded_by_commit = null
 
@@ -1439,9 +1439,9 @@ id = 130
 summary = """Fuzz finding in Kani fn"""
 fix = """Immediate Verus escalation assessment (bypasses H_max)"""
 when = """Epoch 13"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-13-target"""
+implementing_doc = """docs/FORMAL_MODEL.md"""
 split_into = []
 superseded_by_commit = null
 
@@ -1505,9 +1505,9 @@ id = 136
 summary = """Kani+Verus inadequate"""
 fix = """**Tier D** stub (TLA+/model checking); deferred post-150; no ad-hoc formal claims"""
 when = """Epoch 13"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-13-target"""
+implementing_doc = """docs/FORMAL_MODEL.md"""
 split_into = []
 superseded_by_commit = null
 
@@ -1824,9 +1824,9 @@ id = 165
 summary = """Verus escalation runway exhausted"""
 fix = """Documented in EPOCH_FAILURE_PROCEDURE when N+2 reached with no Verus path"""
 when = """Epoch 13"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-13-target"""
+implementing_doc = """docs/FORMAL_MODEL.md"""
 split_into = []
 superseded_by_commit = null
 
@@ -2143,9 +2143,9 @@ id = 194
 summary = """Verification toolchain risk"""
 fix = """Kani/Verus bug/deprecation contingency — analogous to SUPPLY_CHAIN_POLICY"""
 when = """Epoch 13"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-13-target"""
+implementing_doc = """docs/FORMAL_MODEL.md"""
 split_into = []
 superseded_by_commit = null
 
