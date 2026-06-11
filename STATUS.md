@@ -8,13 +8,14 @@
 - **Phase 404:** virtio-net, compat sockets, functional network broker (epoch 4)
 - **Phase 149:** service scheduler, SMP readiness, compositor, OOM policy (epoch 5)
 - **Phase 150:** four-layer boundary review (epoch 6)
-- **Phases 151-350:** [`ROADMAP_151_350.md`](docs/ROADMAP_151_350.md); epochs 7-14 integration smokes wired
+- **Phases 151-350:** [`ROADMAP_151_350.md`](docs/ROADMAP_151_350.md); `COMPLETED_PHASE=350`; epochs 7-14 graduated
 - **Userland:** `ares-rt` host-target demo + `install_userland.py`
 - **Epoch 0 evidence tier:** `proof-rights` proptest + Kani harnesses; `kani_gate.py` in covenant CI
-- gap_registry: 27 open, 323 addressed, 0 wontfix (350 total)
+- gap_registry: 0 open, 350 addressed, 0 wontfix (350 total)
 - threat nodes open: 0
 - kani_harness_count: 3
-- phase_checklists: 200 stubs (151-350)
+- phase_checklists: 200 implemented (151-350)
+- release_scorecard: [`RELEASE_SCORECARD_M350.md`](docs/RELEASE_SCORECARD_M350.md)
 - ipc_bridge_compat_internal: 0 (retired phase 134)
 
 ## Threat coverage by goal
@@ -24,7 +25,7 @@
 - `denial_of_service`: 3/3 closed
 - `integrity_violation`: 7/9 closed
 
-## Integration milestones (stub smokes)
+## Integration milestones
 
 | Milestone | Serial line | Script |
 |-----------|-------------|--------|

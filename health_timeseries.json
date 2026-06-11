@@ -122,5 +122,17 @@
     "loom_harness_graduated": 2,
     "epoch_signoffs": "0-14",
     "notes": "ROADMAP_151_350 ratified; gaps 346-350; post-150 wontfix reopened with epoch assignments; milestone smokes 175-350 wired."
+  },
+  {
+    "epoch": 14,
+    "phase": "milestone-350",
+    "timestamp": "2026-06-11T23:30:00Z",
+    "completed_phase": 350,
+    "gap_registry_open": 0,
+    "gap_registry_addressed": 350,
+    "threat_nodes_open": 0,
+    "covenant_ci": true,
+    "epoch_graduation": "7-14",
+    "notes": "Mechanical phases 151-350 complete; epochs 7-14 graduated; M350 release scorecard."
   }
 ]

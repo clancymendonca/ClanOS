@@ -1,0 +1,18 @@
+# Never-stabilize list graduated at M350 (epoch 14).
+
+[graduation]
+milestone = 350
+semver = "1.0.0-candidate"
+timestamp = "2026-06-11T23:00:00Z"
+
+[[graduated_items]]
+name = "MEM_BUDGET_STUB"
+replacement = "oom_policy::enforce_mem_budget"
+
+[[graduated_items]]
+name = "interim_ipc_bridge"
+replacement = "ipc_endpoints native path"
+
+[[graduated_items]]
+name = "health_timeseries.json"
+replacement = "1.0 contract in RELEASE_SCORECARD_M350.md"

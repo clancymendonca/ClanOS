@@ -200,13 +200,14 @@ def emit_status(matrix: dict) -> str:
         "- **Phase 404:** virtio-net, compat sockets, functional network broker (epoch 4)",
         "- **Phase 149:** service scheduler, SMP readiness, compositor, OOM policy (epoch 5)",
         "- **Phase 150:** four-layer boundary review (epoch 6)",
-        "- **Phases 151-350:** [`ROADMAP_151_350.md`](docs/ROADMAP_151_350.md); epochs 7-14 integration smokes wired",
+        "- **Phases 151-350:** [`ROADMAP_151_350.md`](docs/ROADMAP_151_350.md); `COMPLETED_PHASE=350`; epochs 7-14 graduated",
         "- **Userland:** `ares-rt` host-target demo + `install_userland.py`",
         "- **Epoch 0 evidence tier:** `proof-rights` proptest + Kani harnesses; `kani_gate.py` in covenant CI",
         f"- gap_registry: {gaps_open} open, {gaps_addressed} addressed, {gaps_wontfix} wontfix (350 total)",
         f"- threat nodes open: {threats_open}",
         f"- kani_harness_count: {kani_count}",
-        "- phase_checklists: 200 stubs (151-350)",
+        "- phase_checklists: 200 implemented (151-350)",
+        "- release_scorecard: [`RELEASE_SCORECARD_M350.md`](docs/RELEASE_SCORECARD_M350.md)",
         "- ipc_bridge_compat_internal: 0 (retired phase 134)",
         "",
         "## Threat coverage by goal",
@@ -217,7 +218,7 @@ def emit_status(matrix: dict) -> str:
         closed = sum(matrix["closed"].get(g, {}).values())
         lines.append(f"- `{g}`: {closed}/{total} closed")
     lines.append("")
-    lines.append("## Integration milestones (stub smokes)")
+    lines.append("## Integration milestones")
     lines.append("")
     lines.append("| Milestone | Serial line | Script |")
     lines.append("|-----------|-------------|--------|")

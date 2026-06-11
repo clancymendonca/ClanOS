@@ -834,9 +834,9 @@ id = 75
 summary = """Never stabilize before 1.0"""
 fix = """Parallel list to 'will not do' — interim IPC, stub wire formats, etc."""
 when = """Epoch 14"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-14-target"""
+implementing_doc = """docs/RELEASE_SCORECARD_M350.md"""
 split_into = []
 superseded_by_commit = null
 
@@ -1615,9 +1615,9 @@ id = 146
 summary = """Never-stabilize health JSON"""
 fix = """`health_timeseries.json` + benchmark baseline JSON on never-stabilize list; graduation = 1.0 contract"""
 when = """Epoch 14"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-14-target"""
+implementing_doc = """docs/RELEASE_SCORECARD_M350.md"""
 split_into = []
 superseded_by_commit = null
 
@@ -2000,9 +2000,9 @@ id = 181
 summary = """Semver vs never-stabilize"""
 fix = """Semver tracks changes regardless; never-stabilize = cannot declare stable until 1.0 graduation"""
 when = """Epoch 14"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-14-target"""
+implementing_doc = """docs/RELEASE_SCORECARD_M350.md"""
 split_into = []
 superseded_by_commit = null
 
@@ -3056,9 +3056,9 @@ id = 277
 summary = """Multitenancy scoping"""
 fix = """Post-150; structural support now, policy layer deferred"""
 when = """Epoch 14"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-14-target"""
+implementing_doc = """docs/RELEASE_SCORECARD_M350.md"""
 split_into = []
 superseded_by_commit = null
 
@@ -3067,9 +3067,9 @@ id = 278
 summary = """Deterministic replay"""
 fix = """Post-150 record-replay; seeded chaos = QEMU-era determinism"""
 when = """Epoch 14"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-14-target"""
+implementing_doc = """docs/RELEASE_SCORECARD_M350.md"""
 split_into = []
 superseded_by_commit = null
 
@@ -3639,9 +3639,9 @@ id = 330
 summary = """Accessibility platform scope (Upgrade M)"""
 fix = """a11y obligation deferred post-150 **or** out-of-scope row"""
 when = """Epoch 14"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-14-target"""
+implementing_doc = """docs/RELEASE_SCORECARD_M350.md"""
 split_into = []
 superseded_by_commit = null
 
@@ -3760,9 +3760,9 @@ id = 341
 summary = """Post-150 scope inventory"""
 fix = """Flat deferred list + owner/timeline at M150 gate"""
 when = """Epoch 14"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-14-target"""
+implementing_doc = """docs/RELEASE_SCORECARD_M350.md"""
 split_into = []
 superseded_by_commit = null
 

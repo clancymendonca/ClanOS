@@ -3,8 +3,9 @@
 [schema]
 version = "1.0.0"
 
-# [[keys]]
-# reviewer_id = "example"
-# fingerprint = "ABCD..."
-# effective_from = "2026-01-01"
-# retired = false
+[[keys]]
+reviewer_id = "clancy"
+fingerprint = "pending-gpg-population"
+effective_from = "2026-06-11"
+retired = false
+solo_maintainer = true

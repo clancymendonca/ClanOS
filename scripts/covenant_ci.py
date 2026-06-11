@@ -28,6 +28,7 @@ SCRIPTS = [
     "phase_checklist_spot_check.py",
     "phase_smoke_host_check.py",
     "proof_cache_check.py",
+    "release_scorecard_check.py",
 ]
 
 
