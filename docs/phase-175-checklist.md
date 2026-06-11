@@ -7,19 +7,23 @@ governance
 governance
 
 ## Mode
-future implementation
+implemented
 
 ## Scope
 
-- [ ] Deliverable: Phase175-Epoch7 smoke
-- [ ] Consistent with [AXIOMS.md](AXIOMS.md)
-- [ ] Listed in [ROADMAP_151_350.md](ROADMAP_151_350.md)
+- [x] Deliverable: Phase175-Epoch7 smoke
+- [x] Consistent with [AXIOMS.md](AXIOMS.md)
+- [x] Listed in [ROADMAP_151_350.md](ROADMAP_151_350.md)
 
 ## Validation
 
-- [ ] `cargo check -p kernel`
-- [ ] Smoke script when phase delivers runtime behavior
+- [x] `cargo check -p kernel`
+- [x] Smoke script when phase delivers runtime behavior
 
 ## Deferred
 
 - See [ROADMAP_151_350.md](ROADMAP_151_350.md) epoch bands.
+
+## Completed
+
+- Phase 175: Epoch 7 signoff
