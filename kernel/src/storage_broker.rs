@@ -38,8 +38,7 @@ pub fn request_fs_grant_via_ipc(
 /// Post-134: native endpoint path for broker storage grants.
 pub fn request_fs_grant_via_endpoint(pid: ProcessId, grant_id: u32) -> Result<u32, CapError> {
     let ep = crate::ipc_endpoints::create_endpoint();
-    crate::ipc_endpoints::send(ep, pid, b"fs-grant-req")
-        .map_err(|_| CapError::InvalidArgument)?;
+    crate::ipc_endpoints::send(ep, pid, b"fs-grant-req").map_err(|_| CapError::InvalidArgument)?;
     let _ = crate::ipc_endpoints::recv(ep).map_err(|_| CapError::InvalidArgument)?;
     grant_fsnode(pid, grant_id)
 }

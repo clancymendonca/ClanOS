@@ -56,6 +56,7 @@ struct BlockDeviceEntry {
 struct BlockManager {
     next_id: u64,
     active: Option<BlockDeviceId>,
+    primary: Option<BlockDeviceId>,
     devices: Vec<BlockDeviceEntry>,
 }
 
@@ -64,6 +65,7 @@ impl BlockManager {
         Self {
             next_id: 1,
             active: None,
+            primary: None,
             devices: Vec::new(),
         }
     }
@@ -71,6 +73,7 @@ impl BlockManager {
     fn clear(&mut self) {
         self.next_id = 1;
         self.active = None;
+        self.primary = None;
         self.devices.clear();
     }
 
@@ -97,6 +100,9 @@ impl BlockManager {
             info,
             media: vec![[0; SECTOR_SIZE]; sector_count],
         });
+        if self.primary.is_none() {
+            self.primary = Some(id);
+        }
         if self.active.is_none() {
             self.active = Some(id);
         }
@@ -147,12 +153,14 @@ pub fn init() {
     );
 }
 
-pub fn register_virtio_blk(
-    name: &str,
-    sector_count: usize,
-    read_only: bool,
-) -> BlockDeviceId {
-    MANAGER.lock().register(name, BlockBackendKind::VirtioBlk, sector_count, read_only, true)
+pub fn register_virtio_blk(name: &str, sector_count: usize, read_only: bool) -> BlockDeviceId {
+    MANAGER.lock().register(
+        name,
+        BlockBackendKind::VirtioBlk,
+        sector_count,
+        read_only,
+        true,
+    )
 }
 
 pub fn register_memory_fallback(sector_count: usize) -> BlockDeviceId {
@@ -174,6 +182,10 @@ pub fn register_memory_fallback(sector_count: usize) -> BlockDeviceId {
         None,
     );
     id
+}
+
+pub fn primary_id() -> Option<BlockDeviceId> {
+    MANAGER.lock().primary
 }
 
 pub fn set_active(id: BlockDeviceId) -> Result<(), BlockError> {

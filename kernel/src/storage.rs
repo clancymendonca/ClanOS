@@ -420,7 +420,8 @@ impl<D: BlockDevice> SimpleFs<D> {
         let mut entries = Vec::new();
         for index in 0..MAX_FILES {
             let start = index * DIR_ENTRY_SIZE;
-            entries.push(decode_entry(&bytes[start..start + DIR_ENTRY_SIZE])?);
+            let slot = &bytes[start..start + DIR_ENTRY_SIZE];
+            entries.push(decode_entry(slot).unwrap_or(None));
         }
         Ok(entries)
     }
@@ -459,11 +460,18 @@ impl<D: BlockDevice> SimpleFs<D> {
 pub fn init() {
     crate::device::init();
     crate::block::init();
+    let _ = ensure_filesystem_on_active();
+}
+
+/// Remount/format/seed the active block device when the backend changes (e.g. virtio probe).
+pub fn ensure_filesystem_on_active() -> Result<(), StorageError> {
+    ensure_backend();
     let mut fs = STORAGE.lock();
     if fs.mount().is_err() {
-        let _ = fs.format();
+        fs.format()?;
+        seed_bootstrap_files(&mut fs)?;
     }
-    let _ = seed_bootstrap_files(&mut fs);
+    Ok(())
 }
 
 pub fn format() -> Result<(), StorageError> {
@@ -729,6 +737,14 @@ fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), Stor
         (
             "/bin/fsinfo",
             "ares-exec-v1\nname=fsinfo\nkind=builtin-alias\nentry=fsinfo\nrequires=execute\ntrust=system\nowner=admin\ndescription=Show filesystem status",
+        ),
+        (
+            "/bin/demo-hello",
+            "ares-exec-v1\nname=demo-hello\nkind=builtin-alias\nentry=demo-hello\ndescription=ares-rt demo\ntrust=system\nowner=admin\n",
+        ),
+        (
+            "/bin/ares-info",
+            "ares-exec-v1\nname=ares-info\nkind=builtin-alias\nentry=ares-info\ndescription=System info\ntrust=system\nowner=admin\n",
         ),
         (
             "/bin/hello",

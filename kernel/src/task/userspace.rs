@@ -130,12 +130,17 @@ fn dispatch_builtin(entry: &str, args: &[&str]) -> Result<String, &'static str> 
                 programs
             ))
         }
+        "demo-hello" => Ok(String::from("ares-rt demo: hello from userland\n")),
+        "ares-info" => dispatch_builtin("sysinfo", args),
         _ => Err("unknown user program"),
     }
 }
 
 fn is_builtin_entry(name: &str) -> bool {
-    matches!(name, "echo" | "time" | "sysinfo" | "fsinfo")
+    matches!(
+        name,
+        "echo" | "time" | "sysinfo" | "fsinfo" | "demo-hello" | "ares-info"
+    )
 }
 
 fn record_program_process(

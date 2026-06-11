@@ -90,11 +90,7 @@ static BUDGET_REJECTS: AtomicU64 = AtomicU64::new(0);
 
 pub fn mem_budget_status() -> (u64, u64, u64) {
     let used = MEM_USED.load(Ordering::Relaxed);
-    (
-        MEM_BUDGET.total_bytes,
-        used,
-        MEM_BUDGET.allocatable(used),
-    )
+    (MEM_BUDGET.total_bytes, used, MEM_BUDGET.allocatable(used))
 }
 
 pub fn stub_status() -> (u64, u64, u64, u32) {
@@ -139,7 +135,10 @@ pub fn charge_mem_budget(bytes: u64) -> Result<(), NativeError> {
 }
 
 pub fn release_mem_budget(bytes: u64) {
-    MEM_USED.fetch_sub(bytes.min(MEM_USED.load(Ordering::Relaxed)), Ordering::Relaxed);
+    MEM_USED.fetch_sub(
+        bytes.min(MEM_USED.load(Ordering::Relaxed)),
+        Ordering::Relaxed,
+    );
 }
 
 /// E-00 admission: bounded in-flight service load operations.
@@ -183,7 +182,11 @@ pub fn bootstrap_root_caps(pid: ProcessId) -> Result<u32, CapError> {
         kernel_object::register_object(ObjectKind::BrokerSession, Rights::all_for_smoke());
 
     let cap0 = kernel_object::mint_cap_for_process(pid, service_oid, Rights::read_write())?;
-    let _cap1 = kernel_object::mint_cap_for_process(pid, broker_oid, Rights(Rights::READ | Rights::DELEGATE))?;
+    let _cap1 = kernel_object::mint_cap_for_process(
+        pid,
+        broker_oid,
+        Rights(Rights::READ | Rights::DELEGATE),
+    )?;
 
     charge_mem_budget(4096).ok();
     BOOTSTRAP_MINTS.fetch_add(1, Ordering::Relaxed);
@@ -237,9 +240,9 @@ pub fn phase121_service_loader_smoke() -> bool {
     }
     let at_quota = kernel_object::cap_count_for_process(pid) >= quota;
     let quota_reject = check_cap_quota(pid).is_err();
-    if let Some(slot) = (0..kernel_object::MAX_CAPS as u32).find(|s| {
-        kernel_object::get_cap(pid, *s).is_some()
-    }) {
+    if let Some(slot) =
+        (0..kernel_object::MAX_CAPS as u32).find(|s| kernel_object::get_cap(pid, *s).is_some())
+    {
         let _ = kernel_object::close_cap_for_process(pid, slot);
     }
     let retry_ok = check_cap_quota(pid).is_ok();

@@ -83,6 +83,7 @@ pub mod user_paging;
 pub mod user_path;
 pub mod user_syscall;
 pub mod user_syscall_hw;
+pub mod userland_install;
 pub mod vga_buffer;
 pub mod virtio;
 pub mod virtio_blk;

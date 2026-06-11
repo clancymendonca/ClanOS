@@ -1015,7 +1015,9 @@ pub fn phase23_smoke_check() -> bool {
     let before = crate::user_entry::status();
     let ok = enter_hw_user_ud2(crate::security::Credentials::shell_user(), "hello").is_ok();
     let after = crate::user_entry::status();
-    ok && after.0 > before.0 && after.1 > before.1
+    let before_traps = before.1 + before.3;
+    let after_traps = after.1 + after.3;
+    ok && after.0 > before.0 && after_traps > before_traps
 }
 
 pub fn enter_hw_user_trap(
