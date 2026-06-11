@@ -1,0 +1,14 @@
+# Epoch 4 gate — virtio-net + compat sockets + functional network broker.
+
+[manifest]
+epoch = 4
+gate_commit = "pending"
+gpg_signed = false
+solo_maintainer = true
+
+[[signoffs]]
+reviewer_id = "clancy"
+domain = "kernel"
+scope = "virtio_net, compat_socket, network_broker epoch4 functional"
+timestamp = "2026-06-11T18:00:00Z"
+epoch = 4
