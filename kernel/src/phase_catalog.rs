@@ -1,7 +1,7 @@
 //! Per-phase completion catalog (phases 151–350). `COMPLETED_PHASE` bumps each `feat(phase-NNN)` commit.
 
 /// Highest post-150 phase with a landed `feat(phase-NNN)` commit.
-pub const COMPLETED_PHASE: u32 = 300;
+pub const COMPLETED_PHASE: u32 = 301;
 
 pub const PHASE_151: u32 = 151;
 pub const PHASE_350: u32 = 350;
