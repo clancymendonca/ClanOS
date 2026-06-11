@@ -15,7 +15,7 @@ semantics_version: 1.0.0
 
 ## QEMU
 
-Versioned config script + changelog (TBD). SMP enabled phases 141+.
+Versioned config script: [`scripts/qemu/x86_64-config.ps1`](../scripts/qemu/x86_64-config.ps1) (v1 — virtio-blk-pci, `-smp 2`). SMP enabled phases 141+.
 
 ---
 

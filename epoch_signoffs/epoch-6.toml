@@ -1,0 +1,14 @@
+# Epoch 6 gate — milestone 150 four-layer boundary + architecture targets.
+
+[manifest]
+epoch = 6
+gate_commit = "pending"
+gpg_signed = false
+solo_maintainer = true
+
+[[signoffs]]
+reviewer_id = "clancy"
+domain = "process"
+scope = "milestone150, ARCHITECTURE_TARGETS, QEMU config script, CONTRIBUTING/SECURITY gates"
+timestamp = "2026-06-11T18:00:00Z"
+epoch = 6
