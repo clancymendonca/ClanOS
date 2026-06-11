@@ -10,6 +10,19 @@
     "kani_harness_count": 0,
     "proptest_count": 0,
     "feature_cost_entries": [],
-    "notes": "Epoch 0 staging — pre-gate snapshot. feature_cost tracking per phase_snapshots deferred until phase 121+."
+    "notes": "Epoch 0 staging — pre-gate snapshot."
+  },
+  {
+    "epoch": 0,
+    "phase": "epoch-0-gate",
+    "timestamp": "2026-06-11T12:00:00Z",
+    "scope_freeze_commit": "5961eb7",
+    "solo_maintainer": true,
+    "gap_registry_open": 330,
+    "gap_registry_addressed": 15,
+    "threat_nodes_open": 11,
+    "threat_nodes_deferred": 3,
+    "gpg_signed": false,
+    "notes": "Solo MV team sign-off; GPG deferred. Living authority: gap_registry.toml."
   }
 ]

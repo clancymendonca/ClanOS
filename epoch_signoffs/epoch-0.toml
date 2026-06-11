@@ -1,15 +1,32 @@
-# Epoch 0 sign-offs — populate before gate squash.
-# Dissent blocks squash until resolved (CHARTER.md).
+# Epoch 0 gate sign-offs — solo maintainer (CHARTER.md MV team policy).
 
 [manifest]
 epoch = 0
-gate_commit = null  # set at squash
+gate_commit = null
 gpg_signed = false
+solo_maintainer = true
+mv_team_justification = "Single maintainer holds kernel, evidence, and process domains; reviewed all epoch-0 docs and project_health CI locally."
 
-# Example entry (remove template comment when signing):
-# [[signoffs]]
-# reviewer_id = "alice"
-# domain = "kernel"
-# scope = "KERNEL_OBJECT_MODEL, FAULT_ESCALATION, RIGHTS_ALGEBRA"
-# timestamp = "2026-06-11T00:00:00Z"
-# epoch = 0
+[[signoffs]]
+reviewer_id = "clancy"
+domain = "kernel"
+scope = "KERNEL_OBJECT_MODEL, FAULT_ESCALATION, RIGHTS_ALGEBRA, SCHEDULER_MODEL, CAP_REGISTRY"
+timestamp = "2026-06-11T12:00:00Z"
+epoch = 0
+multi_domain_roles = ["kernel", "evidence", "process"]
+
+[[signoffs]]
+reviewer_id = "clancy"
+domain = "evidence"
+scope = "PROOF_COVERAGE, KANI_SCOPE, THREAT_NODES, UNSAFE_AUDIT, project_health"
+timestamp = "2026-06-11T12:00:00Z"
+epoch = 0
+multi_domain_roles = ["kernel", "evidence", "process"]
+
+[[signoffs]]
+reviewer_id = "clancy"
+domain = "process"
+scope = "CHARTER, gap_registry, epoch_checklist, SECURITY, DESIGN_NORTH_STAR"
+timestamp = "2026-06-11T12:00:00Z"
+epoch = 0
+multi_domain_roles = ["kernel", "evidence", "process"]
