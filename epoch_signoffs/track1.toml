@@ -6,6 +6,13 @@ id = "track1-doc-migration"
 scope_freeze_commit = "8f0052b9a327c4779a93efbba8bccb6754593e1f"
 gate_squash_commit = ""
 
+[batch1_kom]
+squash_commit = "40260cbc5fe224250e71c7a2aaa346a317e02aec"
+reviewer = "solo-dev"
+date = "2026-06-12"
+gate_conditions = "flat stub resolves; 4 Mermaid diagrams; link_check_passes; status_header_hash recorded"
+implementation_gap = "alloc-after-close no rollback STUB(track1b); threat class resource leak only"
+
 [signoff]
 reviewer = "solo-dev"
 multi_domain_justification = "team size below three-person quorum threshold per CHARTER.md §Minimum viable team"

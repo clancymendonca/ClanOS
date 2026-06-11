@@ -47,6 +47,18 @@ Prepared while Batch 1 KOM is in review. Batch 2 blocks on KOM merge; this inven
 
 ---
 
+## Implementation verification (required before writing canonical docs)
+
+Unlike KOM (definitional), FE and SM document **runtime behavior** that must match kernel code.
+
+**Before migrating FAULT_ESCALATION:** read the actual tier-1/2/3 fault paths in kernel (`fault/`, service restart, audit flush-before-halt). Any flat doc claim not enforced in code → `STUB(track1b)` in implementation + `not-yet-enforced` note in canonical doc (same discipline as KOM TOCTOU diagram).
+
+**Before migrating SCHEDULER_MODEL:** verify `R-revoke-blocked` against scheduler wait/revoke paths. Gaps → STUB + explicit canonical status, not silent omission.
+
+Budget this verification before prose migration — it will take longer than writing.
+
+---
+
 ## Batch 2 staging checklist (on KOM merge)
 
 1. Create `docs/architecture/FAULT_ESCALATION.md`, `SCHEDULER_MODEL.md`, `RIGHTS_ALGEBRA.md`
