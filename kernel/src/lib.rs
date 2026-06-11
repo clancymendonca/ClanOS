@@ -59,6 +59,7 @@ pub mod permission_broker;
 pub mod phase_catalog;
 pub mod pipe;
 pub mod post150;
+pub mod post351;
 pub mod ring3_trampoline;
 pub mod security;
 pub mod semantic_observability;

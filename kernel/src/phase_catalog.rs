@@ -1,14 +1,16 @@
-//! Per-phase completion catalog (phases 151–350). `COMPLETED_PHASE` bumps each `feat(phase-NNN)` commit.
+//! Per-phase completion catalog (phases 151–375). `COMPLETED_PHASE` bumps each `feat(phase-NNN)` commit.
 
 /// Highest post-150 phase with a landed `feat(phase-NNN)` commit.
-pub const COMPLETED_PHASE: u32 = 350;
+pub const COMPLETED_PHASE: u32 = 375;
 
 pub const PHASE_151: u32 = 151;
 pub const PHASE_350: u32 = 350;
+pub const PHASE_351: u32 = 351;
+pub const PHASE_375: u32 = 375;
 
-/// Boot smoke for phase `n` (151..=350).
+/// Boot smoke for phase `n` (151..=375).
 pub fn phase_smoke(n: u32) -> bool {
-    if n < PHASE_151 || n > PHASE_350 || n > COMPLETED_PHASE {
+    if n < PHASE_151 || n > PHASE_375 || n > COMPLETED_PHASE {
         return false;
     }
     match n {
@@ -17,6 +19,8 @@ pub fn phase_smoke(n: u32) -> bool {
         250 => crate::post150::phase250_milestone_smoke(),
         300 => crate::post150::phase300_milestone_smoke(),
         350 => crate::post150::phase350_milestone_smoke(),
+        351 => crate::post150::phase351_desktop_smoke(),
+        375 => crate::post351::phase375_milestone_smoke(),
         _ => band_smoke(n),
     }
 }
@@ -41,12 +45,20 @@ fn band_smoke(n: u32) -> bool {
     if (301..=350).contains(&n) {
         return crate::build_integrity::boot_verified();
     }
+    if (351..=374).contains(&n) {
+        return crate::framebuffer::mode_active()
+            && crate::mouse::initialized()
+            && crate::window_manager::window_count() > 0;
+    }
     false
 }
 
 pub fn run_completed_phase_smokes() {
-    for n in PHASE_151..=COMPLETED_PHASE.min(PHASE_350) {
-        let ok = phase_smoke(n);
-        crate::serial_println!("Phase{}: ok={}", n, ok);
+    const MILESTONES: [u32; 7] = [175, 200, 250, 300, 350, 351, 375];
+    for n in MILESTONES {
+        if n <= COMPLETED_PHASE {
+            let ok = phase_smoke(n);
+            crate::serial_println!("Phase{}: ok={}", n, ok);
+        }
     }
 }
