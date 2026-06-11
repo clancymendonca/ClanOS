@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 import sys
@@ -67,12 +68,18 @@ def main() -> int:
         print("kani_gate: error — kani_harness_registry.toml has no [[harnesses]] entries")
         return 1
 
+    kani_required = os.environ.get("KANI_REQUIRED", "").lower() in ("1", "true", "yes")
+
     if kani_available():
         print(f"kani_gate: running cargo kani -p proof-rights ({harnesses} registered harnesses)")
         code = run_kani()
         if code == 0:
             print("kani_gate: OK")
         return code
+
+    if kani_required:
+        print("kani_gate: KANI_REQUIRED set but cargo-kani not installed", file=sys.stderr)
+        return 1
 
     print("kani_gate: cargo-kani not installed — running proptest fallback (tier A)")
     print("Install: cargo install cargo-kani")

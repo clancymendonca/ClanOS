@@ -8,6 +8,7 @@ use crate::service_loader::{ErrorClass, NativeError};
 static WIRE_EVENTS: AtomicU64 = AtomicU64::new(0);
 static CORRELATION_IDS: AtomicU64 = AtomicU64::new(1);
 static AUDIT_CHAIN: AtomicU64 = AtomicU64::new(0xA0E5_A0D1_0001);
+static SHADOW_COUNTER: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WireAuditEvent {
@@ -36,9 +37,18 @@ pub fn audit_chain_head() -> u64 {
     AUDIT_CHAIN.load(Ordering::Relaxed)
 }
 
+pub fn shadow_audit_count() -> u64 {
+    SHADOW_COUNTER.load(Ordering::Relaxed)
+}
+
+fn bump_shadow() {
+    SHADOW_COUNTER.fetch_add(1, Ordering::Relaxed);
+}
+
 pub fn encode_error_on_wire(err: &NativeError) -> WireAuditEvent {
     WIRE_EVENTS.fetch_add(1, Ordering::Relaxed);
     let _ = append_chain_hash(err.code);
+    bump_shadow();
     let class_byte = match err.class {
         ErrorClass::Transient => 1,
         ErrorClass::StructuralRemediable => 2,
@@ -73,6 +83,12 @@ pub fn phase135_audit_correlation_smoke() -> bool {
         && ev.correlation_id > 0
         && bytes.len() >= 13
         && wire_event_count() > 0
+        && shadow_audit_count() > 0
+        && audit_chain_head() != 0xA0E5_A0D1_0001
+}
+
+pub fn epoch7_audit_graduated() -> bool {
+    phase135_audit_correlation_smoke()
 }
 
 pub fn phase136_wait_set_smoke() -> bool {

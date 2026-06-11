@@ -2,7 +2,7 @@
 
 [manifest]
 epoch = 7
-gate_commit = "pending"
+gate_commit = "grad-epoch-7"
 gpg_signed = false
 solo_maintainer = true
 
