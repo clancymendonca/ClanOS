@@ -11,3 +11,4 @@ has_tpm_integration = false
 has_external_network = false
 has_persisted_cap_state = false
 has_hypervisor_guest_target = false
+has_no_std_enforcement = false

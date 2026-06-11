@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 SCRIPTS = [
     "doc_link_check.py",
+    "config_readme_check.py",
     "project_health.py",
     "cap_registry_sync.py",
     "epoch_signoff_check.py",

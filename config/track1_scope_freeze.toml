@@ -1,0 +1,442 @@
+# Track 1 doc migration epoch — scope freeze manifest (CI: covenant_ci via track1_scope_check.py)
+
+[epoch]
+id = "track1-doc-migration"
+description = "Migrate flat docs to docs/architecture/, docs/specs/, docs/process/, docs/proofs/ (Track 1 creates all four subdirectory trees)"
+scope_freeze_commit = "pending"
+max_wall_clock_days = 30
+triage_fallback = ["KOM", "FE", "SM"]
+status = "open"
+
+[semantic_diff_baseline]
+record_at = "migration_pr_merge"
+fields = ["status_header_hash", "section_count", "mermaid_diagram_count", "cross_ref_count"]
+stored_in = "config/migration_baselines.json"
+
+[warnings]
+target = "kernel"
+deny_warnings_commit = "pending"
+pre_existing_count = 3
+resolution_required_before_gate = true
+
+[exclusions]
+workspace_restructure = "deferred — no servers/ extraction during this epoch"
+ares_rt_no_std = "deferred — tracked in DECISION_LOG ares-rt-001; architecture_state.toml has_no_std_enforcement=false"
+new_architecture_docs = "any doc not in [[docs]] list requires charter approval to add"
+subdirectory_policy = "track1_creates_specs_process_proofs — specs→docs/specs/, process→docs/process/, proofs→docs/proofs/, architecture→docs/architecture/; defers second migration"
+threat_nodes_physical_move = "deferred — docs/THREAT_NODES.toml remains canonical at flat path; config/README.md mapping only"
+phase_checklists = "docs/phase-*.md — working documents, not migrated"
+roadmaps = "docs/ROADMAP_*.md — working documents, not migrated"
+release_scorecards = "docs/RELEASE_SCORECARD_*.md — milestone artifacts, not migrated"
+plan_supersession = "docs/PLAN_SUPERSESSION.md — archived; superseded-by gap_registry.toml; no migration"
+security_model = "docs/architecture/SECURITY_MODEL.md — already canonical; no flat_src; reconcile references only at gate"
+signoff_manifest = "epoch_signoffs/track1.toml — solo-dev multi-domain per CHARTER.md §Minimum viable team"
+
+# --- Batch 1: unblocked ---
+
+[[docs]]
+id = "KOM"
+flat_src = "docs/KERNEL_OBJECT_MODEL.md"
+canonical_dst = "docs/architecture/KERNEL_OBJECT_MODEL.md"
+batch = 1
+blocking = []
+status = "superseded-stub-present"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND flat_scorecard_rows_reconciled_into_canonical"
+domain_reviewer = "kernel_abi"
+
+# --- Batch 2: blocks on Batch 1; FE/SM mutual CROSS-REF stubs until squash ---
+
+[[docs]]
+id = "FE"
+flat_src = "docs/FAULT_ESCALATION.md"
+canonical_dst = "docs/architecture/FAULT_ESCALATION.md"
+batch = 2
+blocking = ["KOM"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND r_revoke_blocked_crossref_resolves_to_SM"
+domain_reviewer = "kernel_abi"
+
+[[docs]]
+id = "SM"
+flat_src = "docs/SCHEDULER_MODEL.md"
+canonical_dst = "docs/architecture/SCHEDULER_MODEL.md"
+batch = 2
+blocking = ["KOM"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND priority_ceiling_crossref_resolves_to_FE"
+domain_reviewer = "kernel_abi"
+
+[[docs]]
+id = "RA"
+flat_src = "docs/RIGHTS_ALGEBRA.md"
+canonical_dst = "docs/architecture/RIGHTS_ALGEBRA.md"
+batch = 2
+blocking = ["KOM"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
+domain_reviewer = "kernel_abi"
+
+# --- Batch 3: blocks on Batch 1; TM/TN atomic pair ---
+
+[[docs]]
+id = "TM"
+flat_src = "docs/THREAT_MODEL.md"
+canonical_dst = "docs/architecture/THREAT_MODEL.md"
+batch = 3
+blocking = ["FE"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND every_threat_node_id_in_tm_exists_in_tn AND attacker_goal_taxonomy_present AND tn_depends_on_all_resolve"
+domain_reviewer = "security"
+
+[[docs]]
+id = "TN"
+flat_src = "docs/THREAT_NODES.toml"
+canonical_dst = "docs/THREAT_NODES.toml"
+batch = 3
+blocking = ["FE", "TM"]
+status = "canonical-at-flat-path"
+gate_condition = "zero_open_nodes AND tm_cross_ref_parity AND depends_on_all_resolve AND config_readme_mapping_verified AND no_physical_move_to_config"
+domain_reviewer = "security"
+
+# --- Batch 4: blocks on Batch 2 + Batch 3 ---
+
+[[docs]]
+id = "ET"
+flat_src = "docs/ERROR_TAXONOMY.md"
+canonical_dst = "docs/architecture/ERROR_TAXONOMY.md"
+batch = 4
+blocking = ["FE", "TM"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
+domain_reviewer = "process"
+
+[[docs]]
+id = "PC"
+flat_src = "docs/PROOF_COVERAGE.md"
+canonical_dst = "docs/architecture/PROOF_COVERAGE.md"
+batch = 4
+blocking = ["RA", "TM"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
+domain_reviewer = "process"
+
+[[docs]]
+id = "KS"
+flat_src = "docs/KANI_SCOPE.md"
+canonical_dst = "docs/architecture/KANI_SCOPE.md"
+batch = 4
+blocking = ["PC"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
+domain_reviewer = "process"
+
+# --- Batch 5: blocks on Batch 4; 31 entries per prereq_graph.toml dependency order ---
+# Subgroup A: architecture layer
+
+[[docs]]
+id = "TS"
+flat_src = "docs/TEMPORAL_SEMANTICS.md"
+canonical_dst = "docs/architecture/TEMPORAL_SEMANTICS.md"
+batch = 5
+blocking = ["RA", "ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
+domain_reviewer = "kernel_abi"
+
+[[docs]]
+id = "GC"
+flat_src = "docs/GENERATION_COUNTER.md"
+canonical_dst = "docs/architecture/GENERATION_COUNTER.md"
+batch = 5
+blocking = ["KOM", "ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
+domain_reviewer = "kernel_abi"
+
+[[docs]]
+id = "MSB"
+flat_src = "docs/MEMORY_SAFETY_BOUNDARY.md"
+canonical_dst = "docs/architecture/MEMORY_SAFETY_BOUNDARY.md"
+batch = 5
+blocking = ["ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
+domain_reviewer = "kernel_abi"
+
+[[docs]]
+id = "AUD"
+flat_src = "docs/AUDIT_SUBSYSTEM.md"
+canonical_dst = "docs/architecture/AUDIT_SUBSYSTEM.md"
+batch = 5
+blocking = ["ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
+domain_reviewer = "security"
+
+[[docs]]
+id = "CIS"
+flat_src = "docs/COMPAT_ISOLATION.md"
+canonical_dst = "docs/architecture/COMPAT_ISOLATION.md"
+batch = 5
+blocking = ["TM", "ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
+domain_reviewer = "security"
+
+[[docs]]
+id = "ATP"
+flat_src = "docs/ARCHITECTURE_TARGETS.md"
+canonical_dst = "docs/architecture/ARCHITECTURE_TARGETS.md"
+batch = 5
+blocking = ["ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
+domain_reviewer = "kernel_abi"
+
+[[docs]]
+id = "VSA"
+flat_src = "docs/VIRTIO_SAFETY.md"
+canonical_dst = "docs/architecture/VIRTIO_SAFETY.md"
+batch = 5
+blocking = ["ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
+domain_reviewer = "kernel_abi"
+
+[[docs]]
+id = "DNS"
+flat_src = "docs/DESIGN_NORTH_STAR.md"
+canonical_dst = "docs/architecture/DESIGN_NORTH_STAR.md"
+batch = 5
+blocking = ["TM", "ET", "PC", "KS"]
+status = "superseded-stub-present"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND falsifiable_scorecard_rows_reconciled"
+domain_reviewer = "process"
+
+[[docs]]
+id = "DRM"
+flat_src = "docs/DRIVER_MODEL.md"
+canonical_dst = "docs/architecture/DRIVER_MODEL.md"
+batch = 5
+blocking = ["ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
+domain_reviewer = "kernel_abi"
+
+[[docs]]
+id = "SUN"
+flat_src = "docs/SCHEDULING_UNIFIED.md"
+canonical_dst = "docs/architecture/SCHEDULING_UNIFIED.md"
+batch = 5
+blocking = ["SM", "ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
+domain_reviewer = "kernel_abi"
+
+[[docs]]
+id = "FML"
+flat_src = "docs/FORMAL_MODEL.md"
+canonical_dst = "docs/architecture/FORMAL_MODEL.md"
+batch = 5
+blocking = ["KS", "ET", "PC"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND tier_d_stub_marked"
+domain_reviewer = "process"
+
+# Subgroup B: docs/specs/ (interface specifications)
+
+[[docs]]
+id = "CTP"
+flat_src = "docs/CAP_TRANSFER_PROTOCOL.md"
+canonical_dst = "docs/specs/CAP_TRANSFER_PROTOCOL.md"
+batch = 5
+blocking = ["RA", "ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND specs_index_readme_present"
+domain_reviewer = "kernel_abi"
+
+[[docs]]
+id = "WSR"
+flat_src = "docs/WIRE_SCHEMA_REGISTRY.md"
+canonical_dst = "docs/specs/WIRE_SCHEMA_REGISTRY.md"
+batch = 5
+blocking = ["CTP", "ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND specs_index_readme_present"
+domain_reviewer = "kernel_abi"
+
+[[docs]]
+id = "IVN"
+flat_src = "docs/IPC_VERSION_NEGOTIATION.md"
+canonical_dst = "docs/specs/IPC_VERSION_NEGOTIATION.md"
+batch = 5
+blocking = ["CTP", "ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND specs_index_readme_present"
+domain_reviewer = "kernel_abi"
+
+[[docs]]
+id = "ANS"
+flat_src = "docs/ABI_NATIVE_SYSCALL.md"
+canonical_dst = "docs/specs/ABI_NATIVE_SYSCALL.md"
+batch = 5
+blocking = ["ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND specs_index_readme_present"
+domain_reviewer = "kernel_abi"
+
+[[docs]]
+id = "AAR"
+flat_src = "docs/ABI_ARES_RT.md"
+canonical_dst = "docs/specs/ABI_ARES_RT.md"
+batch = 5
+blocking = ["ANS", "ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND specs_index_readme_present"
+domain_reviewer = "kernel_abi"
+
+[[docs]]
+id = "ACP"
+flat_src = "docs/ABI_COMPOSITOR_IPC.md"
+canonical_dst = "docs/specs/ABI_COMPOSITOR_IPC.md"
+batch = 5
+blocking = ["IVN", "ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND specs_index_readme_present"
+domain_reviewer = "kernel_abi"
+
+[[docs]]
+id = "PCH"
+flat_src = "docs/PROTOCOL_CHANGELOG.md"
+canonical_dst = "docs/specs/PROTOCOL_CHANGELOG.md"
+batch = 5
+blocking = ["WSR", "ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND link_check_passes AND specs_index_readme_present"
+domain_reviewer = "process"
+
+# Subgroup C: docs/process/ (governance and policy)
+
+[[docs]]
+id = "UAD"
+flat_src = "docs/UNSAFE_AUDIT.md"
+canonical_dst = "docs/process/UNSAFE_AUDIT.md"
+batch = 5
+blocking = ["ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND process_index_readme_present"
+domain_reviewer = "security"
+
+[[docs]]
+id = "EFP"
+flat_src = "docs/EPOCH_FAILURE_PROCEDURE.md"
+canonical_dst = "docs/process/EPOCH_FAILURE_PROCEDURE.md"
+batch = 5
+blocking = ["ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND process_index_readme_present"
+domain_reviewer = "process"
+
+[[docs]]
+id = "SCP"
+flat_src = "docs/SUPPLY_CHAIN_POLICY.md"
+canonical_dst = "docs/process/SUPPLY_CHAIN_POLICY.md"
+batch = 5
+blocking = ["ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND process_index_readme_present"
+domain_reviewer = "security"
+
+[[docs]]
+id = "DPP"
+flat_src = "docs/DEPENDENCY_POLICY.md"
+canonical_dst = "docs/process/DEPENDENCY_POLICY.md"
+batch = 5
+blocking = ["SCP", "ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND link_check_passes AND process_index_readme_present"
+domain_reviewer = "process"
+
+[[docs]]
+id = "BLD"
+flat_src = "docs/BUILD_INTEGRITY.md"
+canonical_dst = "docs/process/BUILD_INTEGRITY.md"
+batch = 5
+blocking = ["SCP", "ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND process_index_readme_present"
+domain_reviewer = "security"
+
+[[docs]]
+id = "CSN"
+flat_src = "docs/COMPAT_SUNSET.md"
+canonical_dst = "docs/process/COMPAT_SUNSET.md"
+batch = 5
+blocking = ["CIS", "ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND link_check_passes AND process_index_readme_present"
+domain_reviewer = "process"
+
+[[docs]]
+id = "DLD"
+flat_src = "docs/DECISION_LOG.md"
+canonical_dst = "docs/process/DECISION_LOG.md"
+batch = 5
+blocking = ["ET", "PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND link_check_passes AND process_index_readme_present AND root_DECISION_LOG_crossref_preserved"
+domain_reviewer = "process"
+
+[[docs]]
+id = "CTR"
+flat_src = "CHARTER.md"
+canonical_dst = "CHARTER.md"
+batch = 5
+blocking = ["ET", "PC", "KS"]
+status = "canonical-at-root"
+gate_condition = "no_physical_move AND docs/process/CHARTER_pointer_stub_added AND link_check_passes"
+domain_reviewer = "process"
+
+[[docs]]
+id = "SEC"
+flat_src = "SECURITY.md"
+canonical_dst = "SECURITY.md"
+batch = 5
+blocking = ["ET", "PC", "KS"]
+status = "canonical-at-root"
+gate_condition = "no_physical_move AND docs/process/SECURITY_pointer_stub_added AND link_check_passes"
+domain_reviewer = "security"
+
+# Subgroup D: docs/proofs/
+
+[[docs]]
+id = "FZT"
+flat_src = "docs/FUZZ_TARGETS.md"
+canonical_dst = "docs/proofs/FUZZ_TARGETS.md"
+batch = 5
+blocking = ["PC", "KS"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND link_check_passes AND proofs_index_readme_present"
+domain_reviewer = "process"
+
+[[docs]]
+id = "LVP"
+flat_src = "docs/LIVENESS_PROPERTIES.md"
+canonical_dst = "docs/proofs/LIVENESS_PROPERTIES.md"
+batch = 5
+blocking = ["KS", "ET", "PC"]
+status = "pending"
+gate_condition = "flat_status_header_matches_canonical_dst AND link_check_passes AND proofs_index_readme_present"
+domain_reviewer = "process"
+
+# Subgroup E: config registry verification (no content migration)
+
+[[docs]]
+id = "CRG"
+flat_src = "docs/CAP_REGISTRY.toml"
+canonical_dst = "docs/CAP_REGISTRY.toml"
+batch = 5
+blocking = ["KOM", "ET", "PC", "KS"]
+status = "canonical-at-flat-path"
+gate_condition = "cap_registry_sync_passes AND config_readme_mapping_verified AND no_physical_move_to_config"
+domain_reviewer = "kernel_abi"

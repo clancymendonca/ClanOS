@@ -250,12 +250,11 @@ pub fn write_user_stub_hw_syscall_rdi(
     arg0_rdi: u64,
 ) -> Result<(), UserEntryError> {
     let mut bytes = [0u8; 32];
-    let mut len = 0usize;
-    if arg0_rdi != 0 {
+    let mut len = if arg0_rdi != 0 {
         bytes[0] = 0x48;
         bytes[1] = 0xBF;
         bytes[2..10].copy_from_slice(&arg0_rdi.to_le_bytes());
-        len = 10;
+        10usize
     } else {
         bytes[0] = 0x48;
         bytes[1] = 0x31;
@@ -263,8 +262,8 @@ pub fn write_user_stub_hw_syscall_rdi(
         bytes[3] = 0x48;
         bytes[4] = 0x31;
         bytes[5] = 0xF6;
-        len = 6;
-    }
+        6usize
+    };
     bytes[len] = 0x48;
     bytes[len + 1] = 0xC7;
     bytes[len + 2] = 0xC0;

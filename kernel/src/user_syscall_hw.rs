@@ -296,7 +296,7 @@ pub fn run_hw_probe_syscall(
 }
 
 pub fn init_syscall_msrs() {
-    let stack_top = unsafe {
+    let stack_top = {
         let base = (&raw const SYSCALL_STACK).addr() as u64;
         base + core::mem::size_of::<SyscallStack>() as u64
     };

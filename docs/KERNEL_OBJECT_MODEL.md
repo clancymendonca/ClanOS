@@ -1,9 +1,11 @@
 # Universal Kernel Object Model
 
 ```yaml
-status: authoritative
+status: superseded-by: docs/architecture/KERNEL_OBJECT_MODEL.md
 semantics_version: 1.2.0
 ```
+
+> **Canonical:** [`docs/architecture/KERNEL_OBJECT_MODEL.md`](architecture/KERNEL_OBJECT_MODEL.md). This flat copy is retained until the doc migration epoch squash reconciles any differences.
 
 **Gate G1** — phases **115+** must not introduce new handle semantics without charter revision.
 
