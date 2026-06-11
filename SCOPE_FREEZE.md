@@ -4,7 +4,7 @@
 status: authoritative
 ```
 
-**Scope-freeze staging commit** — epoch 0 artifacts authored per execution plan.
+**Scope-freeze commit:** `5961eb7` — epoch 0 artifacts authored per execution plan.
 
 ## Clock
 

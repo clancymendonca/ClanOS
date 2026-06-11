@@ -3,6 +3,7 @@
     "epoch": 0,
     "phase": "epoch-0-staging",
     "timestamp": "2026-06-11T00:00:00Z",
+    "scope_freeze_commit": "5961eb7",
     "gap_registry_open": 345,
     "threat_nodes_open": 11,
     "threat_nodes_deferred": 3,
