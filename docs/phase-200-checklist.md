@@ -7,19 +7,23 @@ governance
 governance
 
 ## Mode
-future implementation
+implemented
 
 ## Scope
 
-- [ ] Deliverable: SCHEDULING_UNIFIED + semantic lint
-- [ ] Consistent with [AXIOMS.md](AXIOMS.md)
-- [ ] Listed in [ROADMAP_151_350.md](ROADMAP_151_350.md)
+- [x] Deliverable: SCHEDULING_UNIFIED + semantic lint
+- [x] Consistent with [AXIOMS.md](AXIOMS.md)
+- [x] Listed in [ROADMAP_151_350.md](ROADMAP_151_350.md)
 
 ## Validation
 
-- [ ] `cargo check -p kernel`
-- [ ] Smoke script when phase delivers runtime behavior
+- [x] `cargo check -p kernel`
+- [x] Smoke script when phase delivers runtime behavior
 
 ## Deferred
 
 - See [ROADMAP_151_350.md](ROADMAP_151_350.md) epoch bands.
+
+## Completed
+
+- Phase 200: Milestone 200 integration gate
