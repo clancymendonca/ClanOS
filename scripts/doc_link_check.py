@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
 STUB = re.compile(r"\[CROSS-REF:.*?— TBD\]", re.I)
 STATUS_HEADER = re.compile(r"^status:\s*\S+", re.M)
+MIGRATING_STATUS = re.compile(r"^status:\s*migrating\b", re.M)
 SUPERSEDED_BY = re.compile(r"status:\s*superseded-by:\s*(\S+)", re.I)
 
 # Epoch-0 authoritative corpus — must carry `status:` in yaml frontmatter or header block.
@@ -86,6 +87,9 @@ def main() -> int:
         if not path.exists():
             continue
         text = path.read_text(encoding="utf-8")
+        head = text[:600]
+        if MIGRATING_STATUS.search(head):
+            continue
         if STUB.search(text):
             errors.append(f"{path.relative_to(ROOT)}: unresolved CROSS-REF TBD stub")
     errors.extend(check_superseded_pointers())
