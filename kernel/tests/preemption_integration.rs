@@ -1630,3 +1630,11 @@ fn phase121_service_loader_smoke_works() {
     assert!(budget, "mem budget");
     assert!(quota, "cap quota");
 }
+
+#[test_case]
+fn phase130_platform_integration_smoke_works() {
+    assert!(kernel::ipc_interim_bridge::phase_interim_ipc_smoke());
+    assert!(kernel::governance::phase122_storage_broker_smoke());
+    assert!(kernel::governance::phase128_native_manifest_smoke());
+    assert!(kernel::governance::phase130_platform_integration_smoke());
+}

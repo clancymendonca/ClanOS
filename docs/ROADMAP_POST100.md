@@ -66,16 +66,16 @@ Integration milestone: **120**.
 
 | Phase | Title | Layer | Tag |
 |------:|-------|-------|-----|
-| 121 | Service loader contract | platform | native | **in progress** — `service_loader.rs`, smoke `Phase121-ServiceLoader` |
-| 122 | Storage broker | platform | native |
-| 123 | Permission broker | platform | native |
-| 124 | Device broker skeleton | platform | native |
-| 125 | Network broker stub | platform | native |
-| 126 | Clipboard broker stub | platform | native |
-| 127 | Service crash isolation | platform | native |
-| 128 | Mandatory `ares-native-v1` manifest | platform | native | G4 |
-| 129 | Scoped grants in manifest | platform | native |
-| 130 | Integration | platform | governance |
+| 121 | Service loader contract | platform | native | **complete** — `service_loader.rs` |
+| 122 | Storage broker | platform | native | **complete** — IPC FS via `storage_broker` + interim bridge |
+| 123 | Permission broker | platform | native | **complete** — `permission_broker.rs` |
+| 124 | Device broker skeleton | platform | native | **complete** — `device_broker.rs` |
+| 125 | Network broker stub | platform | native | **complete** — stub (`network_broker.rs`) |
+| 126 | Clipboard broker stub | platform | native | **complete** — stub (`clipboard_broker.rs`) |
+| 127 | Service crash isolation | platform | native | **complete** — tier-2 `service_isolation.rs` |
+| 128 | Mandatory `ares-native-v1` manifest | platform | native | **complete** — G4 `native_manifest.rs` |
+| 129 | Scoped grants in manifest | platform | native | **complete** — scoped grant validation |
+| 130 | Integration | platform | governance | **complete** — `Phase130-Platform` smoke |
 
 Integration milestone: **130**.
 

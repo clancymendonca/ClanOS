@@ -1,5 +1,6 @@
-//! In-kernel storage broker stub (phase 118); mints FsNode caps from grants (phase 114).
+//! In-kernel storage broker (phase 118/122); mints FsNode caps from grants via interim IPC.
 
+use crate::ipc_interim_bridge;
 use crate::kernel_object::{self, CapError, Rights};
 use crate::task::process::ProcessId;
 
@@ -17,6 +18,31 @@ pub fn grant_fsnode(pid: ProcessId, grant_id: u32) -> Result<u32, CapError> {
     let slot = kernel_object::mint_cap_from_grant(pid, grant_id)?;
     BROKER_MINTS.fetch_add(1, core::sync::atomic::Ordering::Relaxed);
     Ok(slot)
+}
+
+/// Phase 122: IPC-mediated storage grant (compat-internal FIFO session).
+pub fn request_fs_grant_via_ipc(
+    pid: ProcessId,
+    session_id: u32,
+    grant_id: u32,
+) -> Result<u32, CapError> {
+    ipc_interim_bridge::send(pid, session_id, b"fs-grant-req")
+        .map_err(|_| CapError::InvalidArgument)?;
+    let _ = ipc_interim_bridge::recv(pid, session_id).map_err(|_| CapError::InvalidArgument)?;
+    grant_fsnode(pid, grant_id)
+}
+
+pub fn phase122_storage_broker_smoke() -> bool {
+    let Some(pid) = kernel_object::ensure_smoke_process() else {
+        return false;
+    };
+    crate::task::process::set_process_mode(pid, crate::task::process::ProcessMode::Native);
+    let _ = crate::service_loader::bootstrap_root_caps(pid);
+    let grant = kernel_object::create_storage_grant(99, Rights::read_write()).ok();
+    let minted = grant.and_then(|g| request_fs_grant_via_ipc(pid, 5, g).ok());
+    let ok = minted.is_some();
+    crate::task::process::set_process_mode(pid, crate::task::process::ProcessMode::Compat);
+    ok
 }
 
 pub fn phase118_broker_mint_smoke() -> bool {

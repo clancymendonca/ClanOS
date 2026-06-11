@@ -1080,6 +1080,27 @@ fn run_phase111_to_120_smokes() {
     );
 }
 
+fn run_phase122_to_130_smokes() {
+    let p122 = kernel::governance::phase122_storage_broker_smoke();
+    let p123 = kernel::governance::phase123_permission_broker_smoke();
+    let p124 = kernel::governance::phase124_device_broker_smoke();
+    let p125 = kernel::governance::phase125_network_broker_smoke();
+    let p126 = kernel::governance::phase126_clipboard_broker_smoke();
+    let p127 = kernel::governance::phase127_service_isolation_smoke();
+    let p128 = kernel::governance::phase128_native_manifest_smoke();
+    let p129 = kernel::governance::phase129_scoped_grants_smoke();
+    let p130 = kernel::governance::phase130_platform_integration_smoke();
+    let bridge = kernel::ipc_interim_bridge::ipc_bridge_compat_internal_count();
+    println!(
+        "Phase130-Platform: p122={}, p123={}, p124={}, p125={}, p126={}, p127={}, p128={}, p129={}, ipc_bridge_calls={}, ok={}",
+        p122, p123, p124, p125, p126, p127, p128, p129, bridge, p130
+    );
+    kernel::serial_println!(
+        "Phase130-Platform: p122={}, p123={}, p124={}, p125={}, p126={}, p127={}, p128={}, p129={}, ipc_bridge_calls={}, ok={}",
+        p122, p123, p124, p125, p126, p127, p128, p129, bridge, p130
+    );
+}
+
 fn run_phase121_smoke() {
     let phase121_ok = kernel::governance::phase121_service_loader_smoke();
     let (bootstrap, stubs, budget, _) = kernel::governance::phase121_status();
@@ -1550,6 +1571,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     run_phase101_to_110_smokes();
     run_phase111_to_120_smokes();
     run_phase121_smoke();
+    run_phase122_to_130_smokes();
     kernel::serial_println!("Boot: phase21-100 smokes done");
 
     // Display performance counters at startup.

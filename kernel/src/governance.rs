@@ -51,6 +51,52 @@ pub fn phase121_service_loader_smoke() -> bool {
     crate::service_loader::phase121_service_loader_smoke()
 }
 
+pub fn phase122_storage_broker_smoke() -> bool {
+    crate::storage_broker::phase122_storage_broker_smoke()
+}
+
+pub fn phase123_permission_broker_smoke() -> bool {
+    crate::permission_broker::phase123_permission_broker_smoke()
+}
+
+pub fn phase124_device_broker_smoke() -> bool {
+    crate::device_broker::phase124_device_broker_smoke()
+}
+
+pub fn phase125_network_broker_smoke() -> bool {
+    crate::network_broker::phase125_network_broker_smoke()
+}
+
+pub fn phase126_clipboard_broker_smoke() -> bool {
+    crate::clipboard_broker::phase126_clipboard_broker_smoke()
+}
+
+pub fn phase127_service_isolation_smoke() -> bool {
+    crate::service_isolation::phase127_service_isolation_smoke()
+}
+
+pub fn phase128_native_manifest_smoke() -> bool {
+    crate::native_manifest::phase128_g4_smoke()
+}
+
+pub fn phase129_scoped_grants_smoke() -> bool {
+    crate::native_manifest::phase129_scoped_grants_smoke()
+}
+
+pub fn phase130_platform_integration_smoke() -> bool {
+    phase121_service_loader_smoke()
+        && crate::ipc_interim_bridge::phase_interim_ipc_smoke()
+        && phase122_storage_broker_smoke()
+        && phase123_permission_broker_smoke()
+        && phase124_device_broker_smoke()
+        && phase125_network_broker_smoke()
+        && phase126_clipboard_broker_smoke()
+        && phase127_service_isolation_smoke()
+        && phase128_native_manifest_smoke()
+        && phase129_scoped_grants_smoke()
+        && phase120_cap_compat_smoke()
+}
+
 pub fn phase121_status() -> (bool, bool, bool, bool) {
     let (quota_rej, e00_rej, budget_rej, bootstrap_mints) = crate::service_loader::stub_status();
     (
