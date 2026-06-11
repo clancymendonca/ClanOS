@@ -98,3 +98,8 @@ pub fn phase350_milestone_smoke() -> bool {
         && crate::build_integrity::boot_verified()
         && release_scorecard_ok()
 }
+
+/// Phase 351 — VGA framebuffer desktop shell (epoch 15 start).
+pub fn phase351_desktop_smoke() -> bool {
+    phase350_milestone_smoke() && crate::compositor::phase351_compositor_desktop_smoke()
+}

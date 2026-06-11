@@ -5,7 +5,23 @@
 //! translates scancodes to key events with the `pc-keyboard` crate, and
 //! prints printable characters to the VGA console.
 
-use crate::{print, println};
+/// Console output mirrored to VGA and serial (terminal stays usable in graphics mode).
+macro_rules! con_print {
+    ($($arg:tt)*) => {{
+        $crate::print!($($arg)*);
+        $crate::serial_print!($($arg)*);
+    }};
+}
+macro_rules! con_println {
+    () => {{
+        $crate::println!();
+        $crate::serial_println!();
+    }};
+    ($($arg:tt)*) => {{
+        $crate::println!($($arg)*);
+        $crate::serial_println!($($arg)*);
+    }};
+}
 use alloc::{
     string::{String, ToString},
     vec::Vec,
@@ -82,6 +98,8 @@ impl Stream for ScancodeStream {
     type Item = u8;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Option<u8>> {
+        poll_serial_console();
+
         let queue = SCANCODE_QUEUE
             .try_get()
             .expect("scancode queue not initialised");
@@ -115,7 +133,7 @@ pub async fn print_keypresses() {
     while let Some(scancode) = scancodes.next().await {
         process_scancode(scancode, true);
     }
-    println!("Keyboard stream ended.");
+    con_println!("Keyboard stream ended.");
 }
 
 /// Poll queued scancodes and process keyboard-console commands.
@@ -123,8 +141,22 @@ pub async fn print_keypresses() {
 /// This is used by preemption-mode context tasks where the async keyboard
 /// task is not running.
 pub fn poll_console_commands() {
+    poll_serial_console();
     while let Some(scancode) = try_pop_scancode() {
         process_scancode(scancode, true);
+    }
+}
+
+/// Drain host terminal bytes from COM1 (`-serial stdio`).
+pub fn poll_serial_console() {
+    while let Some(byte) = crate::serial::try_pop_byte() {
+        if byte == b'\n' || byte == b'\r' {
+            handle_console_char('\n', true);
+        } else if let Some(ch) = char::from_u32(byte.into()) {
+            if ch.is_ascii() && !ch.is_ascii_control() || ch == '\u{8}' || ch == '\u{7f}' {
+                handle_console_char(ch, true);
+            }
+        }
     }
 }
 
@@ -140,7 +172,7 @@ fn process_scancode(scancode: u8, echo: bool) {
                 DecodedKey::Unicode(character) => handle_console_char(character, echo),
                 DecodedKey::RawKey(key) => {
                     if echo {
-                        print!("{:?}", key);
+                        con_print!("{:?}", key);
                     }
                 }
             }
@@ -152,7 +184,7 @@ fn handle_console_char(character: char, echo: bool) {
     match character {
         '\n' | '\r' => {
             if echo {
-                println!("");
+                con_println!("");
             }
             let command = {
                 let mut line = CONSOLE_LINE.lock();
@@ -172,7 +204,7 @@ fn handle_console_char(character: char, echo: bool) {
             if !line.is_empty() {
                 line.pop();
                 if echo {
-                    print!("\u{8} \u{8}");
+                    con_print!("\u{8} \u{8}");
                 }
             }
         }
@@ -180,7 +212,7 @@ fn handle_console_char(character: char, echo: bool) {
             let mut line = CONSOLE_LINE.lock();
             line.push(c);
             if echo {
-                print!("{}", c);
+                con_print!("{}", c);
             }
         }
     }
@@ -194,53 +226,54 @@ fn execute_console_command(command: &str) {
 
     match parts.as_slice() {
         ["help"] => {
-            println!("Console commands:");
-            println!("  help");
-            println!("  ps");
-            println!("  kill <pid>");
-            println!("  metrics");
-            println!("  whoami");
-            println!("  su <admin|user|guest>");
-            println!("  run <echo|time|sysinfo|fsinfo> [args...]");
-            println!("  programs");
-            println!("  bin list");
-            println!("  bin info <program>");
-            println!("  bin validate <program>");
-            println!("  bin prepare <program>");
-            println!("  bin map <program>");
-            println!("  bin back <program>");
-            println!("  bin pagetable <program>");
-            println!("  bin userctx <program>");
-            println!("  bin ring3 <program>");
-            println!("  bin usyscall <program>");
-            println!("  bin plans");
-            println!("  bin mappings");
-            println!("  frames");
-            println!("  ls");
-            println!("  cat <path>");
-            println!("  touch <path>");
-            println!("  write <path> <text>");
-            println!("  rm <path>");
-            println!("  stat <path>");
-            println!("  chmod +x|-x <path>");
-            println!("  mount");
-            println!("  format");
-            println!("  fsinfo");
-            println!("  devices");
-            println!("  blk list");
-            println!("  blk info <id>");
-            println!("  mount <block-id>");
-            println!("  sched show");
-            println!("  sched quantum <ticks>");
-            println!("  sched fairness <ticks>");
-            println!("  sched maxproc <count>");
+            con_println!("Console commands:");
+            con_println!("  help");
+            con_println!("  ps");
+            con_println!("  kill <pid>");
+            con_println!("  metrics");
+            con_println!("  whoami");
+            con_println!("  su <admin|user|guest>");
+            con_println!("  run <echo|time|sysinfo|fsinfo|demo-hello|ares-info> [args...]");
+            con_println!("  programs");
+            con_println!("  bin list");
+            con_println!("  bin info <program>");
+            con_println!("  bin validate <program>");
+            con_println!("  bin prepare <program>");
+            con_println!("  bin map <program>");
+            con_println!("  bin back <program>");
+            con_println!("  bin pagetable <program>");
+            con_println!("  bin userctx <program>");
+            con_println!("  bin ring3 <program>");
+            con_println!("  bin usyscall <program>");
+            con_println!("  bin plans");
+            con_println!("  bin mappings");
+            con_println!("  frames");
+            con_println!("  ls");
+            con_println!("  cat <path>");
+            con_println!("  touch <path>");
+            con_println!("  write <path> <text>");
+            con_println!("  rm <path>");
+            con_println!("  stat <path>");
+            con_println!("  chmod +x|-x <path>");
+            con_println!("  mount");
+            con_println!("  format");
+            con_println!("  fsinfo");
+            con_println!("  desktop");
+            con_println!("  devices");
+            con_println!("  blk list");
+            con_println!("  blk info <id>");
+            con_println!("  mount <block-id>");
+            con_println!("  sched show");
+            con_println!("  sched quantum <ticks>");
+            con_println!("  sched fairness <ticks>");
+            con_println!("  sched maxproc <count>");
         }
         ["ps"] => {
             let entries = crate::task::process::get_all_processes_with_details();
             if entries.is_empty() {
-                println!("No processes registered");
+                con_println!("No processes registered");
             } else {
-                println!("PID  STATE       CPU_TICKS  OWNER      IMAGE          LOAD       NAME");
+                con_println!("PID  STATE       CPU_TICKS  OWNER      IMAGE          LOAD       NAME");
                 for (pid, name, state, ticks, owner, image, load) in entries {
                     let image_source = image
                         .as_ref()
@@ -300,7 +333,7 @@ fn execute_console_command(command: &str) {
                             crate::task::process::ProcessLoadState::ApIdleReady => "ap-idle",
                         })
                         .unwrap_or("-");
-                    println!(
+                    con_println!(
                         "{:<4} {:<11?} {:<9} {:<10} {:<14} {:<10} {}",
                         pid.as_u64(),
                         state,
@@ -321,16 +354,16 @@ fn execute_console_command(command: &str) {
                     pid,
                     0,
                 ) {
-                    println!("Terminated PID {}", raw_pid);
+                    con_println!("Terminated PID {}", raw_pid);
                 } else {
-                    println!("PID {} not found or permission denied", raw_pid);
+                    con_println!("PID {} not found or permission denied", raw_pid);
                 }
             }
-            Err(err) => println!("Invalid pid ({}): {}", err, pid),
+            Err(err) => con_println!("Invalid pid ({}): {}", err, pid),
         },
         ["whoami"] => {
             let credentials = crate::security::current_credentials();
-            println!(
+            con_println!(
                 "user={} role={}",
                 credentials.user.as_u64(),
                 credentials.role.name()
@@ -339,23 +372,23 @@ fn execute_console_command(command: &str) {
         ["su", role] => match *role {
             "admin" => {
                 crate::security::set_current_credentials(crate::security::Credentials::admin());
-                println!("Switched to admin");
+                con_println!("Switched to admin");
             }
             "user" => {
                 crate::security::set_current_credentials(crate::security::Credentials::shell_user());
-                println!("Switched to user");
+                con_println!("Switched to user");
             }
             "guest" => {
                 crate::security::set_current_credentials(crate::security::Credentials::guest());
-                println!("Switched to guest");
+                con_println!("Switched to guest");
             }
-            _ => println!("Unknown role: {}", role),
+            _ => con_println!("Unknown role: {}", role),
         },
         ["metrics"] => {
             let scheduler = crate::task::scheduler::stats();
             let (creates, terms, preemptions, fairness_violations) =
                 crate::performance::process_metrics::ProcessMetricsGlobal::global_snapshot();
-            println!(
+            con_println!(
                 "Metrics: ticks={}, req={}, points={}, preemptions={}, creates={}, terms={}, fairness_violations={}",
                 scheduler.timer_ticks,
                 scheduler.reschedule_requests,
@@ -367,27 +400,27 @@ fn execute_console_command(command: &str) {
             );
         }
         ["run", program, args @ ..] => match crate::task::userspace::run_program(program, args) {
-            Ok(output) => println!("{}", output),
-            Err(err) => println!("run error: {}", err),
+            Ok(output) => con_println!("{}", output),
+            Err(err) => con_println!("run error: {}", err),
         },
         ["programs"] | ["bin", "list"] => {
             let programs = crate::task::program_loader::discover_programs();
             if programs.is_empty() {
-                println!("No stored programs discovered");
+                con_println!("No stored programs discovered");
             } else {
                 for program in programs {
                     let marker = match program.kind {
                         crate::task::program_loader::ProgramKind::BuiltinAlias => "builtin",
                         crate::task::program_loader::ProgramKind::Elf64Image => "elf64-image",
                     };
-                    println!(
+                    con_println!(
                         "{} [{}] -> {} ({})",
                         program.name, marker, program.entry, program.source_path
                     );
                 }
             }
             let status = crate::task::program_loader::status();
-            println!(
+            con_println!(
                 "Program loader: programs={}, images={}/{}, invalid_images={}, prepared={}, planned_pages={}, mapped={}, mapped_pages={}, launches={}, failed_launches={}",
                 status.program_count,
                 status.valid_image_count,
@@ -407,7 +440,7 @@ fn execute_console_command(command: &str) {
                     .image
                     .as_ref()
                     .and_then(|image| crate::load_plan::build_load_plan(image).ok());
-                println!(
+                con_println!(
                     "Program {}: path={}, kind={:?}, entry={}, image={:?}, segments={}, planned_pages={}, planned_regions={}, trust={:?}, exec_supported={}, description={}",
                     info.name,
                     info.source_path,
@@ -422,13 +455,13 @@ fn execute_console_command(command: &str) {
                     info.description
                 );
             }
-            Err(err) => println!("program info error: {:?}", err),
+            Err(err) => con_println!("program info error: {:?}", err),
         },
         ["bin", "validate", program] => match crate::task::program_loader::validate_program_image(
             crate::security::current_credentials(),
             program,
         ) {
-            Ok(image) => println!(
+            Ok(image) => con_println!(
                 "Program {} image valid: format={:?}, entry=0x{:x}, segments={}, source={}",
                 image.name,
                 image.format,
@@ -436,13 +469,13 @@ fn execute_console_command(command: &str) {
                 image.segments.len(),
                 image.source_path
             ),
-            Err(err) => println!("program validate error: {:?}", err),
+            Err(err) => con_println!("program validate error: {:?}", err),
         },
         ["bin", "prepare", program] => match crate::task::program_loader::prepare_program_image(
             crate::security::current_credentials(),
             program,
         ) {
-            Ok(prepared) => println!(
+            Ok(prepared) => con_println!(
                 "Prepared {}: entry=0x{:x}, regions={}, pages={}, stack_pages={}",
                 prepared.image.name,
                 prepared.load_plan.entry_point,
@@ -450,13 +483,13 @@ fn execute_console_command(command: &str) {
                 prepared.load_plan.total_pages,
                 prepared.load_plan.stack_pages
             ),
-            Err(err) => println!("program prepare error: {:?}", err),
+            Err(err) => con_println!("program prepare error: {:?}", err),
         },
         ["bin", "map", program] => match crate::task::program_loader::map_prepared_program(
             crate::security::current_credentials(),
             program,
         ) {
-            Ok(mapped) => println!(
+            Ok(mapped) => con_println!(
                 "Mapped {}: id={}, pages={}, copied={}, zeroed={}, state={:?}",
                 mapped.mapped.image_name,
                 mapped.mapped.id.as_u64(),
@@ -465,13 +498,13 @@ fn execute_console_command(command: &str) {
                 mapped.mapped.zero_filled_bytes,
                 mapped.mapped.state
             ),
-            Err(err) => println!("program map error: {:?}", err),
+            Err(err) => con_println!("program map error: {:?}", err),
         },
         ["bin", "back", program] => match crate::task::program_loader::back_mapped_program(
             crate::security::current_credentials(),
             program,
         ) {
-            Ok(backed) => println!(
+            Ok(backed) => con_println!(
                 "Frame-backed {}: mapping={}, pages={}, copied={}, zeroed={}, state={:?}",
                 backed.backed.image_name,
                 backed.backed.mapping_id.as_u64(),
@@ -480,13 +513,13 @@ fn execute_console_command(command: &str) {
                 backed.backed.zero_filled_bytes,
                 backed.backed.state
             ),
-            Err(err) => println!("program frame-back error: {:?}", err),
+            Err(err) => con_println!("program frame-back error: {:?}", err),
         },
         ["bin", "pagetable", program] => match crate::task::program_loader::build_user_page_table(
             crate::security::current_credentials(),
             program,
         ) {
-            Ok(table) => println!(
+            Ok(table) => con_println!(
                 "Inactive page table {}: asid={}, pages={}, exec={}, writable={}, readonly={}, cr3_ready={}",
                 table.page_table.id.as_u64(),
                 table.page_table.address_space_id.as_u64(),
@@ -496,13 +529,13 @@ fn execute_console_command(command: &str) {
                 table.page_table.read_only_pages,
                 table.page_table.cr3_switch_ready
             ),
-            Err(err) => println!("program page-table error: {:?}", err),
+            Err(err) => con_println!("program page-table error: {:?}", err),
         },
         ["bin", "userctx", program] => match crate::task::program_loader::prepare_user_context(
             crate::security::current_credentials(),
             program,
         ) {
-            Ok(userctx) => println!(
+            Ok(userctx) => con_println!(
                 "User context: page_table={}, rip=0x{:x}, rsp=0x{:x}, cs={}, ss={}, ring3_entered={}",
                 userctx.context.page_table_id.as_u64(),
                 userctx.context.entry.rip,
@@ -511,13 +544,13 @@ fn execute_console_command(command: &str) {
                 userctx.context.entry.stack_selector,
                 userctx.context.ring3_entered
             ),
-            Err(err) => println!("program user-context error: {:?}", err),
+            Err(err) => con_println!("program user-context error: {:?}", err),
         },
         ["bin", "ring3", program] => match crate::task::program_loader::enter_controlled_ring3_trampoline(
             crate::security::current_credentials(),
             program,
         ) {
-            Ok(entry) => println!(
+            Ok(entry) => con_println!(
                 "Ring3 trampoline: rip=0x{:x}, rsp=0x{:x}, trap_vector={}, entered={}, trapped={}",
                 entry.result.entry_rip,
                 entry.result.user_rsp,
@@ -525,24 +558,24 @@ fn execute_console_command(command: &str) {
                 entry.result.ring3_entered,
                 entry.result.trapped_back
             ),
-            Err(err) => println!("program ring3 error: {:?}", err),
+            Err(err) => con_println!("program ring3 error: {:?}", err),
         },
         ["bin", "usyscall", program] => match crate::task::program_loader::run_user_syscall_probe(
             crate::security::current_credentials(),
             program,
         ) {
-            Ok(probe) => println!(
+            Ok(probe) => con_println!(
                 "User syscall: id={}, return={}, error={:?}, returned={}",
                 probe.syscall_return.syscall_id,
                 probe.syscall_return.return_value,
                 probe.syscall_return.error,
                 probe.syscall_return.returned_to_user
             ),
-            Err(err) => println!("program user-syscall error: {:?}", err),
+            Err(err) => con_println!("program user-syscall error: {:?}", err),
         },
         ["bin", "plans"] | ["loadplans"] => {
             let status = crate::task::program_loader::status();
-            println!(
+            con_println!(
                 "Load plans: prepared={}, rejected={}, planned_pages={}, mapped={}, mapped_pages={}, backed={}, backed_pages={}, page_tables={}, ptable_pages={}, user_contexts={}, ring3_entries={}, traps={}, user_syscalls={}, returns={}, elf_exec={}, elf_exits={}, exec_blocked={}",
                 status.prepared_image_count,
                 status.rejected_load_plan_count,
@@ -565,7 +598,7 @@ fn execute_console_command(command: &str) {
         }
         ["bin", "mappings"] => {
             for mapping in crate::mapping_stub::list_mappings() {
-                println!(
+                con_println!(
                     "Mapping {}: image={}, asid={}, pages={}, copied={}, zeroed={}, state={:?}",
                     mapping.id.as_u64(),
                     mapping.image_name,
@@ -579,7 +612,7 @@ fn execute_console_command(command: &str) {
         }
         ["frames"] => {
             let status = crate::frame_ownership::status();
-            println!(
+            con_println!(
                 "Frames: initialized={}, tracked={}, available={}, allocated={}, allocations={}, releases={}, failures={}",
                 status.initialized,
                 status.tracked_frames,
@@ -593,26 +626,26 @@ fn execute_console_command(command: &str) {
         ["ls"] => match crate::storage::list_files() {
             Ok(files) => {
                 for file in files {
-                    println!("{}", file);
+                    con_println!("{}", file);
                 }
             }
-            Err(err) => println!("ls error: {}", err),
+            Err(err) => con_println!("ls error: {}", err),
         },
         ["cat", path] => match crate::storage::read_file_checked(
             crate::security::current_credentials(),
             path,
         ) {
-            Ok(Some(contents)) => println!("{}", contents),
-            Ok(None) => println!("No such file: {}", path),
-            Err(err) => println!("cat error: {}", err),
+            Ok(Some(contents)) => con_println!("{}", contents),
+            Ok(None) => con_println!("No such file: {}", path),
+            Err(err) => con_println!("cat error: {}", err),
         },
         ["touch", path] => match crate::storage::create_file_checked(
             crate::security::current_credentials(),
             path,
         ) {
-            Ok(()) => println!("Created {}", path),
-            Err(crate::storage::StorageError::AlreadyExists) => println!("File already exists: {}", path),
-            Err(err) => println!("touch error: {}", err),
+            Ok(()) => con_println!("Created {}", path),
+            Err(crate::storage::StorageError::AlreadyExists) => con_println!("File already exists: {}", path),
+            Err(err) => con_println!("touch error: {}", err),
         },
         ["write", path, contents @ ..] if !contents.is_empty() => {
             let text = join_parts(contents);
@@ -621,28 +654,28 @@ fn execute_console_command(command: &str) {
                 path,
                 &text,
             ) {
-                Ok(()) => println!("Wrote {}", path),
-                Err(err) => println!("write error: {}", err),
+                Ok(()) => con_println!("Wrote {}", path),
+                Err(err) => con_println!("write error: {}", err),
             }
         }
-        ["write", ..] => println!("Usage: write <path> <text>"),
+        ["write", ..] => con_println!("Usage: write <path> <text>"),
         ["rm", path] => match crate::storage::delete_file_checked(
             crate::security::current_credentials(),
             path,
         ) {
-            Ok(()) => println!("Removed {}", path),
-            Err(err) => println!("rm error: {}", err),
+            Ok(()) => con_println!("Removed {}", path),
+            Err(err) => con_println!("rm error: {}", err),
         },
         ["stat", path] => match crate::storage::stat_file(path) {
-            Ok(Some(metadata)) => println!(
+            Ok(Some(metadata)) => con_println!(
                 "File {}: owner={}, mode={:03b}, len={}",
                 metadata.path,
                 metadata.owner.as_u64(),
                 metadata.mode.bits(),
                 metadata.len
             ),
-            Ok(None) => println!("No such file: {}", path),
-            Err(err) => println!("stat error: {}", err),
+            Ok(None) => con_println!("No such file: {}", path),
+            Err(err) => con_println!("stat error: {}", err),
         },
         ["chmod", flag, path] => match *flag {
             "+x" => match crate::storage::chmod_execute_checked(
@@ -650,36 +683,36 @@ fn execute_console_command(command: &str) {
                 path,
                 true,
             ) {
-                Ok(()) => println!("Enabled execute on {}", path),
-                Err(err) => println!("chmod error: {}", err),
+                Ok(()) => con_println!("Enabled execute on {}", path),
+                Err(err) => con_println!("chmod error: {}", err),
             },
             "-x" => match crate::storage::chmod_execute_checked(
                 crate::security::current_credentials(),
                 path,
                 false,
             ) {
-                Ok(()) => println!("Disabled execute on {}", path),
-                Err(err) => println!("chmod error: {}", err),
+                Ok(()) => con_println!("Disabled execute on {}", path),
+                Err(err) => con_println!("chmod error: {}", err),
             },
-            _ => println!("Usage: chmod +x|-x <path>"),
+            _ => con_println!("Usage: chmod +x|-x <path>"),
         },
         ["mount"] => match crate::storage::remount() {
-            Ok(()) => println!("Storage mounted"),
-            Err(err) => println!("mount error: {}", err),
+            Ok(()) => con_println!("Storage mounted"),
+            Err(err) => con_println!("mount error: {}", err),
         },
         ["mount", block_id] => match parse_block_id(block_id) {
             Ok(id) => match crate::storage::mount_block_device(id) {
-                Ok(()) => println!("Mounted block device {}", id),
-                Err(err) => println!("mount error: {}", err),
+                Ok(()) => con_println!("Mounted block device {}", id),
+                Err(err) => con_println!("mount error: {}", err),
             },
-            Err(err) => println!("Invalid block id ({}): {}", err, block_id),
+            Err(err) => con_println!("Invalid block id ({}): {}", err, block_id),
         },
         ["format"] => match crate::storage::format() {
-            Ok(()) => println!("Storage formatted"),
-            Err(err) => println!("format error: {}", err),
+            Ok(()) => con_println!("Storage formatted"),
+            Err(err) => con_println!("format error: {}", err),
         },
         ["fsinfo"] => match crate::storage::info() {
-            Ok(info) => println!(
+            Ok(info) => con_println!(
                 "FS: mounted={}, files={}/{}, free_slots={}, capacity_bytes={}, max_file_size={}, backend={}, driver_backed={}",
                 info.mounted,
                 info.file_count,
@@ -690,16 +723,20 @@ fn execute_console_command(command: &str) {
                 info.backend_name,
                 info.driver_backed
             ),
-            Err(err) => println!("fsinfo error: {}", err),
+            Err(err) => con_println!("fsinfo error: {}", err),
         },
+        ["desktop"] => {
+            crate::framebuffer::render_desktop_frame();
+            con_println!("Desktop frame rendered (320x200 mode 13h).");
+        }
         ["devices"] => {
             let summary = crate::device::summary();
-            println!(
+            con_println!(
                 "Devices: total={}, pci={}, block={}, storage={}",
                 summary.total, summary.pci, summary.block, summary.storage
             );
             for device in crate::device::list_devices() {
-                println!(
+                con_println!(
                     "  id={} kind={:?} state={:?} name={} vendor={:?} device={:?} class={:?} subclass={:?}",
                     device.id.as_u64(),
                     device.kind,
@@ -714,7 +751,7 @@ fn execute_console_command(command: &str) {
         }
         ["blk", "list"] => {
             for device in crate::block::list_block_devices() {
-                println!(
+                con_println!(
                     "  id={} name={} backend={:?} sectors={} sector_size={} readonly={} driver_backed={}",
                     device.id.as_u64(),
                     device.name,
@@ -732,7 +769,7 @@ fn execute_console_command(command: &str) {
                     .into_iter()
                     .find(|device| device.id.as_u64() == id);
                 match found {
-                    Some(device) => println!(
+                    Some(device) => con_println!(
                         "Block {}: name={}, backend={:?}, sectors={}, sector_size={}, readonly={}, driver_backed={}",
                         id,
                         device.name,
@@ -742,18 +779,14 @@ fn execute_console_command(command: &str) {
                         device.read_only,
                         device.driver_backed
                     ),
-                    None => println!("Block device {} not found", id),
+                    None => con_println!("Block device {} not found", id),
                 }
             }
-            Err(err) => println!("Invalid block id ({}): {}", err, block_id),
+            Err(err) => con_println!("Invalid block id ({}): {}", err, block_id),
         },
         ["sched", "show"] => {
             let config = crate::task::scheduler::runtime_config();
-            println!(
-                "Scheduler config: quantum_ticks={}, fairness_check_ticks={}, max_processes={}",
-                config.quantum_ticks, config.fairness_check_interval_ticks, config.max_processes
-            );
-            crate::serial_println!(
+            con_println!(
                 "Scheduler config: quantum_ticks={}, fairness_check_ticks={}, max_processes={}",
                 config.quantum_ticks, config.fairness_check_interval_ticks, config.max_processes
             );
@@ -763,40 +796,40 @@ fn execute_console_command(command: &str) {
                 let mut config = crate::task::scheduler::runtime_config();
                 config.quantum_ticks = ticks;
                 match crate::task::scheduler::apply_runtime_config(config) {
-                    Ok(_) => println!("Updated scheduler quantum to {} ticks", config.quantum_ticks),
-                    Err(err) => println!("Rejected scheduler update: {:?}", err),
+                    Ok(_) => con_println!("Updated scheduler quantum to {} ticks", config.quantum_ticks),
+                    Err(err) => con_println!("Rejected scheduler update: {:?}", err),
                 }
             }
-            Err(_) => println!("Invalid quantum value: {}", value),
+            Err(_) => con_println!("Invalid quantum value: {}", value),
         },
         ["sched", "fairness", value] => match value.parse::<u64>() {
             Ok(ticks) => {
                 let mut config = crate::task::scheduler::runtime_config();
                 config.fairness_check_interval_ticks = ticks;
                 match crate::task::scheduler::apply_runtime_config(config) {
-                    Ok(_) => println!(
+                    Ok(_) => con_println!(
                         "Updated fairness check interval to {} ticks",
                         config.fairness_check_interval_ticks
                     ),
-                    Err(err) => println!("Rejected scheduler update: {:?}", err),
+                    Err(err) => con_println!("Rejected scheduler update: {:?}", err),
                 }
             }
-            Err(_) => println!("Invalid fairness value: {}", value),
+            Err(_) => con_println!("Invalid fairness value: {}", value),
         },
         ["sched", "maxproc", value] => match value.parse::<usize>() {
             Ok(max_proc) => {
                 let mut config = crate::task::scheduler::runtime_config();
                 config.max_processes = max_proc;
                 match crate::task::scheduler::apply_runtime_config(config) {
-                    Ok(_) => println!("Updated max processes to {}", config.max_processes),
-                    Err(err) => println!("Rejected scheduler update: {:?}", err),
+                    Ok(_) => con_println!("Updated max processes to {}", config.max_processes),
+                    Err(err) => con_println!("Rejected scheduler update: {:?}", err),
                 }
             }
-            Err(_) => println!("Invalid maxproc value: {}", value),
+            Err(_) => con_println!("Invalid maxproc value: {}", value),
         },
         _ => {
-            println!("Unknown command: {}", command);
-            println!("Type 'help' for available commands");
+            con_println!("Unknown command: {}", command);
+            con_println!("Type 'help' for available commands");
         }
     }
 }

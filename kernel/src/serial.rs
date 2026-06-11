@@ -16,6 +16,22 @@ lazy_static! {
     };
 }
 
+/// Non-blocking read of one byte from COM1 (host terminal when QEMU uses `-serial stdio`).
+pub fn try_pop_byte() -> Option<u8> {
+    use x86_64::instructions::{interrupts, port::PortReadOnly};
+
+    interrupts::without_interrupts(|| {
+        let mut line_sts = PortReadOnly::<u8>::new(0x3F8 + 5);
+        // LSR bit 0: data ready.
+        if unsafe { line_sts.read() } & 0x01 == 0 {
+            return None;
+        }
+        let mut data = PortReadOnly::<u8>::new(0x3F8);
+        let byte = unsafe { data.read() };
+        Some(if byte == b'\r' { b'\n' } else { byte })
+    })
+}
+
 #[doc(hidden)]
 pub fn _print(args: ::core::fmt::Arguments) {
     use core::fmt::Write;
