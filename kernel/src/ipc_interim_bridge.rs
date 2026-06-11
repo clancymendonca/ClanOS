@@ -28,14 +28,12 @@ pub enum BridgeError {
 }
 
 static IPC_BRIDGE_COMPAT_INTERNAL: AtomicU64 = AtomicU64::new(0);
-static BRIDGE_RETIRED: core::sync::atomic::AtomicBool =
-    core::sync::atomic::AtomicBool::new(false);
+static BRIDGE_RETIRED: core::sync::atomic::AtomicBool = core::sync::atomic::AtomicBool::new(false);
 static E00_SATURATIONS: AtomicU64 = AtomicU64::new(0);
 
 lazy_static! {
-    static ref SESSION_QUEUES: Mutex<
-        alloc::collections::BTreeMap<(ProcessId, u32), VecDeque<InterimMessage>>,
-    > = Mutex::new(alloc::collections::BTreeMap::new());
+    static ref SESSION_QUEUES: Mutex<alloc::collections::BTreeMap<(ProcessId, u32), VecDeque<InterimMessage>>> =
+        Mutex::new(alloc::collections::BTreeMap::new());
 }
 
 /// CI counter — must reach zero by phase 134.
@@ -115,7 +113,10 @@ pub fn phase_interim_ipc_smoke() -> bool {
     let before = ipc_bridge_compat_internal_count();
     let s1 = send(pid, 1, b"hello").is_ok();
     let msg = recv(pid, 1).ok();
-    let fifo_ok = msg.as_ref().map(|m| m.payload.as_slice() == b"hello").unwrap_or(false);
+    let fifo_ok = msg
+        .as_ref()
+        .map(|m| m.payload.as_slice() == b"hello")
+        .unwrap_or(false);
 
     for i in 0..MAX_QUEUE_PER_SESSION {
         let _ = send(pid, 2, &[i as u8]);
