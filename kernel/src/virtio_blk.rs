@@ -46,7 +46,6 @@ pub fn init() -> bool {
     let sector_count = 128usize;
     let id = block::register_virtio_blk("virtio-blk0", sector_count, false);
     *VIRTIO_BLK_ID.lock() = Some(id);
-    let _ = block::set_active(id);
 
     device::register_device(
         "virtio-blk0",
@@ -66,9 +65,13 @@ pub fn phase201_virtio_blk_smoke() -> bool {
     if VIRTIO_BLK_ID.lock().is_none() {
         init();
     }
-    let info = block::active_info().ok();
-    let backend_ok = info
-        .as_ref()
+    let Some(virtio_id) = *VIRTIO_BLK_ID.lock() else {
+        return false;
+    };
+    let restore = block::active_info().ok().map(|i| i.id);
+    let _ = block::set_active(virtio_id);
+    let backend_ok = block::active_info()
+        .ok()
         .map(|i| i.driver_backed && i.sector_count >= 64)
         .unwrap_or(false);
 
@@ -76,8 +79,10 @@ pub fn phase201_virtio_blk_smoke() -> bool {
     write[0] = 0x56; // 'V'
     let rw_ok = block::write_active_sector(0, &write).is_ok();
     let mut read = [0u8; crate::storage::SECTOR_SIZE];
-    let read_ok =
-        block::read_active_sector(0, &mut read).is_ok() && read[0] == 0x56 && backend_ok;
+    let read_ok = block::read_active_sector(0, &mut read).is_ok() && read[0] == 0x56 && backend_ok;
+    if let Some(id) = restore.or_else(block::primary_id) {
+        let _ = block::set_active(id);
+    }
     read_ok && rw_ok
 }
 
@@ -86,9 +91,5 @@ pub fn status() -> (bool, u64, usize) {
         .iter()
         .filter(|d| d.driver_backed)
         .count();
-    (
-        pci_found(),
-        probe_count(),
-        driver_backed,
-    )
+    (pci_found(), probe_count(), driver_backed)
 }

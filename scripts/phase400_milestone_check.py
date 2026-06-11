@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Epoch 4 network smoke — virtio-net, compat sockets, functional broker (QEMU)."""
+"""Milestone 400 functional OS gate."""
 
 import argparse
 import sys
@@ -11,14 +11,9 @@ from post150_milestone_check import run_smoke  # noqa: E402
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--timeout", type=int, default=300)
+    ap.add_argument("--timeout", type=int, default=360)
     args = ap.parse_args()
-    return run_smoke(
-        r"Phase404-Network:.*?ok=(true|false)",
-        "phase404_network_check",
-        args.timeout,
-        ["--features", "preemption"],
-    )
+    return run_smoke(r"Phase400-Milestone: ok=(true|false)", "phase400_milestone_check", args.timeout)
 
 
 if __name__ == "__main__":

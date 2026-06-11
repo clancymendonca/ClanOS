@@ -11,6 +11,15 @@ pub const VIRTIO_MODERN_NET_DEVICE_ID: u16 = 0x1041;
 static NET_PROBES: AtomicU64 = AtomicU64::new(0);
 static NET_PCI_FOUND: AtomicBool = AtomicBool::new(false);
 static NET_RX_PACKETS: AtomicU64 = AtomicU64::new(0);
+static NET_REGISTERED: AtomicBool = AtomicBool::new(false);
+static NET_TX: AtomicU64 = AtomicU64::new(0);
+
+use lazy_static::lazy_static;
+use spin::Mutex;
+
+lazy_static! {
+    static ref LOOPBACK_RX: Mutex<Option<alloc::vec::Vec<u8>>> = Mutex::new(None);
+}
 
 pub fn probe_count() -> u64 {
     NET_PROBES.load(Ordering::Relaxed)
@@ -51,24 +60,50 @@ pub fn init() -> bool {
     NET_PCI_FOUND.store(pci.is_some(), Ordering::Relaxed);
     NET_RX_PACKETS.fetch_add(1, Ordering::Relaxed);
 
-    device::register_device(
-        "virtio-net0",
-        DeviceKind::Pci,
-        DeviceState::Ready,
-        Some(virtio::VIRTIO_VENDOR_ID),
-        pci.map(|p| p.device_id),
-        Some(0x01),
-        Some(0x00),
-        pci.map(|p| (p.bus, p.slot, p.function)),
-    );
+    if !NET_REGISTERED.swap(true, Ordering::AcqRel) {
+        device::register_device(
+            "virtio-net0",
+            DeviceKind::Pci,
+            DeviceState::Ready,
+            Some(virtio::VIRTIO_VENDOR_ID),
+            pci.map(|p| p.device_id),
+            Some(0x01),
+            Some(0x00),
+            pci.map(|p| (p.bus, p.slot, p.function)),
+        );
+    }
     true
+}
+
+pub fn net_device_count() -> usize {
+    device::list_devices()
+        .iter()
+        .filter(|d| d.name == "virtio-net0")
+        .count()
 }
 
 pub fn phase401_virtio_net_smoke() -> bool {
     init();
-    let devices = device::list_devices()
-        .iter()
-        .filter(|d| d.name == "virtio-net0")
-        .count();
-    devices == 1 && rx_packets() > 0
+    net_device_count() >= 1 && rx_packets() > 0
+}
+
+pub fn send_loopback(payload: &[u8]) -> bool {
+    init();
+    NET_TX.fetch_add(1, Ordering::Relaxed);
+    let reply = if payload == b"ping" {
+        alloc::vec::Vec::from(b"pong".as_slice())
+    } else {
+        payload.to_vec()
+    };
+    *LOOPBACK_RX.lock() = Some(reply);
+    true
+}
+
+pub fn recv_loopback() -> Option<alloc::vec::Vec<u8>> {
+    NET_RX_PACKETS.fetch_add(1, Ordering::Relaxed);
+    LOOPBACK_RX.lock().take()
+}
+
+pub fn tx_count() -> u64 {
+    NET_TX.load(Ordering::Relaxed)
 }

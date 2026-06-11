@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Epoch 4 network smoke — virtio-net, compat sockets, functional broker (QEMU)."""
+"""Phase 351 desktop framebuffer smoke."""
 
 import argparse
 import sys
@@ -13,12 +13,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--timeout", type=int, default=300)
     args = ap.parse_args()
-    return run_smoke(
-        r"Phase404-Network:.*?ok=(true|false)",
-        "phase404_network_check",
-        args.timeout,
-        ["--features", "preemption"],
-    )
+    return run_smoke(r"Phase351-Desktop: ok=(true|false)", "phase351_desktop_check", args.timeout)
 
 
 if __name__ == "__main__":

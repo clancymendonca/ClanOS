@@ -65,11 +65,7 @@ pub fn create_endpoint() -> EndpointId {
     id
 }
 
-pub fn send(
-    endpoint: EndpointId,
-    sender: ProcessId,
-    payload: &[u8],
-) -> Result<(), EndpointError> {
+pub fn send(endpoint: EndpointId, sender: ProcessId, payload: &[u8]) -> Result<(), EndpointError> {
     if payload.len() > MAX_ENDPOINT_MSG_BYTES {
         return Err(EndpointError::TooLarge);
     }

@@ -1,49 +1,24 @@
 #!/usr/bin/env python3
 """Epoch 2 virtio-blk smoke (QEMU)."""
 
-import os
-import re
-import subprocess
+import argparse
 import sys
 from pathlib import Path
 
-PHASE_RE = re.compile(
-    r"Phase201-VirtioBlk:.*?ok=(true|false)"
-)
-REPO = Path(__file__).resolve().parents[1]
-
-
-def cleanup():
-    if os.name == "nt":
-        subprocess.run(
-            ["taskkill", "/IM", "qemu-system-x86_64.exe", "/F"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            check=False,
-        )
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from post150_milestone_check import run_smoke  # noqa: E402
 
 
 def main() -> int:
-    p = subprocess.Popen(
-        ["cargo", "run", "-p", "kernel", "--features", "preemption"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        cwd=REPO,
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--timeout", type=int, default=300)
+    args = ap.parse_args()
+    return run_smoke(
+        r"Phase201-VirtioBlk:.*?ok=(true|false)",
+        "phase201_virtio_blk_check",
+        args.timeout,
+        ["--features", "preemption"],
     )
-    try:
-        out, _ = p.communicate(timeout=300)
-    except subprocess.TimeoutExpired:
-        p.kill()
-        cleanup()
-        return 1
-    for line in out.splitlines():
-        m = PHASE_RE.search(line)
-        if m and m.group(1) == "true":
-            print("phase201_virtio_blk_check: OK")
-            return 0
-    print(out[-2500:], file=sys.stderr)
-    return 1
 
 
 if __name__ == "__main__":

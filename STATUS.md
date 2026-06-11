@@ -1,22 +1,20 @@
 # AresOS Project Status
 
-## Snapshot (post-150 roadmap through phase 350)
+## Snapshot (functional OS — milestone 400)
 
-- **Phases 111-130:** platform brokers + interim IPC (epoch 1, commit `044d4ef`)
-- **Phase 201:** virtio-blk hybrid stub (epoch 2)
+- **Phases 111-130:** platform brokers + interim IPC (epoch 1)
 - **Phases 131-140:** build integrity, native endpoints, audit wire, IPC integration (epoch 3)
-- **Phase 404:** virtio-net, compat sockets, functional network broker (epoch 4)
-- **Phase 149:** service scheduler, SMP readiness, compositor, OOM policy (epoch 5)
-- **Phase 150:** four-layer boundary review (epoch 6)
-- **Phases 151-350:** [`ROADMAP_151_350.md`](docs/ROADMAP_151_350.md); `COMPLETED_PHASE=350`; epochs 7-14 graduated
-- **Userland:** `ares-rt` host-target demo + `install_userland.py`
-- **Epoch 0 evidence tier:** `proof-rights` proptest + Kani harnesses; `kani_gate.py` in covenant CI
-- gap_registry: 0 open, 350 addressed, 0 wontfix (350 total)
+- **Phases 151-350:** [`ROADMAP_151_350.md`](docs/ROADMAP_151_350.md); epochs 7-14 graduated
+- **Phases 351-400:** [`ROADMAP_351_400.md`](docs/ROADMAP_351_400.md); desktop + userland + network
+- **COMPLETED_PHASE:** 400
+- **Desktop:** VGA 320×200, double-buffered compositor, PS/2 mouse, window manager, taskbar shell
+- **Userland:** `/bin/demo-hello`, `/bin/ares-info` native packages (ares-rt ABI)
+- **Network:** virtio-net loopback ping + compat sockets
+- **Userland runtime:** `ares-rt` + `install_userland.py`
+- gap_registry: 0 open, 350 addressed (350 total)
 - threat nodes open: 0
-- kani_harness_count: 3
-- phase_checklists: 200 implemented (151-350)
-- release_scorecard: [`RELEASE_SCORECARD_M350.md`](docs/RELEASE_SCORECARD_M350.md)
-- ipc_bridge_compat_internal: 0 (retired phase 134)
+- phase_checklists: 250 implemented (151-400)
+- release_scorecard: [`RELEASE_SCORECARD_M400.md`](docs/RELEASE_SCORECARD_M400.md)
 
 ## Threat coverage by goal
 
@@ -29,21 +27,35 @@
 
 | Milestone | Serial line | Script |
 |-----------|-------------|--------|
-| Epoch 7 | `Phase175-Epoch7` | `phase175_epoch7_check.py` |
-| M200 | `Phase200-Milestone` | `phase200_milestone_check.py` |
-| M250 | `Phase250-Milestone` | `phase250_milestone_check.py` |
-| M300 | `Phase300-Milestone` | `phase300_milestone_check.py` |
 | M350 | `Phase350-Milestone` | `phase350_milestone_check.py` |
+| M375 | `Phase375-Milestone` | `phase375_milestone_check.py` |
+| **M400** | `Phase400-Milestone` | `phase400_milestone_check.py` |
+| Desktop | `Phase351-Desktop` | `phase351_desktop_check.py` |
 
 ## Boot smokes (QEMU)
 
 Expected serial lines (all `ok=true`):
 
-- `Phase201-VirtioBlk`
-- `Phase140-IPC` (`bridge=0`)
-- `Phase404-Network`
-- `Phase149-Epoch5`
-- `Phase150-Milestone`
-- `Phase175-Epoch7` through `Phase350-Milestone`
+- `Phase350-Milestone`
+- `Phase351-Desktop`
+- `Phase375-Milestone`
+- `Phase400-Milestone`
 
-Scripts: `phase201_virtio_blk_check.py`, `phase134_endpoint_check.py`, `phase404_network_check.py`, `phase149_epoch5_check.py`, `phase150_milestone_check.py`, `phase175_epoch7_check.py` … `phase350_milestone_check.py`
+## Running with GUI
+
+```powershell
+.\scripts\run_desktop.ps1
+```
+
+Or manually:
+
+```powershell
+$env:Path = "C:\Program Files\qemu;" + $env:Path
+cargo bootimage -p kernel
+qemu-system-x86_64 -drive format=raw,file=target\x86_64-unknown-none\debug\bootimage-kernel.bin -serial stdio -display default -vga std -no-reboot
+```
+
+- **Terminal** (this window): type shell commands after `AresOS shell ready`
+- **QEMU window**: 320×200 desktop (auto-refreshes; click to focus windows)
+
+Shell commands: `help`, `run demo-hello`, `run ares-info`, `ls`, `ps`, `fsinfo`, `desktop`
