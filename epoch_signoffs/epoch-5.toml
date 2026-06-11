@@ -1,0 +1,14 @@
+# Epoch 5 gate — scheduler, SMP readiness, compositor, OOM (141–149).
+
+[manifest]
+epoch = 5
+gate_commit = "pending"
+gpg_signed = false
+solo_maintainer = true
+
+[[signoffs]]
+reviewer_id = "clancy"
+domain = "kernel"
+scope = "service_scheduler, compositor IPC, oom_policy MEM_BUDGET enforcement"
+timestamp = "2026-06-11T18:00:00Z"
+epoch = 5
