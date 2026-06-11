@@ -3,7 +3,7 @@
 
 [epoch]
 id = "track1-doc-migration"
-scope_freeze_commit = "pending"
+scope_freeze_commit = "8f0052b9a327c4779a93efbba8bccb6754593e1f"
 gate_squash_commit = ""
 
 [signoff]

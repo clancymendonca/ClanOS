@@ -3,7 +3,7 @@
 [epoch]
 id = "track1-doc-migration"
 description = "Migrate flat docs to docs/architecture/, docs/specs/, docs/process/, docs/proofs/ (Track 1 creates all four subdirectory trees)"
-scope_freeze_commit = "pending"
+scope_freeze_commit = "8f0052b9a327c4779a93efbba8bccb6754593e1f"
 max_wall_clock_days = 30
 triage_fallback = ["KOM", "FE", "SM"]
 status = "open"
@@ -15,7 +15,7 @@ stored_in = "config/migration_baselines.json"
 
 [warnings]
 target = "kernel"
-deny_warnings_commit = "pending"
+deny_warnings_commit = "8f0052b9a327c4779a93efbba8bccb6754593e1f"
 pre_existing_count = 3
 resolution_required_before_gate = true
 
