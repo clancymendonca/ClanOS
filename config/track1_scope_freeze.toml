@@ -40,7 +40,7 @@ flat_src = "docs/KERNEL_OBJECT_MODEL.md"
 canonical_dst = "docs/architecture/KERNEL_OBJECT_MODEL.md"
 batch = 1
 blocking = []
-status = "superseded-stub-present"
+status = "reconciled-staging"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND flat_scorecard_rows_reconciled_into_canonical"
 domain_reviewer = "kernel_abi"
 
