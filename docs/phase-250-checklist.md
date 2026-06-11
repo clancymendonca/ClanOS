@@ -7,19 +7,23 @@ governance
 governance
 
 ## Mode
-future implementation
+implemented
 
 ## Scope
 
-- [ ] Deliverable: hardware + SDK
-- [ ] Consistent with [AXIOMS.md](AXIOMS.md)
-- [ ] Listed in [ROADMAP_151_350.md](ROADMAP_151_350.md)
+- [x] Deliverable: hardware + SDK
+- [x] Consistent with [AXIOMS.md](AXIOMS.md)
+- [x] Listed in [ROADMAP_151_350.md](ROADMAP_151_350.md)
 
 ## Validation
 
-- [ ] `cargo check -p kernel`
-- [ ] Smoke script when phase delivers runtime behavior
+- [x] `cargo check -p kernel`
+- [x] Smoke script when phase delivers runtime behavior
 
 ## Deferred
 
 - See [ROADMAP_151_350.md](ROADMAP_151_350.md) epoch bands.
+
+## Completed
+
+- Phase 250: Milestone 250 hardware + SDK gate
