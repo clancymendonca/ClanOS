@@ -19,4 +19,4 @@ Initial constitutional docs — no wire protocol bumps yet.
 
 | Doc | Bump | Rationale |
 |-----|------|-----------|
-| `docs/architecture/KERNEL_OBJECT_MODEL.md` | 1.3.0.clarification.0 | Merge flat `docs/KERNEL_OBJECT_MODEL.md` into canonical; add TOCTOU state diagram, BrokerSession kind, implementation-phase table, cap confinement/schema sections; unify cross-references. No wire format change. |
+| `docs/architecture/KERNEL_OBJECT_MODEL.md` | 1.3.0.additive.0 | **Additive:** sections absent from pre-reconcile canonical — phase-110 design decision, universal interface table, G1 handle semantics list, generation invalidation, full mint/delegation authority, cap schema version, confinement, kind freeze, implementation-phase table, BrokerSession kind row, TOCTOU diagram (implementation-verified). **Clarification:** merged wording for reference cycles, bootstrap ceremony, R-destroy-notify where canonical already had shorter forms. No wire format change. |

@@ -169,16 +169,26 @@ sequenceDiagram
 
 ### Cap transfer TOCTOU state machine
 
-During IPC-embedded transfer, the capability is in exactly one table — source (reserved) or destination (active). Threat node: `T-transfer-toctou`.
+Verified against `kernel_object::cap_transfer_move` (close sender slot, then alloc receiver slot). The cap is never in **both** tables at once; there is no in-table **Reserved** state — between close and alloc the cap lives in a transient kernel hold only.
+
+| Property | Implementation |
+|----------|----------------|
+| Never in both tables | Yes — `close_cap_for_process` before `alloc_cap_slot` |
+| Source reserved before dest write | No reserved slot — sender cleared, then receiver written |
+| Failure restores source | Only if `get_cap` fails; **not** if alloc fails after close (`STUB(track1b)`) |
+| Success consumes source before return | Yes |
+
+Threat node: `T-transfer-toctou` (tier B, closed on happy path). Alloc-failure rollback deferred to track1b.
 
 ```mermaid
 stateDiagram-v2
     [*] --> InSource : cap in sender table
-    InSource --> Reserved : transfer_initiated
-    Reserved --> InDestination : transfer_commit_ok
-    Reserved --> InSource : transfer_abort_err
-    InDestination --> [*] : sender slot consumed
-    InSource --> [*] : transfer_failed_source_retains
+    InSource --> InSource : get_cap NotFound
+    InSource --> TransientHold : close_cap sender slot empty
+    TransientHold --> InDestination : alloc_cap_slot ok
+    TransientHold --> Orphaned : alloc_cap_slot err
+    InDestination --> [*] : to_slot returned
+    Orphaned --> [*] : STUB track1b no source rollback
 ```
 
 ---
