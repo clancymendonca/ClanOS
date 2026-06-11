@@ -1,0 +1,14 @@
+# Epoch 13 gate — checkpoint / Tier D formal (phases 301–325).
+
+[manifest]
+epoch = 13
+gate_commit = "pending"
+gpg_signed = false
+solo_maintainer = true
+
+[[signoffs]]
+reviewer_id = "clancy"
+domain = "kernel"
+scope = "checkpoint security domain, FORMAL_MODEL, selective Verus"
+timestamp = "2026-06-11T20:00:00Z"
+epoch = 13

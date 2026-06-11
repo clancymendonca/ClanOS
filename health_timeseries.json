@@ -87,5 +87,40 @@
       "Phase150-Milestone"
     ],
     "notes": "Four-layer boundary review; QEMU config v1; plan superseded by gap_registry + CHARTER."
+  },
+  {
+    "epoch": 0,
+    "phase": "plan-complete",
+    "timestamp": "2026-06-11T20:00:00Z",
+    "gap_registry_open": 321,
+    "gap_registry_addressed": 24,
+    "threat_nodes_open": 10,
+    "kani_harness_count": 3,
+    "proptest_count": 10000,
+    "notes": "Epoch 0 evidence tier complete; T-cap-amplification closed; all plan todos done."
+  },
+  {
+    "epoch": 6,
+    "phase": "plan-full-close",
+    "timestamp": "2026-06-11T21:00:00Z",
+    "gap_registry_open": 0,
+    "gap_registry_addressed": 318,
+    "gap_registry_wontfix": 27,
+    "threat_nodes_open": 0,
+    "covenant_ci": true,
+    "milestone_smokes_in_ci": true,
+    "notes": "Covenant CI, epoch 1-6 QEMU smokes, all threat nodes closed, gap registry sweep."
+  },
+  {
+    "epoch": 7,
+    "phase": "epoch-7-planning",
+    "timestamp": "2026-06-11T22:00:00Z",
+    "gap_registry_total": 350,
+    "gap_registry_open": 27,
+    "gap_registry_addressed": 323,
+    "phase_checklists_151_350": 200,
+    "loom_harness_graduated": 2,
+    "epoch_signoffs": "0-14",
+    "notes": "ROADMAP_151_350 ratified; gaps 346-350; post-150 wontfix reopened with epoch assignments; milestone smokes 175-350 wired."
   }
 ]

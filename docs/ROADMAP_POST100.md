@@ -121,15 +121,7 @@ Integration milestone: **150**.
 
 ## Beyond 150
 
-| Range | Focus |
-|-------|--------|
-| 151–155 | `SCHEDULING_UNIFIED.md` + S-* cases + executable tests |
-| 156–158 | Meta-semantics precedence table + M-* |
-| 159–160 | Semantic lint CI gates `ares-semantics-v*` bumps |
-| 161–170 | Native UX / SDK |
-| 171–180 | Language runtime adapters |
-| 181–190 | Semantic observability tooling |
-| 191+ | POSIX depth; federation; distributed endpoints |
+**Superseded:** phases 151–350 are defined in [ROADMAP_151_350.md](ROADMAP_151_350.md) (epochs 7–14, milestones 200/250/300/350).
 
 ---
 

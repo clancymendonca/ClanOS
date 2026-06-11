@@ -19,6 +19,10 @@ Falsifiable targets for phases 121–150. See [`CHARTER.md`](../CHARTER.md), [`T
 | Reproducible build | Dual-build hash match | BUILD_INTEGRITY CI failure |
 | Public security process | Disclosure + key compromise playbooks | Missing before M150 release |
 | Windows comparison | Named rows or explicit non-commitment | See § Comparative position |
+| **M200** scheduling | `SCHEDULING_UNIFIED` S-* cases executable; semantic lint on ABI bumps | Phase200-Milestone smoke false |
+| **M250** hardware/SDK | QEMU→HW procedure + signed images; native SDK path | Phase250-Milestone smoke false |
+| **M300** federation | Distributed endpoint protocol + observability tooling | Phase300-Milestone smoke false |
+| **M350** release 1.0 | Zero open threats; never-stabilize graduated; dual-build + compat threshold | Phase350-Milestone smoke false |
 
 ---
 

@@ -213,3 +213,60 @@ blocking_epoch = 1
 from = "phase-134"
 to = "CAP_TRANSFER_PROTOCOL.md"
 blocking_epoch = 3
+
+# --- Post-150 epoch 7–14 ---
+
+[[nodes]]
+id = "ROADMAP_151_350.md"
+path = "docs/ROADMAP_151_350.md"
+blocking_epoch = 7
+
+[[nodes]]
+id = "SCHEDULING_UNIFIED.md"
+path = "docs/SCHEDULING_UNIFIED.md"
+blocking_epoch = 8
+
+[[nodes]]
+id = "DRIVER_MODEL.md"
+path = "docs/DRIVER_MODEL.md"
+blocking_epoch = 11
+
+[[nodes]]
+id = "FORMAL_MODEL.md"
+path = "docs/FORMAL_MODEL.md"
+blocking_epoch = 13
+
+[[edges]]
+from = "SCHEDULING_UNIFIED.md"
+to = "ROADMAP_151_350.md"
+blocking_epoch = 7
+
+[[edges]]
+from = "SCHEDULING_UNIFIED.md"
+to = "SCHEDULER_MODEL.md"
+blocking_epoch = 8
+
+[[edges]]
+from = "DRIVER_MODEL.md"
+to = "ROADMAP_151_350.md"
+blocking_epoch = 10
+
+[[edges]]
+from = "FORMAL_MODEL.md"
+to = "formal_semantics_framework_decision"
+blocking_epoch = 13
+
+[[edges]]
+from = "phase-200"
+to = "SCHEDULING_UNIFIED.md"
+blocking_epoch = 8
+
+[[edges]]
+from = "phase-250"
+to = "DRIVER_MODEL.md"
+blocking_epoch = 11
+
+[[edges]]
+from = "phase-350"
+to = "FORMAL_MODEL.md"
+blocking_epoch = 14

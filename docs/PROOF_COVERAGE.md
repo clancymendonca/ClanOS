@@ -40,3 +40,10 @@ Sub-property proofs sufficient by stated composition theorem **or** dedicated to
 ## Invariant inventory
 
 Each invariant lists: tier, harness bound, threat node id, CI gate, Verus/Kani/fuzz status.
+
+| ID | Property | Tier | Bound | Threat node | CI gate | Status |
+|----|----------|------|-------|-------------|---------|--------|
+| RA-01 | Delegate child ⊆ parent | B | 32 | T-cap-amplification | `kani_gate.py` | Kani + proptest |
+| RA-02 | Amplification denied (R-06) | B | 32 | T-cap-amplification | `kani_gate.py` | Kani vacuity cover |
+| RA-03 | Depth-2 chain monotone | B | 32 | T-cap-amplification | `kani_gate.py` | Kani |
+| RA-04 | `contains` / `intersect` laws | A | 10k samples | — | `rights_algebra_check.py` | proptest-style random |

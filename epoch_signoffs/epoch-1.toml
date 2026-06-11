@@ -1,0 +1,32 @@
+# Epoch 1 gate — service loader, brokers, interim IPC bridge (commit 044d4ef).
+
+[manifest]
+epoch = 1
+gate_commit = "044d4ef"
+gpg_signed = false
+solo_maintainer = true
+mv_team_justification = "Solo maintainer; phases 121–130 delivered with platform brokers and interim IPC per STATUS.md."
+
+[[signoffs]]
+reviewer_id = "clancy"
+domain = "kernel"
+scope = "service loader, E-00 stubs, platform brokers 122–130, storage/network broker scaffolding"
+timestamp = "2026-06-11T14:00:00Z"
+epoch = 1
+multi_domain_roles = ["kernel", "evidence", "process"]
+
+[[signoffs]]
+reviewer_id = "clancy"
+domain = "evidence"
+scope = "phase121_service_loader_check, phase130_platform_check, interim IPC smoke"
+timestamp = "2026-06-11T14:00:00Z"
+epoch = 1
+multi_domain_roles = ["kernel", "evidence", "process"]
+
+[[signoffs]]
+reviewer_id = "clancy"
+domain = "process"
+scope = "AUDIT_SUBSYSTEM, WIRE_SCHEMA_REGISTRY, COMPAT_ISOLATION, COMPAT_SUNSET, IPC_INTERIM_BRIDGE"
+timestamp = "2026-06-11T14:00:00Z"
+epoch = 1
+multi_domain_roles = ["kernel", "evidence", "process"]

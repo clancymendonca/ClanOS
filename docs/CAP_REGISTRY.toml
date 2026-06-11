@@ -53,6 +53,20 @@ semantic_relation = "specialization"
 notes = "Specialization of kernel.device — network"
 
 [[kinds]]
+id = "kernel.broker_session"
+namespace = "kernel"
+object_kind = "BrokerSession"
+operations = ["create", "transfer", "delegate", "revoke", "close"]
+semantic_relation = "disjoint"
+
+[[kinds]]
+id = "kernel.gpu_context"
+namespace = "kernel"
+object_kind = "GpuContext"
+operations = ["create", "transfer", "delegate", "revoke", "close", "map"]
+semantic_relation = "disjoint"
+
+[[kinds]]
 id = "compat.path_broker"
 namespace = "compat"
 object_kind = "FsNode"

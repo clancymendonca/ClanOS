@@ -13,7 +13,8 @@ Full disclosure playbooks and key-compromise runbooks are required before **mile
 
 ## Responsible disclosure
 
-Process to be defined before public release. Security contact: **TBD** (placeholder handler).
+Report vulnerabilities to **security@aresos.dev** (placeholder inbox until public release).
+Include reproduction steps, affected commit, and threat-node id if known.
 
 ---
 

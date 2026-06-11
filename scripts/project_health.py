@@ -81,8 +81,8 @@ def check_gap_registry() -> list[str]:
     path = ROOT / "gap_registry.toml"
     text = read_text(path)
     gaps = parse_toml_tables(text, "gaps")
-    if len(gaps) != 345:
-        errors.append(f"gap_registry: expected 345 gaps, found {len(gaps)}")
+    if len(gaps) != 350:
+        errors.append(f"gap_registry: expected 350 gaps, found {len(gaps)}")
     for g in gaps:
         if g.get("status") == "superseded" and not g.get("superseded_by_commit"):
             errors.append(f"gap {g.get('id')}: superseded requires superseded_by_commit")
@@ -176,17 +176,38 @@ def render_matrix_svg(matrix: dict[str, dict[str, int]]) -> str:
     return "\n".join(lines)
 
 
+def count_kani_harnesses() -> int:
+    text = read_text(ROOT / "kani_harness_registry.toml")
+    return len(re.findall(r"\[\[harnesses\]\]", text))
+
+
 def emit_status(matrix: dict) -> str:
-    gaps_open = sum(1 for g in parse_toml_tables(read_text(ROOT / "gap_registry.toml"), "gaps") if g.get("status") == "open")
+    gaps = parse_toml_tables(read_text(ROOT / "gap_registry.toml"), "gaps")
+    gaps_open = sum(1 for g in gaps if g.get("status") == "open")
+    gaps_addressed = sum(1 for g in gaps if g.get("status") == "addressed")
+    gaps_wontfix = sum(1 for g in gaps if g.get("status") == "wontfix")
     nodes = parse_toml_tables(read_text(ROOT / "docs" / "THREAT_NODES.toml"), "nodes")
     threats_open = sum(1 for n in nodes if n.get("status") == "open")
+    kani_count = count_kani_harnesses()
     lines = [
         "# AresOS Project Status",
         "",
-        "## Snapshot (epoch 0 staging)",
+        "## Snapshot (post-150 roadmap through phase 350)",
         "",
-        f"- gap_registry open gaps: {gaps_open}",
+        "- **Phases 111-130:** platform brokers + interim IPC (epoch 1, commit `044d4ef`)",
+        "- **Phase 201:** virtio-blk hybrid stub (epoch 2)",
+        "- **Phases 131-140:** build integrity, native endpoints, audit wire, IPC integration (epoch 3)",
+        "- **Phase 404:** virtio-net, compat sockets, functional network broker (epoch 4)",
+        "- **Phase 149:** service scheduler, SMP readiness, compositor, OOM policy (epoch 5)",
+        "- **Phase 150:** four-layer boundary review (epoch 6)",
+        "- **Phases 151-350:** [`ROADMAP_151_350.md`](docs/ROADMAP_151_350.md); epochs 7-14 integration smokes wired",
+        "- **Userland:** `ares-rt` host-target demo + `install_userland.py`",
+        "- **Epoch 0 evidence tier:** `proof-rights` proptest + Kani harnesses; `kani_gate.py` in covenant CI",
+        f"- gap_registry: {gaps_open} open, {gaps_addressed} addressed, {gaps_wontfix} wontfix (350 total)",
         f"- threat nodes open: {threats_open}",
+        f"- kani_harness_count: {kani_count}",
+        "- phase_checklists: 200 stubs (151-350)",
+        "- ipc_bridge_compat_internal: 0 (retired phase 134)",
         "",
         "## Threat coverage by goal",
         "",
@@ -196,9 +217,32 @@ def emit_status(matrix: dict) -> str:
         closed = sum(matrix["closed"].get(g, {}).values())
         lines.append(f"- `{g}`: {closed}/{total} closed")
     lines.append("")
-    lines.append("## Delta")
+    lines.append("## Integration milestones (stub smokes)")
     lines.append("")
-    lines.append("_First entry — no prior epoch gate._")
+    lines.append("| Milestone | Serial line | Script |")
+    lines.append("|-----------|-------------|--------|")
+    lines.append("| Epoch 7 | `Phase175-Epoch7` | `phase175_epoch7_check.py` |")
+    lines.append("| M200 | `Phase200-Milestone` | `phase200_milestone_check.py` |")
+    lines.append("| M250 | `Phase250-Milestone` | `phase250_milestone_check.py` |")
+    lines.append("| M300 | `Phase300-Milestone` | `phase300_milestone_check.py` |")
+    lines.append("| M350 | `Phase350-Milestone` | `phase350_milestone_check.py` |")
+    lines.append("")
+    lines.append("## Boot smokes (QEMU)")
+    lines.append("")
+    lines.append("Expected serial lines (all `ok=true`):")
+    lines.append("")
+    lines.append("- `Phase201-VirtioBlk`")
+    lines.append("- `Phase140-IPC` (`bridge=0`)")
+    lines.append("- `Phase404-Network`")
+    lines.append("- `Phase149-Epoch5`")
+    lines.append("- `Phase150-Milestone`")
+    lines.append("- `Phase175-Epoch7` through `Phase350-Milestone`")
+    lines.append("")
+    lines.append(
+        "Scripts: `phase201_virtio_blk_check.py`, `phase134_endpoint_check.py`, "
+        "`phase404_network_check.py`, `phase149_epoch5_check.py`, `phase150_milestone_check.py`, "
+        "`phase175_epoch7_check.py` … `phase350_milestone_check.py`"
+    )
     return "\n".join(lines)
 
 
@@ -266,7 +310,10 @@ def main() -> int:
 
     print("project_health: OK")
     if not args.write_status:
-        print(emit_status(matrix))
+        try:
+            print(emit_status(matrix))
+        except UnicodeEncodeError:
+            print(emit_status(matrix).encode("ascii", errors="replace").decode("ascii"))
     return 0
 
 

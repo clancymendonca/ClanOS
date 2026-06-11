@@ -41,3 +41,12 @@ pub fn phase142_smp_readiness_smoke() -> bool {
     let (cpus, aps, _tlb) = crate::smp::status();
     cpus >= 1 && aps <= cpus
 }
+
+/// S-01 unified native service admission (`SCHEDULING_UNIFIED.md`).
+pub fn s01_unified_admission_smoke() -> bool {
+    phase141_service_scheduler_smoke() && phase142_smp_readiness_smoke()
+}
+
+pub fn phase200_scheduling_unified_smoke() -> bool {
+    s01_unified_admission_smoke()
+}

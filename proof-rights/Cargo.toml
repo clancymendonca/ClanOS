@@ -1,0 +1,17 @@
+[package]
+name = "proof-rights"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Host-side rights algebra proofs (proptest tier A, Kani tier B)"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+
+[package.metadata.kani]
+flags = { default-unwind = "16" }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }

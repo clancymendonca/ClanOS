@@ -7,6 +7,7 @@ use crate::service_loader::{ErrorClass, NativeError};
 
 static WIRE_EVENTS: AtomicU64 = AtomicU64::new(0);
 static CORRELATION_IDS: AtomicU64 = AtomicU64::new(1);
+static AUDIT_CHAIN: AtomicU64 = AtomicU64::new(0xA0E5_A0D1_0001);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WireAuditEvent {
@@ -24,8 +25,20 @@ pub fn next_correlation_id() -> u64 {
     CORRELATION_IDS.fetch_add(1, Ordering::Relaxed)
 }
 
+fn append_chain_hash(code: u32) -> u64 {
+    let prev = AUDIT_CHAIN.load(Ordering::Relaxed);
+    let next = prev.wrapping_mul(0x9E37_79B9).wrapping_add(code as u64);
+    AUDIT_CHAIN.store(next, Ordering::Relaxed);
+    next
+}
+
+pub fn audit_chain_head() -> u64 {
+    AUDIT_CHAIN.load(Ordering::Relaxed)
+}
+
 pub fn encode_error_on_wire(err: &NativeError) -> WireAuditEvent {
     WIRE_EVENTS.fetch_add(1, Ordering::Relaxed);
+    let _ = append_chain_hash(err.code);
     let class_byte = match err.class {
         ErrorClass::Transient => 1,
         ErrorClass::StructuralRemediable => 2,
@@ -45,6 +58,11 @@ pub fn serialize_event(ev: &WireAuditEvent) -> Vec<u8> {
     out.extend_from_slice(&ev.error_code.to_le_bytes());
     out.push(ev.error_class);
     out
+}
+
+/// Kernel-only audit append — userland cannot call without future read-cap IPC.
+pub fn kernel_append_event(err: &NativeError) -> WireAuditEvent {
+    encode_error_on_wire(err)
 }
 
 pub fn phase135_audit_correlation_smoke() -> bool {

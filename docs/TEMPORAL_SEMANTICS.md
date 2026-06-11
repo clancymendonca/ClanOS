@@ -1,6 +1,13 @@
 # Temporal Semantics
 
+```yaml
+status: authoritative
+semantics_version: 1.0.0
+```
+
 **Gate G5** — when rights, revocation, cancellation, and restarts become visible across CPUs and async boundaries.
+
+Ratified epoch 0 (2026-06-11). Aligns with [`FAULT_ESCALATION.md`](FAULT_ESCALATION.md) authority checkpoints and [`SCHEDULER_MODEL.md`](SCHEDULER_MODEL.md) revoke-while-runnable visibility.
 
 *Distributed systems theory inside one OS* — multicore + async + endpoints + brokers on a single machine.
 
@@ -23,7 +30,7 @@ Phase 1–100 compat paths document **current** behavior in [ABI_SYSCALL.md](ABI
 
 ---
 
-## Checkpoint model (draft for phase 110)
+## Checkpoint model
 
 **Authority checkpoint:** a syscall return, explicit `cap_checkpoint`, or endpoint wait completion after which all prior revocations on observed generations are visible to that thread.
 

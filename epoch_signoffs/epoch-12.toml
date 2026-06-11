@@ -1,0 +1,14 @@
+# Epoch 12 gate — milestone 300 federation.
+
+[manifest]
+epoch = 12
+gate_commit = "pending"
+gpg_signed = false
+solo_maintainer = true
+
+[[signoffs]]
+reviewer_id = "clancy"
+domain = "kernel"
+scope = "federation protocol, semantic observability, Phase300-Milestone"
+timestamp = "2026-06-11T20:00:00Z"
+epoch = 12

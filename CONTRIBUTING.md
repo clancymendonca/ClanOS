@@ -18,7 +18,25 @@ Staging may use `[CROSS-REF: doc §section — TBD]`; must be resolved at gate.
 
 ## Milestone 150 deliverables
 
-- **Capability transfer walkthrough:** animated or interactive walkthrough of a capability transfer sequence showing state machine transitions in `KERNEL_OBJECT_MODEL.md` and `CAP_TRANSFER_PROTOCOL.md` — onboarding artifact for contributors and external auditors.
+### Capability transfer walkthrough
+
+State machine for **move** transfer (`cap_transfer_move` in `kernel/src/kernel_object.rs`):
+
+1. **Pre:** Sender holds cap at slot `S` referencing `(ObjectId, Generation, Rights)`.
+2. **Validate:** `get_cap(sender, S)` succeeds; generation matches object registry.
+3. **Move:** `close_cap_for_process(sender, S)` — sender slot empty (R-05).
+4. **Post:** `alloc_cap_slot(receiver, cap)` — receiver gets same or attenuated rights; no amplification (R-06).
+5. **TOCTOU guard:** Sender slot must stay empty between steps 3–4 (`scripts/transfer_toctou_check.py`).
+
+```mermaid
+stateDiagram-v2
+    [*] --> SenderHolds
+    SenderHolds --> SenderEmpty: close_cap (move)
+    SenderEmpty --> ReceiverHolds: alloc_cap_slot
+    ReceiverHolds --> [*]
+```
+
+See `docs/KERNEL_OBJECT_MODEL.md`, `docs/CAP_TRANSFER_PROTOCOL.md`, and `docs/RIGHTS_ALGEBRA.md` R-01/R-05/R-06.
 
 ## Ergonomics feedback
 

@@ -1132,6 +1132,19 @@ fn run_milestone150_smoke() {
     kernel::serial_println!("Phase150-Milestone: ok={}", ok);
 }
 
+fn run_post150_milestone_smokes() {
+    let e7 = kernel::governance::phase175_epoch7_smoke();
+    kernel::serial_println!("Phase175-Epoch7: ok={}", e7);
+    let m200 = kernel::governance::phase200_milestone_smoke();
+    kernel::serial_println!("Phase200-Milestone: ok={}", m200);
+    let m250 = kernel::governance::phase250_milestone_smoke();
+    kernel::serial_println!("Phase250-Milestone: ok={}", m250);
+    let m300 = kernel::governance::phase300_milestone_smoke();
+    kernel::serial_println!("Phase300-Milestone: ok={}", m300);
+    let m350 = kernel::governance::phase350_milestone_smoke();
+    kernel::serial_println!("Phase350-Milestone: ok={}", m350);
+}
+
 fn run_phase122_to_130_smokes() {
     let p122 = kernel::governance::phase122_storage_broker_smoke();
     let p123 = kernel::governance::phase123_permission_broker_smoke();
@@ -1629,6 +1642,8 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     run_epoch4_network_smokes();
     run_epoch5_scheduler_smokes();
     run_milestone150_smoke();
+    run_post150_milestone_smokes();
+    kernel::phase_catalog::run_completed_phase_smokes();
     kernel::serial_println!("Boot: phase21-150 smokes done");
 
     // Display performance counters at startup.

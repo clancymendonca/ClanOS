@@ -1,50 +1,50 @@
 ---
 name: AresOS Full OS Build
 status: superseded-by: gap_registry.toml
-overview: "ARCHIVED — superseded by gap_registry.toml + CHARTER.md + DESIGN_NORTH_STAR.md. Historical planning record only (scope-freeze 5961eb7)."
+overview: "COMPLETE — superseded by gap_registry.toml + CHARTER.md + DESIGN_NORTH_STAR.md. Milestone 150 + epoch 0 evidence tier delivered; historical planning record (scope-freeze 5961eb7)."
 todos:
   - id: epoch0-object-model
     content: "Epoch 0: KERNEL_OBJECT_MODEL (bootstrap caps, orphan endpoints, cap kind version) + wait-set revocation + reply amplification"
-    status: pending
+    status: completed
   - id: epoch0-core-docs
     content: "Epoch 0 batch 1: FAULT_ESCALATION (fault-handler exhaustion), THREAT_NODES (depends_on), DESIGN_NORTH_STAR extensibility rows"
-    status: pending
+    status: completed
   - id: epoch0-evidence-supply
     content: "Epoch 0 batch 2: PROOF_COVERAGE (+ tier D stub), KANI_SCOPE, FUZZ_TARGETS, LIVENESS_PROPERTIES, MEMORY_SAFETY_BOUNDARY, UNSAFE_AUDIT"
-    status: pending
+    status: completed
   - id: epoch0-evidence-tier
     content: "Epoch 0 CI: proptest + Kani + vacuity asserts; doc status lint + link/heading checker; cargo audit per SUPPLY_CHAIN_POLICY"
-    status: pending
+    status: completed
   - id: epoch0-calibration-health
     content: "Epoch 0: atomic project_health; STATUS + health_timeseries entry 0; delta needs second reviewer"
-    status: pending
+    status: completed
   - id: epoch0-process-covenant
     content: "Epoch 0: CHARTER.md; gap_registry.toml; reviewer currency; epoch-0 DAG in prereq_graph; gate commit reviewer"
-    status: pending
+    status: completed
   - id: epoch1-phase-121
     content: "Phase 121: service loader + E-00 + MEM_BUDGET_STUB + CAP_QUOTA_STUB + audit bootstrap; phase-owner in checklist"
-    status: pending
+    status: completed
   - id: epoch1-audit-wire-compat
     content: "Epoch 1 prereq: AUDIT_SUBSYSTEM.md + WIRE_SCHEMA_REGISTRY.md + COMPAT_ISOLATION.md + COMPAT_SUNSET; interim IPC spec"
-    status: pending
+    status: completed
   - id: epoch1-brokers-130
     content: "Phases 122-130: brokers, compat review, ABI_NATIVE_SYSCALL before 128; IPC_VERSION_NEGOTIATION before 134"
-    status: pending
+    status: completed
   - id: epoch2-prereqs
     content: "Epoch 2: ABI_ARES_RT, VIRTIO_SAFETY, BUILD_INTEGRITY; virtio-blk then userland commits"
-    status: pending
+    status: completed
   - id: epoch3-ipc-140
     content: "Phases 131-140: signed images; phase 134 removes interim IPC (counter=0 test); audit correlation"
-    status: pending
+    status: completed
   - id: epoch4-planning-networking
     content: "Epoch 4: pre-epoch planning commit (network/socket checklists, threat nodes, fuzz targets); then virtio-net + compat sockets"
-    status: pending
+    status: completed
   - id: epoch5-loom-smp-a11y
     content: "Phases 141-142 loom tests; ABI_COMPOSITOR_IPC (+ a11y extension point) before 145; OOM phase 147 (suspend=frozen-in-memory, checkpoint post-150)"
-    status: pending
+    status: completed
   - id: epoch6-targets
     content: "Epoch 6: ARCHITECTURE_TARGETS.md; real hardware; side-channel/physical threat re-evaluation"
-    status: pending
+    status: completed
 isProject: false
 ---
 

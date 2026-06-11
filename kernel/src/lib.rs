@@ -44,6 +44,8 @@ pub mod service_isolation;
 pub mod load_plan;
 pub mod milestone150;
 pub mod oom_policy;
+pub mod phase_catalog;
+pub mod post150;
 pub mod mapping_stub;
 pub mod memory;
 pub mod mmap;

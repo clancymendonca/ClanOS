@@ -1,0 +1,8 @@
+# Documented cargo-audit exceptions per SUPPLY_CHAIN_POLICY.md
+# Empty = clean audit or advisory-only until tool installed in CI.
+
+[schema]
+version = "1.0.0"
+
+[[exceptions]]
+# None at milestone 150 stub gate.

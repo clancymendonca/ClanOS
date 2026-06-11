@@ -1,12 +1,35 @@
-# Machine-readable Kani harness registry — epoch 0 stub.
+# Machine-readable Kani harness registry — epoch 0 evidence tier.
 
 [schema]
 version = "1.0.0"
-kani_version = "0.0.0-stub"
+kani_version = "0.63.0"
 
-# [[harnesses]]
-# function = "cap_transfer_atomic"
-# file = "kernel/tests/cap_transfer_kani.rs"
-# bound = 16
-# bound_justification = "TBD"
-# last_verified_commit = null
+[[harnesses]]
+function = "delegate_no_amplification"
+file = "proof-rights/src/lib.rs"
+bound = 32
+bound_justification = "All 5 right-flag combinations (2^5); full rights bitmask space"
+last_verified_commit = null
+kani_version = "0.63.0"
+shared_dependencies = ["Rights"]
+tractability_note = "Cap table state machine deferred to kernel integration harness"
+
+[[harnesses]]
+function = "amplification_path_reachable"
+file = "proof-rights/src/lib.rs"
+bound = 1
+bound_justification = "Vacuity cover — fixed counterexample R-06"
+last_verified_commit = null
+kani_version = "0.63.0"
+shared_dependencies = ["Rights"]
+tractability_note = "Ensures amplification-denied branch is not vacuous"
+
+[[harnesses]]
+function = "chain_monotone"
+file = "proof-rights/src/lib.rs"
+bound = 32
+bound_justification = "Depth-2 delegation chain; 5-bit rights masks"
+last_verified_commit = null
+kani_version = "0.63.0"
+shared_dependencies = ["Rights"]
+tractability_note = "Deeper cap-table chains require Verus trigger per PROOF_COVERAGE"

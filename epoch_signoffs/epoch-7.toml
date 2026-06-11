@@ -1,0 +1,14 @@
+# Epoch 7 gate — stub graduation (phases 151–175).
+
+[manifest]
+epoch = 7
+gate_commit = "pending"
+gpg_signed = false
+solo_maintainer = true
+
+[[signoffs]]
+reviewer_id = "clancy"
+domain = "kernel"
+scope = "loom harness, OOM enforcement, audit chain, Kani CI, Phase175-Epoch7"
+timestamp = "2026-06-11T20:00:00Z"
+epoch = 7

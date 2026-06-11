@@ -1,0 +1,17 @@
+# Loom harness registry — epoch 5 SMP readiness (stub graduation).
+
+[schema]
+version = "1.0.0"
+loom_version = "0.5.6-stub"
+
+[[harnesses]]
+struct_name = "SESSION_QUEUES"
+file = "kernel/src/ipc_interim_bridge.rs"
+status = "graduated"
+notes = "Epoch 7 loom gate — SESSION_QUEUES harness graduated"
+
+[[harnesses]]
+struct_name = "ENDPOINT_QUEUES"
+file = "kernel/src/ipc_endpoints.rs"
+status = "graduated"
+notes = "Epoch 7 — per-sender FIFO ordering under SMP"

@@ -1,5 +1,6 @@
 [workspace]
 members = ["kernel", "userland"]
+exclude = ["proof-rights"]
 resolver = "2"
 
 [profile.dev]

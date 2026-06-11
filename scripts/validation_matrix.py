@@ -87,6 +87,11 @@ def main() -> int:
     args = parser.parse_args()
 
     checks: list[tuple[str, list[str], int | None]] = [
+        ("epoch0-doc-link", ["python", "scripts/doc_link_check.py"], None),
+        ("epoch0-project-health", ["python", "scripts/project_health.py"], None),
+        ("epoch0-proof-rights", ["python", "scripts/proof_rights_test.py"], 120),
+        ("epoch0-kani-gate", ["python", "scripts/kani_gate.py"], 600),
+        ("epoch0-cargo-audit", ["python", "scripts/cargo_audit_check.py"], 180),
         ("cargo-check", ["cargo", "check", "-p", "kernel"], None),
         (
             "preemption-integration",
@@ -672,6 +677,130 @@ def main() -> int:
             ],
             None,
         ),
+        (
+            "phase121-service-loader-check",
+            [
+                "python",
+                "scripts/phase121_service_loader_check.py",
+                "--timeout",
+                str(args.smoke_timeout),
+            ],
+            None,
+        ),
+        (
+            "phase130-platform-check",
+            [
+                "python",
+                "scripts/phase130_platform_check.py",
+                "--timeout",
+                str(args.smoke_timeout),
+            ],
+            None,
+        ),
+        (
+            "phase201-virtio-blk-check",
+            [
+                "python",
+                "scripts/phase201_virtio_blk_check.py",
+                "--timeout",
+                str(args.smoke_timeout),
+            ],
+            None,
+        ),
+        (
+            "phase134-endpoint-check",
+            [
+                "python",
+                "scripts/phase134_endpoint_check.py",
+                "--timeout",
+                str(args.smoke_timeout),
+            ],
+            None,
+        ),
+        (
+            "phase404-network-check",
+            [
+                "python",
+                "scripts/phase404_network_check.py",
+                "--timeout",
+                str(args.smoke_timeout),
+            ],
+            None,
+        ),
+        (
+            "phase149-epoch5-check",
+            [
+                "python",
+                "scripts/phase149_epoch5_check.py",
+                "--timeout",
+                str(args.smoke_timeout),
+            ],
+            None,
+        ),
+        (
+            "phase150-milestone-check",
+            [
+                "python",
+                "scripts/phase150_milestone_check.py",
+                "--timeout",
+                str(args.smoke_timeout),
+            ],
+            None,
+        ),
+        (
+            "phase175-epoch7-check",
+            [
+                "python",
+                "scripts/phase175_epoch7_check.py",
+                "--timeout",
+                str(args.smoke_timeout),
+            ],
+            None,
+        ),
+        (
+            "phase200-milestone-check",
+            [
+                "python",
+                "scripts/phase200_milestone_check.py",
+                "--timeout",
+                str(args.smoke_timeout),
+            ],
+            None,
+        ),
+        (
+            "phase250-milestone-check",
+            [
+                "python",
+                "scripts/phase250_milestone_check.py",
+                "--timeout",
+                str(args.smoke_timeout),
+            ],
+            None,
+        ),
+        (
+            "phase300-milestone-check",
+            [
+                "python",
+                "scripts/phase300_milestone_check.py",
+                "--timeout",
+                str(args.smoke_timeout),
+            ],
+            None,
+        ),
+        (
+            "phase350-milestone-check",
+            [
+                "python",
+                "scripts/phase350_milestone_check.py",
+                "--timeout",
+                str(args.smoke_timeout),
+            ],
+            None,
+        ),
+        ("semantic-lint", ["python", "scripts/semantic_lint.py"], None),
+        ("covenant-ci", ["python", "scripts/covenant_ci.py"], 120),
+        ("loom-gate", ["python", "scripts/loom_gate.py"], None),
+        ("transfer-toctou-check", ["python", "scripts/transfer_toctou_check.py"], None),
         (
             "phase5-soak-check",
             [

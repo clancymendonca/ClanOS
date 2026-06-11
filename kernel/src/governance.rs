@@ -180,6 +180,26 @@ pub fn phase150_milestone_smoke() -> bool {
     crate::milestone150::phase150_milestone_smoke()
 }
 
+pub fn phase175_epoch7_smoke() -> bool {
+    crate::post150::phase175_epoch7_smoke()
+}
+
+pub fn phase200_milestone_smoke() -> bool {
+    crate::post150::phase200_milestone_smoke()
+}
+
+pub fn phase250_milestone_smoke() -> bool {
+    crate::post150::phase250_milestone_smoke()
+}
+
+pub fn phase300_milestone_smoke() -> bool {
+    crate::post150::phase300_milestone_smoke()
+}
+
+pub fn phase350_milestone_smoke() -> bool {
+    crate::post150::phase350_milestone_smoke()
+}
+
 pub fn phase130_platform_integration_smoke() -> bool {
     phase121_service_loader_smoke()
         && crate::ipc_interim_bridge::phase_interim_ipc_smoke()

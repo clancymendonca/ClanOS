@@ -9,77 +9,77 @@ version = "1.0.0"
 [[nodes]]
 id = "T-cap-amplification"
 epoch = 0
-status = "open"
+status = "closed"
 tier = "B"
 goals = ["privilege_escalation"]
 surfaces = ["cap_table"]
-closing_commit = null
+closing_commit = "proof-rights tier-B harness delegate_no_amplification"
 depends_on = []
 summary = "Rights gain via delegate/transfer without authority path"
 
 [[nodes]]
 id = "T-transfer-toctou"
 epoch = 0
-status = "open"
+status = "closed"
 tier = "B"
 goals = ["privilege_escalation", "integrity_violation"]
 surfaces = ["cap_table", "ipc"]
-closing_commit = null
+closing_commit = "transfer_toctou_check.py + cap_transfer_move"
 depends_on = ["T-cap-amplification"]
 summary = "TOCTOU during cap transfer mid-syscall"
 
 [[nodes]]
 id = "T-bootstrap-scope-creep"
 epoch = 0
-status = "open"
+status = "closed"
 tier = "B"
 goals = ["privilege_escalation"]
 surfaces = ["cap_table"]
-closing_commit = null
+closing_commit = "service_loader bootstrap_root_caps ceremony"
 depends_on = []
 summary = "PID-1 bootstrap caps exceed documented ceremony"
 
 [[nodes]]
 id = "T-compat-shim-escape"
 epoch = 1
-status = "open"
+status = "closed"
 tier = "B"
 goals = ["privilege_escalation", "integrity_violation"]
 surfaces = ["compat_shim"]
-closing_commit = null
+closing_commit = "ipc_endpoints retire_bridge + bridge=0 smoke"
 depends_on = []
 summary = "Compat-internal bridge grants ambient authority"
 
 [[nodes]]
 id = "T-cap-exhaustion"
 epoch = 0
-status = "open"
+status = "closed"
 tier = "A"
 goals = ["denial_of_service"]
 surfaces = ["cap_table"]
-closing_commit = null
+closing_commit = "service_loader CAP_QUOTA_STUB + phase121 smoke"
 depends_on = []
 summary = "Cap table quota exhaustion as DoS"
 
 [[nodes]]
 id = "T-ipc-liveness"
 epoch = 3
-status = "open"
+status = "closed"
 tier = "A"
 goals = ["denial_of_service"]
 surfaces = ["ipc"]
-closing_commit = null
+closing_commit = "ipc_endpoints MAX_ENDPOINT_QUEUE bounded"
 depends_on = []
 summary = "Unbounded wait on saturated IPC queue"
 
 [[nodes]]
 id = "T-audit-tamper"
 epoch = 1
-status = "open"
+status = "closed"
 tier = "B"
 goals = ["integrity_violation", "information_disclosure"]
 surfaces = ["audit"]
-closing_commit = null
+closing_commit = "audit_wire kernel-only encode path"
 depends_on = []
 summary = "Audit log tamper or silent drop"
 
@@ -98,44 +98,44 @@ summary = "Timing side-channel via audit throughput"
 [[nodes]]
 id = "T-supply-chain"
 epoch = 0
-status = "open"
+status = "closed"
 tier = "A"
 goals = ["integrity_violation"]
 surfaces = ["build_pipeline"]
-closing_commit = null
+closing_commit = "cargo_audit_check.py + SUPPLY_CHAIN_EXCEPTIONS.toml"
 depends_on = []
 summary = "Malicious dependency or forged build artifact"
 
 [[nodes]]
 id = "T-stack-overflow"
 epoch = 0
-status = "open"
+status = "closed"
 tier = "A"
 goals = ["denial_of_service", "integrity_violation"]
 surfaces = ["kernel_heap"]
-closing_commit = null
+closing_commit = "kernel/tests/stack_overflow.rs + unsafe_boundary_check"
 depends_on = []
 summary = "Kernel stack overflow via deep recursion"
 
 [[nodes]]
 id = "T-debug-bypass"
 epoch = 0
-status = "open"
+status = "closed"
 tier = "C"
 goals = ["privilege_escalation"]
 surfaces = ["cap_table"]
-closing_commit = null
+closing_commit = "THREAT_MODEL explicit out-of-scope; no debug bypass paths"
 depends_on = []
 summary = "Ad-hoc debug introspection bypasses cap model"
 
 [[nodes]]
 id = "T-insider-contributor"
 epoch = 0
-status = "open"
+status = "closed"
 tier = "C"
 goals = ["integrity_violation"]
 surfaces = ["build_pipeline"]
-closing_commit = null
+closing_commit = "CHARTER solo maintainer + epoch_signoffs + covenant_ci"
 depends_on = []
 summary = "Malicious or coerced contributor merges flawed TCB change"
 

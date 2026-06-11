@@ -38,6 +38,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y qemu-system-x86 nasm
 
+      - name: Install cargo-audit (supply chain gate)
+        run: |
+          if ! command -v cargo-audit >/dev/null 2>&1; then
+            cargo install cargo-audit --locked
+          fi
+
       - name: Install bootimage
         run: |
           if ! command -v bootimage >/dev/null 2>&1; then
