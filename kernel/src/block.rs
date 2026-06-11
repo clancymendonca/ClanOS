@@ -26,6 +26,7 @@ impl BlockDeviceId {
 pub enum BlockBackendKind {
     MemoryFallback,
     SimulatedQemu,
+    VirtioBlk,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -146,6 +147,14 @@ pub fn init() {
     );
 }
 
+pub fn register_virtio_blk(
+    name: &str,
+    sector_count: usize,
+    read_only: bool,
+) -> BlockDeviceId {
+    MANAGER.lock().register(name, BlockBackendKind::VirtioBlk, sector_count, read_only, true)
+}
+
 pub fn register_memory_fallback(sector_count: usize) -> BlockDeviceId {
     let id = MANAGER.lock().register(
         "memory-fallback-block0",
@@ -230,6 +239,7 @@ pub fn active_backend_name() -> &'static str {
     match active_info().map(|info| info.backend) {
         Ok(BlockBackendKind::SimulatedQemu) => "qemu-sim-block0",
         Ok(BlockBackendKind::MemoryFallback) => "memory-fallback-block0",
+        Ok(BlockBackendKind::VirtioBlk) => "virtio-blk0",
         Err(_) => "none",
     }
 }

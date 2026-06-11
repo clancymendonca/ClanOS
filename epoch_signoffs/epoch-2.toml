@@ -1,0 +1,14 @@
+# Epoch 2 gate — virtio-blk + ares-rt userland.
+
+[manifest]
+epoch = 2
+gate_commit = "pending"
+gpg_signed = false
+solo_maintainer = true
+
+[[signoffs]]
+reviewer_id = "clancy"
+domain = "kernel"
+scope = "virtio-blk, BUILD_INTEGRITY, ABI_ARES_RT, userland install hook"
+timestamp = "2026-06-11T18:00:00Z"
+epoch = 2

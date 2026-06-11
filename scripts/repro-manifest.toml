@@ -1,0 +1,16 @@
+# Build reproducibility manifest — epoch 2 stub (BUILD_INTEGRITY.md).
+
+[tools]
+rustc = "stable"
+llvm = "bundled"
+linker = "rust-lld"
+
+[kernel]
+target = "x86_64-unknown-none"
+package = "kernel"
+
+[userland]
+# Host triple for epoch-2 demo; ring3 ELF on x86_64-unknown-none deferred.
+target = "host"
+package = "ares-rt"
+install_hook = "scripts/install_userland.py"

@@ -1,0 +1,16 @@
+[package]
+name = "ares-rt"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "AresOS userspace runtime (epoch 2)"
+
+[lib]
+name = "ares_rt"
+path = "src/lib.rs"
+
+[[bin]]
+name = "demo-hello"
+path = "src/bin/demo_hello.rs"
+
+[dependencies]
