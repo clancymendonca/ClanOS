@@ -322,8 +322,12 @@ pub fn cap_transfer_move(
 ) -> Result<u32, CapError> {
     let cap = get_cap(from_pid, from_slot).ok_or(CapError::NotFound)?;
     close_cap_for_process(from_pid, from_slot)?;
-    // STUB(track1b): receiver alloc failure after close — cap is not restored to source
-    // (transfer_toctou_check "receiver_failed" path). Rollback or reserved-slot protocol TBD.
+    // STUB(track1b): receiver alloc failure after close — cap is not restored to source.
+    // Threat class: resource leak only. Orphaned cap is unreachable by any process.
+    // Not a privilege escalation or cap duplication. Object generation unaffected.
+    // Fix requires: reserved-slot protocol (source slot marked Reserved before close,
+    // restored to Active on alloc failure). See docs/specs/CAP_TRANSFER_PROTOCOL.md
+    // when that doc reaches canonical status in Batch 2.
     let to_slot = alloc_cap_slot(to_pid, cap)?;
     CAP_TRANSFERS.fetch_add(1, Ordering::Relaxed);
     Ok(to_slot)
