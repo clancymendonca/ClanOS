@@ -26,6 +26,8 @@ SCRIPTS = [
     "transfer_toctou_check.py",
     "kani_gate.py",
     "phase_checklist_spot_check.py",
+    "phase_smoke_host_check.py",
+    "proof_cache_check.py",
 ]
 
 

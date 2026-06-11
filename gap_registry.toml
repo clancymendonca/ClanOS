@@ -2825,9 +2825,9 @@ id = 256
 summary = """Kani/Verus CI cache key"""
 fix = """Cache key = source hash + lockfile + tool version + harness bound; bound mismatch = miss"""
 when = """Epoch 8"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-8-target"""
+implementing_doc = """docs/TEMPORAL_SEMANTICS.md"""
 split_into = []
 superseded_by_commit = null
 

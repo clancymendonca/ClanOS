@@ -53,20 +53,21 @@ Exact syscall list for native checkpoints is reserved in `ares-semantics-v1` (im
 
 ---
 
-## Meta-semantics (precedence outline — full table post-150)
+## Meta-semantics M-* precedence table (epoch 8 graduation)
 
 When **cancellation**, **revocation**, **endpoint teardown**, and **service restart** coincide:
 
-| Priority (draft sketch) | Rationale |
-|-------------------------|-----------|
-| 1. Generation invalidation / hard revoke | Authority death dominates in-flight work |
-| 2. Endpoint teardown | Defines peer-visible boundary |
-| 3. Cancellation | Drains waiters per endpoint rules |
-| 4. Service restart | New generation before accepting new work |
+| ID | Priority | Event | Outcome |
+|----|----------|-------|---------|
+| M-01 | 1 | Hard revoke / generation invalidation | All in-flight cap ops fail at next checkpoint |
+| M-02 | 2 | Endpoint teardown | Peers observe closed boundary; no new sends |
+| M-03 | 3 | Cancellation token | Waiters drained per ABI_ASYNC rules |
+| M-04 | 4 | Service restart | New generation before mail accepted |
+| M-05 | 5 | Lazy revoke | Fails at or before next authority checkpoint |
 
-**T-04** / **M-01** — simultaneous multi-domain event → single outcome (outline at phase 108–110; full precedence table phases **156–158** in [ROADMAP_POST100.md](ROADMAP_POST100.md)).
+**T-04** / **M-01** — simultaneous multi-domain event resolves to highest-priority row (single outcome).
 
-Do not block phases 111–140 on full meta-semantics table.
+Jurisdiction: cap authority → [`RIGHTS_ALGEBRA.md`](RIGHTS_ALGEBRA.md); endpoint lifecycle → [`ABI_IPC.md`](ABI_IPC.md); async cancel → [`ABI_ASYNC.md`](ABI_ASYNC.md).
 
 ---
 
