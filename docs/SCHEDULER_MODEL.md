@@ -2,7 +2,7 @@
 
 ```yaml
 status: authoritative
-semantics_version: 1.0.0
+semantics_version: 1.1.0
 ```
 
 Minimum spec before epoch 1 brokers. Full fairness policy deferred to epoch 5 planning commit.
@@ -31,12 +31,14 @@ Thread blocked in long syscall/wait on cap C: when C revoked, wait ends with **t
 
 ## Partial wait-set revocation
 
-See `DECISION_LOG.md#wait_set_revocation_policy`:
+**Adopted (DECISION_LOG `#wait_set_revocation_policy`):** **partial return**.
 
-- **(a)** Partial return — terminal for revoked caps, valid for live, **or**
-- **(b)** Entire wait terminal
+When a multi-cap wait (`select`/poll-equivalent) includes revoked and live caps:
 
-Kani coverage required before epoch 1 brokers.
+- Revoked entries return **terminal** in the result set at checkpoint
+- Live entries remain waitable; wait does not whole-sale abort
+
+Kani multi-cap wait harness required before epoch 1 brokers.
 
 ---
 
@@ -48,15 +50,25 @@ SMP: atomicity at per-core checkpoint in QEMU era; distributed cross-core protoc
 
 ---
 
-## Priority inversion
+## Priority ceiling
 
-See `DECISION_LOG.md#scheduler_priority_inversion`. Choose one: inheritance, ceiling, or explicit denial.
+**Adopted (DECISION_LOG `#scheduler_priority_inversion`):** **priority ceiling**.
+
+When task T holds cap C and higher-priority task H is blocked on C, T runs at priority `max(T.base, H.priority)` while C is held across the blocking syscall/wait region. Ceiling drops at checkpoint when C is released or wait completes.
+
+No priority inheritance chains beyond this ceiling rule.
 
 ---
 
 ## Memory ordering
 
-Cap table ops classified SeqCst / acquire-release / relaxed. Loom harnesses 141–142 must not assume x86 TSO only.
+| Operation | Ordering |
+|-----------|----------|
+| Generation bump / invalidate | `SeqCst` |
+| Cap table slot read/write | `AcqRel` |
+| Stats / metrics on cap path | `Relaxed` (must not publish authority) |
+
+Loom harnesses 141–142 must not assume x86 TSO only.
 
 ---
 

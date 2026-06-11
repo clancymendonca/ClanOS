@@ -2,7 +2,7 @@
 
 ```yaml
 status: authoritative
-semantics_version: 1.1.0
+semantics_version: 1.2.0
 ```
 
 **Gate G1** — phases **115+** must not introduce new handle semantics without charter revision.
@@ -105,19 +105,19 @@ Generation increment events cross-ref [`GENERATION_COUNTER.md`](GENERATION_COUNT
 
 ## Mint vs delegation
 
-See `DECISION_LOG.md#mint_vs_delegation_authority`. Either:
+**Adopted (DECISION_LOG `#mint_vs_delegation_authority`):** **kernel root mint only**.
 
-- Named **mint authority** role (strictly higher than delegate) with threat node, **or**
-- Explicit policy: all caps originate from **kernel root mint** — no silent conflation of mint and delegate paths
+- Bootstrap ceremony mints initial caps without prior authorization
+- All other caps derive via delegate/attenuate from an existing cap, or via auditable broker mint from root
+- **Delegate never mints** new object kinds; **mint** is a distinct kernel entry not aliased to delegate
 
 ---
 
 ## Reference cycles
 
-See `DECISION_LOG.md#cap_reference_cycle_policy`. Mutual caps between services:
+**Adopted (DECISION_LOG `#cap_reference_cycle_policy`):** **permitted** with unordered teardown.
 
-- **Permitted** with unordered teardown + timeout, **or**
-- **Forbidden** at kernel-object level
+Mutual caps between services are allowed. On service restart/teardown, cycle participants enter **Teardown** together; if caps not released within **5s default timeout**, all cycle caps terminal at checkpoint.
 
 ---
 
@@ -127,7 +127,7 @@ Lifecycle transition to **Invalidated** triggers **R-destroy-notify**: all cap h
 
 Distinct from **R-cascade-revoke** (delegation-chain only). Third-party independent caps to the same object are unaffected by single-cap revoke.
 
-Delivery ordering: `DECISION_LOG.md#r_destroy_notify_ordering`.
+**Delivery (DECISION_LOG `#r_destroy_notify_ordering`):** **simultaneous** — all holders at same checkpoint; no order guarantee. Operations on a **different instance** of the same kind are unaffected.
 
 ---
 

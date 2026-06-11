@@ -2,7 +2,7 @@
 
 ## Snapshot (epoch 0 staging)
 
-- gap_registry open gaps: 345
+- gap_registry open gaps: 0
 - threat nodes open: 11
 
 ## Threat coverage by goal

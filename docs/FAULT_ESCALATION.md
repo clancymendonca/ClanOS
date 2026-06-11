@@ -2,7 +2,7 @@
 
 ```yaml
 status: authoritative
-semantics_version: 1.0.0
+semantics_version: 1.1.0
 ```
 
 Three-tier fault model for services, processes, and kernel paths. Aligns with [`TEMPORAL_SEMANTICS.md`](TEMPORAL_SEMANTICS.md) authority checkpoints.
@@ -91,12 +91,11 @@ Tier-3 halt/reboot: deliver terminal to active IPC callers before halt (max time
 
 ### Suspend flush protocol
 
-Kernel attempts audit flush with **max timeout**. On timeout:
+Kernel attempts audit flush with **max timeout** (default **2s** QEMU era).
 
-- **Block suspend**, or
-- **Hard terminate** (tier 3) — never suspend with undrained security partition
+**Adopted (DECISION_LOG `#suspend_flush_timeout`):** on timeout → **hard terminate (tier 3)**. Never suspend with undrained security-partition audit queue.
 
-See `DECISION_LOG.md#suspend_flush_timeout`. Hard terminate has defined cap table, audit, and process-hierarchy effects.
+Hard terminate applies defined cap table teardown, final audit flush attempt, process-hierarchy effects, and `R-destroy-notify` where applicable — not an ad-hoc fault path.
 
 ---
 

@@ -1,5 +1,9 @@
 # Phase 121 Checklist: Service Loader Contract
 
+```yaml
+status: epoch-scoped: 121
+```
+
 ## Layer
 platform
 
@@ -9,17 +13,47 @@ native
 ## Mode
 future implementation
 
+## Process (phase_checklist_schema.toml)
+
+- **phase-owner:** TBD
+- **backup-reviewer:** TBD
+- **proof_tier:** B
+- **harness_bound:** 16
+- **fuzz_target:** N/A
+- **compat_review_entry:** true
+- **oom_stub_ref:** MEM_BUDGET_STUB § phase-121
+- **benchmark_baseline_ref:** benchmarks/phase-120-baseline.json
+- **threat_node_mapping:** T-bootstrap-scope-creep, T-cap-exhaustion
+
+## Gated decisions acknowledged
+
+- [x] `scheduler_priority_inversion` — ceiling (`DECISION_LOG.md`)
+- [x] `r_destroy_notify_ordering` — simultaneous
+- [x] `mint_vs_delegation_authority` — root mint only
+- [x] `cap_reference_cycle_policy` — permitted + 5s timeout
+- [x] `wait_set_revocation_policy` — partial return
+- [ ] `audit_tamper_policy` — chain hash (impl epoch 1)
+- [ ] `driver_isolation_model` — hybrid (impl epoch 2)
+- [x] `suspend_flush_timeout` — hard terminate tier 3
+
 ## Scope
 
-- [ ] Deliverable: service-centric
+- [ ] Service loader contract per `KERNEL_OBJECT_MODEL.md` bootstrap ceremony
+- [ ] E-00 admission control + ERROR_TAXONOMY class mapping
+- [ ] MEM_BUDGET_STUB wire + shed stub (full enforcement phase 147)
+- [ ] CAP_QUOTA_STUB + remediable structural retry path
+- [ ] Audit bootstrap window scoped (`AUDIT_SUBSYSTEM.md`)
+- [ ] Scheduler priority ceiling ack in broker paths
 - [ ] Consistent with [AXIOMS.md](AXIOMS.md)
 - [ ] Listed in [ROADMAP_POST100.md](ROADMAP_POST100.md)
 
 ## Validation
 
-- [ ] Phases 101–110: documentation review (no kernel change required)
-- [ ] Phases 111+: `cargo check -p kernel` + smoke script TBD
+- [ ] `cargo check -p kernel`
+- [ ] Phase 121 smoke script (TBD)
+- [ ] OOM stub syscall returns documented ERROR class
 
 ## Deferred
 
-- See [ROADMAP_POST100.md](ROADMAP_POST100.md) and [AXIOMS.md](AXIOMS.md) gates.
+- Full OOM shed/terminate — phase 147
+- Audit chain hash implementation — epoch 1

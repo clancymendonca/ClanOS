@@ -2,19 +2,26 @@
 
 ```yaml
 status: authoritative
-semantics_version: 1.0.0
+semantics_version: 1.1.0
 ```
 
-Epoch 2 planning stub. See `DECISION_LOG.md#driver_isolation_model`.
+See `DECISION_LOG.md#driver_isolation_model`, [`VIRTIO_SAFETY.md`](VIRTIO_SAFETY.md) (epoch 2).
 
 ---
 
-## Alternatives
+## Adopted model: hybrid
 
-| Model | Description |
-|-------|-------------|
-| Kernel TCB | Driver in kernel — smallest userspace surface |
-| Process + device caps | Userspace driver with gated device caps |
-| Hybrid | Minimal kernel shim + userspace protocol |
+| Layer | Responsibility |
+|-------|----------------|
+| **Kernel trampoline** | MMIO map/unmap gates, IRQ delivery, DMA buffer pinning, IOMMU stub (QEMU) |
+| **Userspace driver host** | Virtio protocol, queue processing, error recovery |
+| **Device caps** | `device.block`, `device.net` attenuated per device instance |
 
-**Decision:** TBD before virtio-blk epoch 2.
+Drivers run in a **privileged service process**, not in the general app sandbox. Kernel does not parse virtio rings in TCB beyond validation hooks.
+
+---
+
+## Epoch 2 deliverables
+
+- virtio-blk via hybrid model before userland epoch 2 bootstrap
+- Threat nodes for DMA confusion and MMIO escape closed or deferred with trigger
