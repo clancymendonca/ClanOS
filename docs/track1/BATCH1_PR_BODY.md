@@ -34,7 +34,7 @@
 | Universal lifecycle | Created→Active→Teardown→Invalidated | Spec intent + flat KOM table; matches epoch-0 lifecycle docs |
 | Endpoint per-kind | Owner death → Teardown → Invalidated | Spec intent; matches KOM flat orphan-endpoint section |
 | IPC transfer sequence | Capability-secured IPC send/reply path | Spec intent; CAP_TRANSFER_PROTOCOL is Batch 2/5 (`CTP`) |
-| **TOCTOU transfer** | **Close-before-alloc; never both tables; alloc-failure gap** | **Verified against `kernel_object::cap_transfer_move`** — no in-table Reserved state; alloc failure does not restore source (`STUB(track1b)`) |
+| **TOCTOU transfer** | **Close-before-alloc; never both tables; alloc-failure gap** | **Verified against `kernel_object::cap_transfer_move`** — no in-table Reserved state; alloc failure does not restore source (`STUB(track1b)`). **Orphaned state:** resource leak only — cap in kernel locals unreachable by any process; not privilege escalation or cap duplication; object generation unaffected. |
 
 ## Gate conditions met
 
@@ -47,7 +47,7 @@
 
 ## Threat nodes
 
-No new threat nodes opened. `T-transfer-toctou` remains **closed** (tier B happy path). Alloc-failure rollback after close is tracked via `STUB(track1b)` in `cap_transfer_move` — not a new node; reopen deferred to track1b implementation phase.
+No new threat nodes opened. `T-transfer-toctou` remains **closed** (tier B happy path). Alloc-failure **Orphaned** path is classified as **resource leak only** (cap unreachable by any process; source receives error; no escalation or duplication) — documented in `cap_transfer_move` STUB co-located with the gap, not as a new threat node. Fix deferred to track1b reserved-slot protocol.
 
 ## Not in this PR
 

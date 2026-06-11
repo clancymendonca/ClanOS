@@ -180,13 +180,15 @@ Verified against `kernel_object::cap_transfer_move` (close sender slot, then all
 
 Threat node: `T-transfer-toctou` (tier B, closed on happy path). Alloc-failure rollback deferred to track1b.
 
+**Orphaned threat class:** resource leak only — the cap in kernel locals is unreachable by any process; source loses the capability and receives an error; no privilege escalation, cap duplication, or generation invalidation on the underlying object.
+
 ```mermaid
 stateDiagram-v2
     [*] --> InSource : cap in sender table
     InSource --> InSource : get_cap NotFound
     InSource --> TransientHold : close_cap sender slot empty
     TransientHold --> InDestination : alloc_cap_slot ok
-    TransientHold --> Orphaned : alloc_cap_slot err
+    TransientHold --> Orphaned : alloc_cap_slot err resource leak only
     InDestination --> [*] : to_slot returned
     Orphaned --> [*] : STUB track1b no source rollback
 ```
