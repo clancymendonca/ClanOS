@@ -19,8 +19,7 @@ pub struct VirtioPciLocation {
 
 pub fn is_virtio_blk_device(vendor_id: u16, device_id: u16) -> bool {
     vendor_id == VIRTIO_VENDOR_ID
-        && (device_id == VIRTIO_LEGACY_BLK_DEVICE_ID
-            || device_id == VIRTIO_MODERN_BLK_DEVICE_ID)
+        && (device_id == VIRTIO_LEGACY_BLK_DEVICE_ID || device_id == VIRTIO_MODERN_BLK_DEVICE_ID)
 }
 
 #[cfg(test)]

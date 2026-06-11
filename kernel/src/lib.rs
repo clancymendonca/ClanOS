@@ -52,6 +52,7 @@ pub mod mouse;
 pub mod native_manifest;
 pub mod native_syscall;
 pub mod network_broker;
+pub mod network_stack;
 pub mod oom_policy;
 pub mod path_broker;
 pub mod performance;
