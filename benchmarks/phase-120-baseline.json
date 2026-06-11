@@ -1,0 +1,8 @@
+{
+  "schema_version": "0.1.0",
+  "phase": 120,
+  "calibrated_at": "2026-06-11",
+  "status": "stub",
+  "metrics": {},
+  "notes": "Epoch 0 stub — populate from phase-120 calibration run before epoch 1 gate"
+}

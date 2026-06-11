@@ -1,5 +1,10 @@
 # Universal Kernel Object Model
 
+```yaml
+status: authoritative
+semantics_version: 1.1.0
+```
+
 **Gate G1** — phases **115+** must not introduce new handle semantics without charter revision.
 
 Phase **110** constitutional default: **immutable object identity + generation invalidation**.
@@ -78,3 +83,102 @@ Triggers (non-exhaustive): hard revoke, service restart, broker session end, end
 | 112–113 | Lifecycle syscalls (G2) |
 | 114 | Storage grant object (no paths) |
 | 115 | Path broker (**compat only**) |
+
+---
+
+## Lifecycle states (epoch 0 extension)
+
+Per-kind state machine (conceptual):
+
+| State | Meaning |
+|-------|---------|
+| **Created** | Object allocated; caps may be minted per mint path |
+| **Active** | Normal operations per cap rights |
+| **Teardown** | Draining; no new grants; in-flight ops complete at checkpoint |
+| **Invalidated** | Generation bumped or object destroyed; caps terminal at checkpoint |
+
+Valid transitions: Created → Active → Teardown → Invalidated. Invalidated is terminal.
+
+Generation increment events cross-ref [`GENERATION_COUNTER.md`](GENERATION_COUNTER.md).
+
+---
+
+## Mint vs delegation
+
+See `DECISION_LOG.md#mint_vs_delegation_authority`. Either:
+
+- Named **mint authority** role (strictly higher than delegate) with threat node, **or**
+- Explicit policy: all caps originate from **kernel root mint** — no silent conflation of mint and delegate paths
+
+---
+
+## Reference cycles
+
+See `DECISION_LOG.md#cap_reference_cycle_policy`. Mutual caps between services:
+
+- **Permitted** with unordered teardown + timeout, **or**
+- **Forbidden** at kernel-object level
+
+---
+
+## Object destruction (R-destroy-notify)
+
+Lifecycle transition to **Invalidated** triggers **R-destroy-notify**: all cap holders receive terminal error at authority checkpoint.
+
+Distinct from **R-cascade-revoke** (delegation-chain only). Third-party independent caps to the same object are unaffected by single-cap revoke.
+
+Delivery ordering: `DECISION_LOG.md#r_destroy_notify_ordering`.
+
+---
+
+## Bootstrap cap ceremony
+
+PID-1 equivalent receives an explicit cap set — the **only** caps created without prior cap authorization. Threat node: `T-bootstrap-scope-creep`.
+
+---
+
+## Orphan endpoints
+
+Endpoint owner process death:
+
+- Pending queue **dropped**
+- Embedded caps → R-destroy-notify
+- Senders receive terminal at checkpoint
+
+---
+
+## MemoryRegion rights
+
+Read, write, execute, resize (or documented subset). All cross-process shared memory is **cap-mediated**.
+
+---
+
+## Process hierarchy
+
+Parent/child relationships documented. Parent tier-2 fault propagation; child cap fate on parent death; reaper policy stub (no reparent → children terminated unless charter exception).
+
+**Process audit token:** stable **root cap_id** of process — no ambient POSIX UID model.
+
+---
+
+## Cap kind schema version
+
+On wire; unrecognized kind version → **structural** error (not terminal).
+
+---
+
+## Cap send / confinement
+
+Non-sendable (confined) right bit **or** confinement out-of-scope pre-150 with threat node — affects IPC wire format. See gap registry #293.
+
+---
+
+## Kind semantics freeze
+
+Once a cap kind graduates the never-stabilize list (`DESIGN_NORTH_STAR.md`), semantics are **frozen**. Reinterpretation requires a **new kind**, not field reuse.
+
+---
+
+## Registry ground truth
+
+Machine-readable kinds and operations: [`CAP_REGISTRY.toml`](CAP_REGISTRY.toml). CI verifies registry ↔ markdown parity.

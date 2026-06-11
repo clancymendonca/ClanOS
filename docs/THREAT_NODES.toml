@@ -1,0 +1,164 @@
+# Structured threat node registry — CI enforces lifecycle.
+
+[schema]
+version = "1.0.0"
+
+# goals: privilege_escalation | information_disclosure | denial_of_service | integrity_violation
+# surfaces: cap_table | audit | ipc | compat_shim | build_pipeline | kernel_heap
+
+[[nodes]]
+id = "T-cap-amplification"
+epoch = 0
+status = "open"
+tier = "B"
+goals = ["privilege_escalation"]
+surfaces = ["cap_table"]
+closing_commit = null
+depends_on = []
+summary = "Rights gain via delegate/transfer without authority path"
+
+[[nodes]]
+id = "T-transfer-toctou"
+epoch = 0
+status = "open"
+tier = "B"
+goals = ["privilege_escalation", "integrity_violation"]
+surfaces = ["cap_table", "ipc"]
+closing_commit = null
+depends_on = ["T-cap-amplification"]
+summary = "TOCTOU during cap transfer mid-syscall"
+
+[[nodes]]
+id = "T-bootstrap-scope-creep"
+epoch = 0
+status = "open"
+tier = "B"
+goals = ["privilege_escalation"]
+surfaces = ["cap_table"]
+closing_commit = null
+depends_on = []
+summary = "PID-1 bootstrap caps exceed documented ceremony"
+
+[[nodes]]
+id = "T-compat-shim-escape"
+epoch = 1
+status = "open"
+tier = "B"
+goals = ["privilege_escalation", "integrity_violation"]
+surfaces = ["compat_shim"]
+closing_commit = null
+depends_on = []
+summary = "Compat-internal bridge grants ambient authority"
+
+[[nodes]]
+id = "T-cap-exhaustion"
+epoch = 0
+status = "open"
+tier = "A"
+goals = ["denial_of_service"]
+surfaces = ["cap_table"]
+closing_commit = null
+depends_on = []
+summary = "Cap table quota exhaustion as DoS"
+
+[[nodes]]
+id = "T-ipc-liveness"
+epoch = 3
+status = "open"
+tier = "A"
+goals = ["denial_of_service"]
+surfaces = ["ipc"]
+closing_commit = null
+depends_on = []
+summary = "Unbounded wait on saturated IPC queue"
+
+[[nodes]]
+id = "T-audit-tamper"
+epoch = 1
+status = "open"
+tier = "B"
+goals = ["integrity_violation", "information_disclosure"]
+surfaces = ["audit"]
+closing_commit = null
+depends_on = []
+summary = "Audit log tamper or silent drop"
+
+[[nodes]]
+id = "T-audit-covert-channel"
+epoch = 1
+status = "deferred"
+tier = "C"
+goals = ["information_disclosure"]
+surfaces = ["audit"]
+closing_commit = null
+depends_on = []
+reopen_trigger = null
+summary = "Timing side-channel via audit throughput"
+
+[[nodes]]
+id = "T-supply-chain"
+epoch = 0
+status = "open"
+tier = "A"
+goals = ["integrity_violation"]
+surfaces = ["build_pipeline"]
+closing_commit = null
+depends_on = []
+summary = "Malicious dependency or forged build artifact"
+
+[[nodes]]
+id = "T-stack-overflow"
+epoch = 0
+status = "open"
+tier = "A"
+goals = ["denial_of_service", "integrity_violation"]
+surfaces = ["kernel_heap"]
+closing_commit = null
+depends_on = []
+summary = "Kernel stack overflow via deep recursion"
+
+[[nodes]]
+id = "T-debug-bypass"
+epoch = 0
+status = "open"
+tier = "C"
+goals = ["privilege_escalation"]
+surfaces = ["cap_table"]
+closing_commit = null
+depends_on = []
+summary = "Ad-hoc debug introspection bypasses cap model"
+
+[[nodes]]
+id = "T-insider-contributor"
+epoch = 0
+status = "open"
+tier = "C"
+goals = ["integrity_violation"]
+surfaces = ["build_pipeline"]
+closing_commit = null
+depends_on = []
+summary = "Malicious or coerced contributor merges flawed TCB change"
+
+[[nodes]]
+id = "T-physical-access"
+epoch = 6
+status = "deferred"
+tier = "D"
+goals = ["privilege_escalation", "integrity_violation"]
+surfaces = ["cap_table"]
+closing_commit = null
+depends_on = []
+reopen_trigger = "has_real_hardware_target"
+summary = "Physical attacker with device access"
+
+[[nodes]]
+id = "T-checkpoint-persisted-caps"
+epoch = 5
+status = "deferred"
+tier = "D"
+goals = ["privilege_escalation", "integrity_violation"]
+surfaces = ["cap_table"]
+closing_commit = null
+depends_on = []
+reopen_trigger = "has_persisted_cap_state"
+summary = "Serialized cap state across power cycle"

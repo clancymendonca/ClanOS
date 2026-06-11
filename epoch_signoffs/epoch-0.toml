@@ -1,0 +1,15 @@
+# Epoch 0 sign-offs — populate before gate squash.
+# Dissent blocks squash until resolved (CHARTER.md).
+
+[manifest]
+epoch = 0
+gate_commit = null  # set at squash
+gpg_signed = false
+
+# Example entry (remove template comment when signing):
+# [[signoffs]]
+# reviewer_id = "alice"
+# domain = "kernel"
+# scope = "KERNEL_OBJECT_MODEL, FAULT_ESCALATION, RIGHTS_ALGEBRA"
+# timestamp = "2026-06-11T00:00:00Z"
+# epoch = 0

@@ -1,0 +1,14 @@
+[
+  {
+    "epoch": 0,
+    "phase": "epoch-0-staging",
+    "timestamp": "2026-06-11T00:00:00Z",
+    "gap_registry_open": 345,
+    "threat_nodes_open": 11,
+    "threat_nodes_deferred": 3,
+    "kani_harness_count": 0,
+    "proptest_count": 0,
+    "feature_cost_entries": [],
+    "notes": "Epoch 0 staging — pre-gate snapshot. feature_cost tracking per phase_snapshots deferred until phase 121+."
+  }
+]

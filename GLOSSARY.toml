@@ -1,0 +1,29 @@
+# Canonical terminology — CI consistency checks.
+
+[schema]
+version = "1.0.0"
+
+[[terms]]
+id = "cap"
+term = "capability"
+definition = "Authority-bearing handle referencing (ObjectId, Kind, Rights, Generation)"
+
+[[terms]]
+id = "checkpoint"
+term = "authority checkpoint"
+definition = "Syscall return, cap op completion, or endpoint wait completion where revocation takes effect"
+
+[[terms]]
+id = "generation"
+term = "generation counter"
+definition = "Monotonic invalidation epoch per kernel object"
+
+[[terms]]
+id = "tcb"
+term = "trusted computing base"
+definition = "Kernel code paths whose compromise breaks security goals"
+
+[[terms]]
+id = "compat-internal"
+term = "compat-internal bridge"
+definition = "Interim IPC path 122-133; CI counter must reach zero at phase 134"

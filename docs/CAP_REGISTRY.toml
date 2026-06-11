@@ -1,0 +1,61 @@
+# Machine-readable cap kind registry — CI sync with KERNEL_OBJECT_MODEL.md
+
+[schema]
+version = "1.0.0"
+namespaces = ["kernel", "device", "compat"]
+
+# New kind checklist (#335): document in DECISION_LOG whether kind is
+# disjoint | specialization | generalization of existing kinds.
+
+[[kinds]]
+id = "kernel.process"
+namespace = "kernel"
+object_kind = "Process"
+operations = ["create", "transfer", "delegate", "revoke", "close"]
+semantic_relation = "disjoint"
+notes = "Root schedulable task cap"
+
+[[kinds]]
+id = "kernel.endpoint"
+namespace = "kernel"
+object_kind = "Endpoint"
+operations = ["create", "transfer", "delegate", "revoke", "close", "send", "recv"]
+semantic_relation = "disjoint"
+
+[[kinds]]
+id = "kernel.memory_region"
+namespace = "kernel"
+object_kind = "MemoryRegion"
+operations = ["create", "transfer", "delegate", "revoke", "close", "map"]
+semantic_relation = "disjoint"
+
+[[kinds]]
+id = "kernel.service"
+namespace = "kernel"
+object_kind = "Service"
+operations = ["create", "transfer", "delegate", "revoke", "close", "restart"]
+semantic_relation = "disjoint"
+
+[[kinds]]
+id = "device.block"
+namespace = "device"
+object_kind = "Device"
+operations = ["create", "transfer", "delegate", "revoke", "close", "io"]
+semantic_relation = "specialization"
+notes = "Specialization of kernel.device — block storage"
+
+[[kinds]]
+id = "device.net"
+namespace = "device"
+object_kind = "Device"
+operations = ["create", "transfer", "delegate", "revoke", "close", "io"]
+semantic_relation = "specialization"
+notes = "Specialization of kernel.device — network"
+
+[[kinds]]
+id = "compat.path_broker"
+namespace = "compat"
+object_kind = "FsNode"
+operations = ["create", "close"]
+semantic_relation = "disjoint"
+notes = "Phase 115 compat only — not parallel handle type"

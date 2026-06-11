@@ -1,0 +1,55 @@
+# Epoch 0 gate checklist — ci / human / both verification.
+
+[schema]
+version = "1.0.0"
+epoch = 0
+
+[[items]]
+id = "charter_present"
+description = "CHARTER.md exists with quorum and MV team policy"
+verify = "ci"
+
+[[items]]
+id = "gap_registry_imported"
+description = "gap_registry.toml has 345 gaps; import script output reviewed"
+verify = "both"
+
+[[items]]
+id = "prereq_graph_dag"
+description = "prereq_graph.toml epoch-0 DAG acyclic; project_health passes"
+verify = "ci"
+
+[[items]]
+id = "threat_nodes_zero_open"
+description = "THREAT_NODES.toml — zero open nodes at epoch 0 gate (deferred allowed)"
+verify = "ci"
+
+[[items]]
+id = "foundational_status_headers"
+description = "All epoch-0 docs have status: authoritative headers"
+verify = "ci"
+
+[[items]]
+id = "cross_doc_review"
+description = "No unresolved [CROSS-REF — TBD] stubs at squash"
+verify = "human"
+
+[[items]]
+id = "domain_signoffs"
+description = "Unanimous 3/3 domain sign-offs in epoch_signoffs/epoch-0.toml"
+verify = "both"
+
+[[items]]
+id = "gpg_gate_commit"
+description = "Epoch 0 squash commit GPG-signed per SECURITY.md"
+verify = "both"
+
+[[items]]
+id = "scope_freeze_clock"
+description = "scope-freeze commit recorded; 90-day budget acknowledged"
+verify = "human"
+
+[[items]]
+id = "health_timeseries_entry_0"
+description = "health_timeseries.json entry 0 appended"
+verify = "ci"

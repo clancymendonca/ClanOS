@@ -1,0 +1,13 @@
+# Structured boolean flags for deferred threat node reopen triggers.
+# CI: flag true + no re-eval commit → blocks epoch gate.
+
+[schema]
+version = "1.0.0"
+
+[flags]
+has_real_hardware_target = false
+has_speculative_execution_unit = false
+has_tpm_integration = false
+has_external_network = false
+has_persisted_cap_state = false
+has_hypervisor_guest_target = false

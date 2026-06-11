@@ -1,6 +1,13 @@
 # Rights Algebra (Authority Calculus)
 
+```yaml
+status: authoritative
+semantics_version: 1.1.0
+```
+
 **Gate G2** — phases **112–113** cap lifecycle implementation blocked until this document is signed off at phase 110.
+
+**Epoch 0:** ratified as grounding doc for brokers epoch 1+. Composition laws below require Kani + proptest before epoch 1 brokers.
 
 Formal semantics for authority — not informal permission flags. See [AXIOMS.md](AXIOMS.md) A1, A3, A7, A10 and [SEMANTIC_SPECS.md](SEMANTIC_SPECS.md) R-* cases.
 
@@ -82,3 +89,23 @@ Prefer deriving IPC or storage rules from this algebra rather than parallel subs
 | R-06 | Amplification denied |
 
 Full narratives in [SEMANTIC_SPECS.md](SEMANTIC_SPECS.md).
+
+---
+
+## Composition laws (epoch 0)
+
+See [`PROOF_COVERAGE.md`](PROOF_COVERAGE.md) for tier mapping.
+
+| Law | Specification |
+|-----|---------------|
+| **Chained attenuation** | `attenuate(attenuate(r, m1), m2) = attenuate(r, m1 ∪ m2)` (monotone) |
+| **Transfer then attenuate** | Document order; Kani proves no amplification either path |
+| **Dual caps same object** | **No implicit union** — operations require explicit cap unless `effective_rights` rule defined |
+| **Broker composition** | Multi-step mint equals single attenuation from grant |
+| **Broker idempotency** | Multi-step mint idempotent and order-independent where applicable |
+| **Empty-rights cap** | Named policy: existence token / invalid at creation / valid-then-immediately-revoked |
+| **IPC reply amplification** | No rights gain via round-trip IPC reply cap |
+| **Attenuation at boundary** | Kernel applies attenuation at transfer — intermediate cannot skip masks |
+| **Remediable structural retry** | Quota exceeded → release N caps → retry succeeds without amplification |
+
+**Proptest:** uniform distribution over `(cap_kind, operation, mask)` tuples — not default arbitrary skew.

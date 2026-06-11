@@ -1,0 +1,57 @@
+# Formal epoch gate sign-off manifest schema.
+
+[schema]
+version = "1.0.0"
+
+[[required_fields]]
+name = "reviewer_id"
+type = "string"
+
+[[required_fields]]
+name = "domain"
+type = "enum"
+values = ["kernel", "evidence", "process"]
+
+[[required_fields]]
+name = "scope"
+type = "string"
+description = "Doc list or domain enum scope reviewed"
+
+[[required_fields]]
+name = "timestamp"
+type = "iso8601"
+
+[[required_fields]]
+name = "epoch"
+type = "integer"
+description = "Must match epoch_signoffs/epoch-N.toml filename"
+
+[[optional_fields]]
+name = "dissent"
+type = "string"
+description = "Freetext dissent — blocks squash until resolved"
+
+[[optional_fields]]
+name = "withdrawn"
+type = "boolean"
+default = false
+description = "Retracts signature within staging window"
+
+[[optional_fields]]
+name = "superseded_by"
+type = "string"
+description = "GPG-signed correction commit; CI verifies transitive chain"
+
+[[optional_fields]]
+name = "authored_by"
+type = "string"
+description = "Design-intent author distinct from reviewer"
+
+[[optional_fields]]
+name = "multi_domain_roles"
+type = "array"
+description = "MV team: domains held by one person with justification"
+
+[quorum]
+epoch_0_domains = 3
+epoch_0_unanimous = true

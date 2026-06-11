@@ -1,0 +1,10 @@
+# GPG reviewer key registry — epoch 0 stub.
+
+[schema]
+version = "1.0.0"
+
+# [[keys]]
+# reviewer_id = "example"
+# fingerprint = "ABCD..."
+# effective_from = "2026-01-01"
+# retired = false
