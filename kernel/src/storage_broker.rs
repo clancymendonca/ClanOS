@@ -26,9 +26,21 @@ pub fn request_fs_grant_via_ipc(
     session_id: u32,
     grant_id: u32,
 ) -> Result<u32, CapError> {
+    if ipc_interim_bridge::is_retired() {
+        return request_fs_grant_via_endpoint(pid, grant_id);
+    }
     ipc_interim_bridge::send(pid, session_id, b"fs-grant-req")
         .map_err(|_| CapError::InvalidArgument)?;
     let _ = ipc_interim_bridge::recv(pid, session_id).map_err(|_| CapError::InvalidArgument)?;
+    grant_fsnode(pid, grant_id)
+}
+
+/// Post-134: native endpoint path for broker storage grants.
+pub fn request_fs_grant_via_endpoint(pid: ProcessId, grant_id: u32) -> Result<u32, CapError> {
+    let ep = crate::ipc_endpoints::create_endpoint();
+    crate::ipc_endpoints::send(ep, pid, b"fs-grant-req")
+        .map_err(|_| CapError::InvalidArgument)?;
+    let _ = crate::ipc_endpoints::recv(ep).map_err(|_| CapError::InvalidArgument)?;
     grant_fsnode(pid, grant_id)
 }
 

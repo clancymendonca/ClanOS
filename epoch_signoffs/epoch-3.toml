@@ -1,0 +1,14 @@
+# Epoch 3 gate — IPC endpoints + build integrity (131–140).
+
+[manifest]
+epoch = 3
+gate_commit = "pending"
+gpg_signed = false
+solo_maintainer = true
+
+[[signoffs]]
+reviewer_id = "clancy"
+domain = "kernel"
+scope = "build_integrity 131-133, ipc_endpoints 134, audit_wire 135-138, phase140 integration"
+timestamp = "2026-06-11T18:00:00Z"
+epoch = 3

@@ -24,9 +24,12 @@ pub enum BridgeError {
     Saturated,
     TooLarge,
     Empty,
+    Retired,
 }
 
 static IPC_BRIDGE_COMPAT_INTERNAL: AtomicU64 = AtomicU64::new(0);
+static BRIDGE_RETIRED: core::sync::atomic::AtomicBool =
+    core::sync::atomic::AtomicBool::new(false);
 static E00_SATURATIONS: AtomicU64 = AtomicU64::new(0);
 
 lazy_static! {
@@ -40,15 +43,31 @@ pub fn ipc_bridge_compat_internal_count() -> u64 {
     IPC_BRIDGE_COMPAT_INTERNAL.load(Ordering::Relaxed)
 }
 
+pub fn is_retired() -> bool {
+    BRIDGE_RETIRED.load(Ordering::Acquire)
+}
+
+/// Retire compat-internal bridge; reset CI counter to zero (phase 134).
+pub fn retire_bridge() {
+    BRIDGE_RETIRED.store(true, Ordering::Release);
+    IPC_BRIDGE_COMPAT_INTERNAL.store(0, Ordering::Release);
+}
+
 pub fn e00_saturation_count() -> u64 {
     E00_SATURATIONS.load(Ordering::Relaxed)
 }
 
 fn touch_bridge() {
+    if BRIDGE_RETIRED.load(Ordering::Acquire) {
+        return;
+    }
     IPC_BRIDGE_COMPAT_INTERNAL.fetch_add(1, Ordering::Relaxed);
 }
 
 pub fn send(pid: ProcessId, session_id: u32, payload: &[u8]) -> Result<(), BridgeError> {
+    if BRIDGE_RETIRED.load(Ordering::Acquire) {
+        return Err(BridgeError::Retired);
+    }
     touch_bridge();
     if payload.len() > MAX_MSG_BYTES {
         return Err(BridgeError::TooLarge);
@@ -67,6 +86,9 @@ pub fn send(pid: ProcessId, session_id: u32, payload: &[u8]) -> Result<(), Bridg
 }
 
 pub fn recv(pid: ProcessId, session_id: u32) -> Result<InterimMessage, BridgeError> {
+    if BRIDGE_RETIRED.load(Ordering::Acquire) {
+        return Err(BridgeError::Retired);
+    }
     touch_bridge();
     let key = (pid, session_id);
     let mut queues = SESSION_QUEUES.lock();
@@ -79,7 +101,7 @@ pub fn recv(pid: ProcessId, session_id: u32) -> Result<InterimMessage, BridgeErr
 pub fn map_bridge_error(err: BridgeError) -> NativeError {
     match err {
         BridgeError::Saturated => NativeError::e00_saturated(),
-        BridgeError::TooLarge | BridgeError::Empty => NativeError {
+        BridgeError::Retired | BridgeError::TooLarge | BridgeError::Empty => NativeError {
             code: crate::service_loader::ERR_CAP_QUOTA,
             class: crate::service_loader::ErrorClass::StructuralRemediable,
         },
