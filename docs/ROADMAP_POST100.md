@@ -66,7 +66,7 @@ Integration milestone: **120**.
 
 | Phase | Title | Layer | Tag |
 |------:|-------|-------|-----|
-| 121 | Service loader contract | platform | native |
+| 121 | Service loader contract | platform | native | **in progress** — `service_loader.rs`, smoke `Phase121-ServiceLoader` |
 | 122 | Storage broker | platform | native |
 | 123 | Permission broker | platform | native |
 | 124 | Device broker skeleton | platform | native |

@@ -219,7 +219,14 @@ pub fn mint_cap_for_process(
 ) -> Result<u32, CapError> {
     if process::process_mode(pid) == process::ProcessMode::Native && cap_count_for_process(pid) == 0
     {
-        return Err(CapError::AmbientDenied);
+        if !crate::service_loader::bootstrap_mint_allowed(pid) {
+            return Err(CapError::AmbientDenied);
+        }
+    }
+    if process::process_mode(pid) == process::ProcessMode::Native
+        && crate::service_loader::check_cap_quota(pid).is_err()
+    {
+        return Err(CapError::NoSlot);
     }
     let reg = OBJECT_REGISTRY.lock();
     let rec = reg.get(&object_id).ok_or(CapError::NotFound)?;

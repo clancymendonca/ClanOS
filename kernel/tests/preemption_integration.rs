@@ -1620,3 +1620,13 @@ fn phase120_cap_compat_smoke_works() {
     );
     assert!(kernel::governance::phase120_cap_compat_smoke());
 }
+
+#[test_case]
+fn phase121_service_loader_smoke_works() {
+    assert!(kernel::governance::phase121_service_loader_smoke());
+    let (bootstrap, e00, budget, quota) = kernel::governance::phase121_status();
+    assert!(bootstrap, "bootstrap ceremony");
+    assert!(e00, "e00 saturation");
+    assert!(budget, "mem budget");
+    assert!(quota, "cap quota");
+}

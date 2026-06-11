@@ -47,6 +47,20 @@ pub fn status() -> (bool, bool, bool, bool) {
     )
 }
 
+pub fn phase121_service_loader_smoke() -> bool {
+    crate::service_loader::phase121_service_loader_smoke()
+}
+
+pub fn phase121_status() -> (bool, bool, bool, bool) {
+    let (quota_rej, e00_rej, budget_rej, bootstrap_mints) = crate::service_loader::stub_status();
+    (
+        bootstrap_mints > 0,
+        e00_rej > 0,
+        budget_rej > 0,
+        quota_rej > 0,
+    )
+}
+
 pub fn phase120_status() -> (bool, bool, bool, bool, bool) {
     let cap_table = crate::kernel_object::phase111_kernel_object_smoke();
     let rights = crate::kernel_object::phase113_rights_smoke();

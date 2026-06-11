@@ -1080,6 +1080,26 @@ fn run_phase111_to_120_smokes() {
     );
 }
 
+fn run_phase121_smoke() {
+    let phase121_ok = kernel::governance::phase121_service_loader_smoke();
+    let (bootstrap, stubs, budget, _) = kernel::governance::phase121_status();
+    let (mem_total, mem_used, mem_free) = kernel::service_loader::mem_budget_status();
+    println!(
+        "Phase121-ServiceLoader: bootstrap={}, stubs={}, budget_rej={}, mem_total={}, mem_used={}, mem_free={}, ok={}",
+        bootstrap, stubs, budget, mem_total, mem_used, mem_free, phase121_ok
+    );
+    kernel::serial_println!(
+        "Phase121-ServiceLoader: bootstrap={}, stubs={}, budget_rej={}, mem_total={}, mem_used={}, mem_free={}, ok={}",
+        bootstrap,
+        stubs,
+        budget,
+        mem_total,
+        mem_used,
+        mem_free,
+        phase121_ok
+    );
+}
+
 fn run_phase21_to_30_smokes() {
     let phase21_ok = kernel::task::program_loader::phase21_smoke_check();
     let (hw_built, hw_verified, hw_rejected, _, _, _, _) = kernel::user_paging::status();
@@ -1529,6 +1549,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     run_phase91_to_100_smokes();
     run_phase101_to_110_smokes();
     run_phase111_to_120_smokes();
+    run_phase121_smoke();
     kernel::serial_println!("Boot: phase21-100 smokes done");
 
     // Display performance counters at startup.

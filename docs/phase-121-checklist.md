@@ -15,8 +15,8 @@ future implementation
 
 ## Process (phase_checklist_schema.toml)
 
-- **phase-owner:** TBD
-- **backup-reviewer:** TBD
+- **phase-owner:** clancy
+- **backup-reviewer:** clancy (solo MV team)
 - **proof_tier:** B
 - **harness_bound:** 16
 - **fuzz_target:** N/A
@@ -38,20 +38,20 @@ future implementation
 
 ## Scope
 
-- [ ] Service loader contract per `KERNEL_OBJECT_MODEL.md` bootstrap ceremony
-- [ ] E-00 admission control + ERROR_TAXONOMY class mapping
-- [ ] MEM_BUDGET_STUB wire + shed stub (full enforcement phase 147)
-- [ ] CAP_QUOTA_STUB + remediable structural retry path
-- [ ] Audit bootstrap window scoped (`AUDIT_SUBSYSTEM.md`)
-- [ ] Scheduler priority ceiling ack in broker paths
-- [ ] Consistent with [AXIOMS.md](AXIOMS.md)
-- [ ] Listed in [ROADMAP_POST100.md](ROADMAP_POST100.md)
+- [x] Service loader contract per `KERNEL_OBJECT_MODEL.md` bootstrap ceremony
+- [x] E-00 admission control + ERROR_TAXONOMY class mapping
+- [x] MEM_BUDGET_STUB wire + shed stub (full enforcement phase 147)
+- [x] CAP_QUOTA_STUB + remediable structural retry path
+- [x] Audit bootstrap window scoped (`AUDIT_SUBSYSTEM.md`) — documented; impl epoch 1
+- [ ] Scheduler priority ceiling ack in broker paths — epoch 1 brokers
+- [x] Consistent with [AXIOMS.md](AXIOMS.md)
+- [x] Listed in [ROADMAP_POST100.md](ROADMAP_POST100.md)
 
 ## Validation
 
-- [ ] `cargo check -p kernel`
-- [ ] Phase 121 smoke script (TBD)
-- [ ] OOM stub syscall returns documented ERROR class
+- [x] `cargo check -p kernel`
+- [x] Phase 121 smoke script (`scripts/phase121_service_loader_check.py`)
+- [x] OOM stub returns `ERR_MEM_BUDGET` / E-00 `E00_SATURATED` / quota `ERR_CAP_QUOTA`
 
 ## Deferred
 

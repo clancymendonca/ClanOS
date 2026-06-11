@@ -39,6 +39,7 @@ pub mod performance;
 pub mod pipe;
 pub mod ring3_trampoline;
 pub mod security;
+pub mod service_loader;
 pub mod serial;
 pub mod shared_loader;
 pub mod smp;

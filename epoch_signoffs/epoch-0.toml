@@ -2,7 +2,7 @@
 
 [manifest]
 epoch = 0
-gate_commit = null
+gate_commit = "d3093eb"
 gpg_signed = false
 solo_maintainer = true
 mv_team_justification = "Single maintainer holds kernel, evidence, and process domains; reviewed all epoch-0 docs and project_health CI locally."
