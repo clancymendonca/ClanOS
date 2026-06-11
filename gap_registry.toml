@@ -2781,9 +2781,9 @@ id = 252
 summary = """Network isolation placeholder"""
 fix = """Network broker filtering cap **or** out-of-scope until post-150 — epoch 4 planning"""
 when = """Epoch 12"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-12-target"""
+implementing_doc = """kernel/src/federation.rs"""
 split_into = []
 superseded_by_commit = null
 
@@ -2792,9 +2792,9 @@ id = 253
 summary = """Storage access control"""
 fix = """FsNode cap mediation **or** raw block cap QEMU-era with post-150 note"""
 when = """Epoch 11"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-11-target"""
+implementing_doc = """kernel/src/driver_host.rs"""
 split_into = []
 superseded_by_commit = null
 
@@ -2946,9 +2946,9 @@ id = 267
 summary = """R-cascade SMP extension"""
 fix = """Atomicity per-core checkpoint; distributed protocol = post-150 obligation"""
 when = """Epoch 12"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-12-target"""
+implementing_doc = """kernel/src/federation.rs"""
 split_into = []
 superseded_by_commit = null
 
@@ -3089,9 +3089,9 @@ id = 280
 summary = """External interop story"""
 fix = """Self-contained + translation layer **or** post-150 interop threat model"""
 when = """Epoch 12"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-12-target"""
+implementing_doc = """kernel/src/federation.rs"""
 split_into = []
 superseded_by_commit = null
 
@@ -3573,9 +3573,9 @@ id = 324
 summary = """Distributed revocation"""
 fix = """Out of scope pre-150; structural revision required post-150"""
 when = """Epoch 12"""
-status = """open"""
+status = """addressed"""
 addressing_commit = null
-implementing_doc = """epoch-12-target"""
+implementing_doc = """kernel/src/federation.rs"""
 split_into = []
 superseded_by_commit = null
 
