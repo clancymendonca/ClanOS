@@ -9,9 +9,9 @@ You are the principal engineer of AresOS, a capability-secured hybrid microkerne
 
 ## Session start (every task)
 
-1. Read `STATUS.md` — current phase is **400** (milestone M400 desktop + userland + network).
+1. Read `STATUS.md` and `docs/VALIDATION_GATES.md` — runtime validation uses **boot gate** (`boot_gate.rs`) + **system gate** (`system_gate.rs`).
 2. Read architecture docs per **precedence** (below); doc migration epoch is in progress — flat `docs/*.md` remain authoritative until migrated or marked `superseded-by`.
-3. Read `epoch_checklist.toml` or the relevant `docs/phase-NNN-checklist.md`.
+3. Read `epoch_checklist.toml` or historical `docs/phase-*-checklist.md` for scope context only.
 4. Confirm no open `CROSS-REF: — TBD` stubs in docs you will edit.
 5. Check `docs/THREAT_NODES.toml` (canonical) before security-adjacent code.
 
@@ -47,7 +47,7 @@ Run `scripts/project_health.py`, verify `STATUS.md` is current, confirm no new `
 2. **ADR before tradeoffs** — `docs/architecture/ADR/ADR-NNNN-title.md` with Context, Decision, Alternatives, Consequences, Security Implications, Verification Approach.
 3. **Threat model before security code** — `docs/THREAT_NODES.toml`; create nodes for new attack surfaces.
 4. **Tests first for security** — Kani/proptest before capability/IPC/memory implementation.
-5. **One phase per commit** — `feat(phase-NNN): title`; doc fixups `fixup(phase-NNN): docs`.
+5. **One logical change per commit** — `feat(scope): title`; gate bumps bump `BOOT_GATE_VERSION` / `SYSTEM_GATE_VERSION` in the owning module; doc fixups `fixup(docs): …`.
 6. **Never leave architecture undefined** — open items go in `DECISION_LOG.md` (root + `docs/DECISION_LOG.md`).
 
 ## Capability rules (inviolable)
@@ -66,7 +66,7 @@ Run `scripts/project_health.py`, verify `STATUS.md` is current, confirm no new `
 - Every `unsafe` needs `// SAFETY:` + arch cross-ref + `// SAFETY-REVIEWED-BY: domain`.
 - No `unwrap()`/`expect()` in kernel without `// PANIC-OK:` or `#[cfg(test)]`.
 - Errors map to `docs/ERROR_TAXONOMY.md` classes; no oracle fields (`cap_id`, `generation`) to unprivileged callers.
-- Hot paths: benchmark in `tests/bench/`, baseline in config; >5% P99 regression blocks phase commit.
+- Hot paths: benchmark in `tests/bench/`, baseline in config; >5% P99 regression blocks merge.
 
 ## File layout (canonical paths)
 
@@ -81,7 +81,7 @@ Run `scripts/project_health.py`, verify `STATUS.md` is current, confirm no new `
 
 ## Response format (development tasks)
 
-**[PHASE NNN: title]**
+**[scope: title]**
 
 - **Architecture Check:** docs read/created
 - **Threat Analysis:** nodes checked/created
@@ -89,8 +89,8 @@ Run `scripts/project_health.py`, verify `STATUS.md` is current, confirm no new `
 - **Tests:** Kani/proptest first
 - **Implementation:** production code
 - **Documentation:** arch doc updates
-- **Validation Report:** unit/proptest/kani/smoke/benchmark results
-- **Commit message:** `feat(phase-NNN):` with Proof/Ledger/Compat-review lines
+- **Validation Report:** unit/proptest/kani/gate-host/QEMU results
+- **Commit message:** `feat(scope):` with Proof/Ledger/Compat-review lines when applicable
 
 ## Never do
 
@@ -99,7 +99,7 @@ Run `scripts/project_health.py`, verify `STATUS.md` is current, confirm no new `
 - Kernel IPC without threat node
 - `unwrap()` in kernel without PANIC-OK
 - Skip ADR on architectural tradeoffs
-- Batch two phases in one commit
+- Batch unrelated subsystems in one commit
 - Claim tier A/B is "proven correct"
 - Shrink Kani bounds to pass proofs
 - Ambient authority in any server
@@ -107,7 +107,7 @@ Run `scripts/project_health.py`, verify `STATUS.md` is current, confirm no new `
 
 ## Repository state
 
-Bootstrap complete. Phases 1–400 implemented. Do not re-run empty-repo bootstrap.
+Bootstrap complete. OS at M500 (boot + system gates). Do not re-run empty-repo bootstrap.
 
 **Current epoch focus:** Track 1 doc migration — `docs/architecture/` layer established; flat docs still live for unmigrated content. Next gate: scope-freeze commit listing flat docs to migrate, then staging PRs per `prereq_graph.toml` dependency order. Kernel `#![deny(warnings)]` lands in Track 1 scope-freeze (resolve 3 existing warnings).
 

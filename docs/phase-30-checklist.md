@@ -1,16 +1,18 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 30 Checklist: Per-Process CR3 Switching
 
 ## Scope
 
 - [x] Switch between distinct user CR3 values and restore kernel CR3.
 - [x] Verify distinct translations after switches.
-- [x] Emit `Phase30-Cr3Switch` boot smoke output.
+- [x] Covered by boot gate `hw_paging` (`AresOS-BootGate: name=hw_paging ok=true`)
 
 ## Validation
 
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/phase30_cr3_switch_check.py --timeout 180`
+- [x] `python scripts/gate/boot.py --phase 30 --timeout 180
 
 ## Deferred
 

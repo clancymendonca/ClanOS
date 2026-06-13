@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/specs/WIRE_SCHEMA_REGISTRY.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/specs/WIRE_SCHEMA_REGISTRY.md`](specs/WIRE_SCHEMA_REGISTRY.md). This flat copy retained until migration squash reconciles any differences.
+
 # Wire Schema Registry
 
 ```yaml

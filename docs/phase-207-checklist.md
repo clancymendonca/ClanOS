@@ -1,3 +1,5 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 207 Checklist: Epoch 9 native SDK phase 207
 
 ## Layer

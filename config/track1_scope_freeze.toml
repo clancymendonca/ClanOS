@@ -6,7 +6,7 @@ description = "Migrate flat docs to docs/architecture/, docs/specs/, docs/proces
 scope_freeze_commit = "8f0052b9a327c4779a93efbba8bccb6754593e1f"
 max_wall_clock_days = 30
 triage_fallback = ["KOM", "FE", "SM"]
-status = "open"
+status = "gated"
 
 [semantic_diff_baseline]
 record_at = "migration_pr_merge"
@@ -16,7 +16,7 @@ stored_in = "config/migration_baselines.json"
 [warnings]
 target = "kernel"
 deny_warnings_commit = "8f0052b9a327c4779a93efbba8bccb6754593e1f"
-pre_existing_count = 3
+pre_existing_count = 0
 resolution_required_before_gate = true
 
 [exclusions]
@@ -52,7 +52,7 @@ flat_src = "docs/FAULT_ESCALATION.md"
 canonical_dst = "docs/architecture/FAULT_ESCALATION.md"
 batch = 2
 blocking = ["KOM"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND r_revoke_blocked_crossref_resolves_to_SM"
 domain_reviewer = "kernel_abi"
 
@@ -62,7 +62,7 @@ flat_src = "docs/SCHEDULER_MODEL.md"
 canonical_dst = "docs/architecture/SCHEDULER_MODEL.md"
 batch = 2
 blocking = ["KOM"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND priority_ceiling_crossref_resolves_to_FE"
 domain_reviewer = "kernel_abi"
 
@@ -72,7 +72,7 @@ flat_src = "docs/RIGHTS_ALGEBRA.md"
 canonical_dst = "docs/architecture/RIGHTS_ALGEBRA.md"
 batch = 2
 blocking = ["KOM"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
 domain_reviewer = "kernel_abi"
 
@@ -84,7 +84,7 @@ flat_src = "docs/THREAT_MODEL.md"
 canonical_dst = "docs/architecture/THREAT_MODEL.md"
 batch = 3
 blocking = ["FE"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND every_threat_node_id_in_tm_exists_in_tn AND attacker_goal_taxonomy_present AND tn_depends_on_all_resolve"
 domain_reviewer = "security"
 
@@ -106,7 +106,7 @@ flat_src = "docs/ERROR_TAXONOMY.md"
 canonical_dst = "docs/architecture/ERROR_TAXONOMY.md"
 batch = 4
 blocking = ["FE", "TM"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
 domain_reviewer = "process"
 
@@ -116,7 +116,7 @@ flat_src = "docs/PROOF_COVERAGE.md"
 canonical_dst = "docs/architecture/PROOF_COVERAGE.md"
 batch = 4
 blocking = ["RA", "TM"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
 domain_reviewer = "process"
 
@@ -126,7 +126,7 @@ flat_src = "docs/KANI_SCOPE.md"
 canonical_dst = "docs/architecture/KANI_SCOPE.md"
 batch = 4
 blocking = ["PC"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
 domain_reviewer = "process"
 
@@ -139,7 +139,7 @@ flat_src = "docs/TEMPORAL_SEMANTICS.md"
 canonical_dst = "docs/architecture/TEMPORAL_SEMANTICS.md"
 batch = 5
 blocking = ["RA", "ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
 domain_reviewer = "kernel_abi"
 
@@ -149,7 +149,7 @@ flat_src = "docs/GENERATION_COUNTER.md"
 canonical_dst = "docs/architecture/GENERATION_COUNTER.md"
 batch = 5
 blocking = ["KOM", "ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
 domain_reviewer = "kernel_abi"
 
@@ -159,7 +159,7 @@ flat_src = "docs/MEMORY_SAFETY_BOUNDARY.md"
 canonical_dst = "docs/architecture/MEMORY_SAFETY_BOUNDARY.md"
 batch = 5
 blocking = ["ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
 domain_reviewer = "kernel_abi"
 
@@ -169,7 +169,7 @@ flat_src = "docs/AUDIT_SUBSYSTEM.md"
 canonical_dst = "docs/architecture/AUDIT_SUBSYSTEM.md"
 batch = 5
 blocking = ["ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
 domain_reviewer = "security"
 
@@ -179,7 +179,7 @@ flat_src = "docs/COMPAT_ISOLATION.md"
 canonical_dst = "docs/architecture/COMPAT_ISOLATION.md"
 batch = 5
 blocking = ["TM", "ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
 domain_reviewer = "security"
 
@@ -189,7 +189,7 @@ flat_src = "docs/ARCHITECTURE_TARGETS.md"
 canonical_dst = "docs/architecture/ARCHITECTURE_TARGETS.md"
 batch = 5
 blocking = ["ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
 domain_reviewer = "kernel_abi"
 
@@ -199,7 +199,7 @@ flat_src = "docs/VIRTIO_SAFETY.md"
 canonical_dst = "docs/architecture/VIRTIO_SAFETY.md"
 batch = 5
 blocking = ["ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
 domain_reviewer = "kernel_abi"
 
@@ -219,7 +219,7 @@ flat_src = "docs/DRIVER_MODEL.md"
 canonical_dst = "docs/architecture/DRIVER_MODEL.md"
 batch = 5
 blocking = ["ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
 domain_reviewer = "kernel_abi"
 
@@ -229,7 +229,7 @@ flat_src = "docs/SCHEDULING_UNIFIED.md"
 canonical_dst = "docs/architecture/SCHEDULING_UNIFIED.md"
 batch = 5
 blocking = ["SM", "ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes"
 domain_reviewer = "kernel_abi"
 
@@ -239,7 +239,7 @@ flat_src = "docs/FORMAL_MODEL.md"
 canonical_dst = "docs/architecture/FORMAL_MODEL.md"
 batch = 5
 blocking = ["KS", "ET", "PC"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND tier_d_stub_marked"
 domain_reviewer = "process"
 
@@ -251,7 +251,7 @@ flat_src = "docs/CAP_TRANSFER_PROTOCOL.md"
 canonical_dst = "docs/specs/CAP_TRANSFER_PROTOCOL.md"
 batch = 5
 blocking = ["RA", "ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND specs_index_readme_present"
 domain_reviewer = "kernel_abi"
 
@@ -261,7 +261,7 @@ flat_src = "docs/WIRE_SCHEMA_REGISTRY.md"
 canonical_dst = "docs/specs/WIRE_SCHEMA_REGISTRY.md"
 batch = 5
 blocking = ["CTP", "ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND specs_index_readme_present"
 domain_reviewer = "kernel_abi"
 
@@ -271,7 +271,7 @@ flat_src = "docs/IPC_VERSION_NEGOTIATION.md"
 canonical_dst = "docs/specs/IPC_VERSION_NEGOTIATION.md"
 batch = 5
 blocking = ["CTP", "ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND specs_index_readme_present"
 domain_reviewer = "kernel_abi"
 
@@ -281,7 +281,7 @@ flat_src = "docs/ABI_NATIVE_SYSCALL.md"
 canonical_dst = "docs/specs/ABI_NATIVE_SYSCALL.md"
 batch = 5
 blocking = ["ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND specs_index_readme_present"
 domain_reviewer = "kernel_abi"
 
@@ -291,7 +291,7 @@ flat_src = "docs/ABI_ARES_RT.md"
 canonical_dst = "docs/specs/ABI_ARES_RT.md"
 batch = 5
 blocking = ["ANS", "ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND specs_index_readme_present"
 domain_reviewer = "kernel_abi"
 
@@ -301,7 +301,7 @@ flat_src = "docs/ABI_COMPOSITOR_IPC.md"
 canonical_dst = "docs/specs/ABI_COMPOSITOR_IPC.md"
 batch = 5
 blocking = ["IVN", "ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND specs_index_readme_present"
 domain_reviewer = "kernel_abi"
 
@@ -311,7 +311,7 @@ flat_src = "docs/PROTOCOL_CHANGELOG.md"
 canonical_dst = "docs/specs/PROTOCOL_CHANGELOG.md"
 batch = 5
 blocking = ["WSR", "ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND link_check_passes AND specs_index_readme_present"
 domain_reviewer = "process"
 
@@ -323,7 +323,7 @@ flat_src = "docs/UNSAFE_AUDIT.md"
 canonical_dst = "docs/process/UNSAFE_AUDIT.md"
 batch = 5
 blocking = ["ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND process_index_readme_present"
 domain_reviewer = "security"
 
@@ -333,7 +333,7 @@ flat_src = "docs/EPOCH_FAILURE_PROCEDURE.md"
 canonical_dst = "docs/process/EPOCH_FAILURE_PROCEDURE.md"
 batch = 5
 blocking = ["ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND process_index_readme_present"
 domain_reviewer = "process"
 
@@ -343,7 +343,7 @@ flat_src = "docs/SUPPLY_CHAIN_POLICY.md"
 canonical_dst = "docs/process/SUPPLY_CHAIN_POLICY.md"
 batch = 5
 blocking = ["ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND process_index_readme_present"
 domain_reviewer = "security"
 
@@ -353,7 +353,7 @@ flat_src = "docs/DEPENDENCY_POLICY.md"
 canonical_dst = "docs/process/DEPENDENCY_POLICY.md"
 batch = 5
 blocking = ["SCP", "ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND link_check_passes AND process_index_readme_present"
 domain_reviewer = "process"
 
@@ -363,7 +363,7 @@ flat_src = "docs/BUILD_INTEGRITY.md"
 canonical_dst = "docs/process/BUILD_INTEGRITY.md"
 batch = 5
 blocking = ["SCP", "ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND canonical_has_mermaid_state_machine AND link_check_passes AND process_index_readme_present"
 domain_reviewer = "security"
 
@@ -373,7 +373,7 @@ flat_src = "docs/COMPAT_SUNSET.md"
 canonical_dst = "docs/process/COMPAT_SUNSET.md"
 batch = 5
 blocking = ["CIS", "ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND link_check_passes AND process_index_readme_present"
 domain_reviewer = "process"
 
@@ -383,7 +383,7 @@ flat_src = "docs/DECISION_LOG.md"
 canonical_dst = "docs/process/DECISION_LOG.md"
 batch = 5
 blocking = ["ET", "PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND link_check_passes AND process_index_readme_present AND root_DECISION_LOG_crossref_preserved"
 domain_reviewer = "process"
 
@@ -415,7 +415,7 @@ flat_src = "docs/FUZZ_TARGETS.md"
 canonical_dst = "docs/proofs/FUZZ_TARGETS.md"
 batch = 5
 blocking = ["PC", "KS"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND link_check_passes AND proofs_index_readme_present"
 domain_reviewer = "process"
 
@@ -425,7 +425,7 @@ flat_src = "docs/LIVENESS_PROPERTIES.md"
 canonical_dst = "docs/proofs/LIVENESS_PROPERTIES.md"
 batch = 5
 blocking = ["KS", "ET", "PC"]
-status = "pending"
+status = "gated"
 gate_condition = "flat_status_header_matches_canonical_dst AND link_check_passes AND proofs_index_readme_present"
 domain_reviewer = "process"
 

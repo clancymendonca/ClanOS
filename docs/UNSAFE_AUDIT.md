@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/process/UNSAFE_AUDIT.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/process/UNSAFE_AUDIT.md`](process/UNSAFE_AUDIT.md). This flat copy retained until migration squash reconciles any differences.
+
 # Unsafe Code Audit Policy
 
 ```yaml

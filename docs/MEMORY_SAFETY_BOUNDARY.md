@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/architecture/MEMORY_SAFETY_BOUNDARY.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/architecture/MEMORY_SAFETY_BOUNDARY.md`](architecture/MEMORY_SAFETY_BOUNDARY.md). This flat copy retained until migration squash reconciles any differences.
+
 # Memory Safety Boundary
 
 ```yaml

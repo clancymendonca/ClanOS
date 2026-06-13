@@ -1,3 +1,5 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 1 Completion Checklist (Boot)
 
 Date: 2026-03-17
@@ -22,3 +24,13 @@ Phase 1 roadmap goals:
 ## Notes
 - Phase 1 is considered complete and stable.
 - Current development focus continues in scheduler/preemption groundwork (Phase 4-aligned work).
+
+## Validation
+
+```bash
+cargo check -p kernel
+python scripts/gate/boot.py --gate boot --timeout 360
+python scripts/validation_matrix.py --smoke-timeout 180
+```
+
+See [VALIDATION_GATES.md](VALIDATION_GATES.md).

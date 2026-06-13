@@ -77,6 +77,9 @@ pub fn init_mode_13h() -> bool {
     }
 
     unsafe {
+        // Misc output: OSDev mode 13h canonical (0x63 — not 0xE3 used by mode 12h).
+        Port::<u8>::new(0x3C2).write(0x63);
+
         let mut isr = PortReadOnly::<u8>::new(0x3DA);
         let mut seq_index = Port::<u8>::new(0x3C4);
         let mut seq_data = Port::<u8>::new(0x3C5);
@@ -96,7 +99,7 @@ pub fn init_mode_13h() -> bool {
         seq_index.write(0x03);
         seq_data.write(0x00);
         seq_index.write(0x04);
-        seq_data.write(0x06);
+        seq_data.write(0x0E);
         seq_index.write(0x00);
         seq_data.write(0x03);
 
@@ -144,7 +147,7 @@ pub fn init_mode_13h() -> bool {
             (0x02, 0x00),
             (0x03, 0x00),
             (0x04, 0x00),
-            (0x05, 0x00),
+            (0x05, 0x40),
             (0x06, 0x05),
             (0x07, 0x0F),
             (0x08, 0xFF),
@@ -160,22 +163,61 @@ pub fn init_mode_13h() -> bool {
             attr.write(i);
         }
         let _ = isr.read();
+        // Mode control: 256-color graphics (required for linear 0xA0000 bytes).
         attr.write(0x10);
         attr.write(0x41);
+        // Overscan, plane enable, panning, color select — missing these leaves planar stripes in QEMU.
+        attr.write(0x11);
+        attr.write(0x00);
+        attr.write(0x12);
+        attr.write(0x0F);
+        attr.write(0x13);
+        attr.write(0x00);
+        attr.write(0x14);
+        attr.write(0x00);
         let _ = isr.read();
         attr.write(0x20);
-
-        Port::<u8>::new(0x3C2).write(0xE3);
     }
 
     init_vga_palette();
+    // Clear VRAM so stale planar data does not show through before first flush.
+    unsafe {
+        for i in 0..BUFFER_LEN {
+            FRAMEBUFFER.add(i).write_volatile(0);
+        }
+    }
     MODE_ACTIVE.store(true, Ordering::Relaxed);
     true
 }
 
-/// Load the standard IBM VGA 16-color DAC palette (mode 13h defaults are often black in QEMU).
+/// Read back the mode-critical registers to confirm the writes landed.
+/// Returns (misc_output, seq4, gc6, crtc1).
+pub fn mode13h_register_readback() -> (u8, u8, u8, u8) {
+    unsafe {
+        let misc = PortReadOnly::<u8>::new(0x3CC).read();
+        let mut seq_index = Port::<u8>::new(0x3C4);
+        let mut seq_data = Port::<u8>::new(0x3C5);
+        seq_index.write(0x04);
+        let seq4 = seq_data.read();
+        let mut gc_index = Port::<u8>::new(0x3CE);
+        let mut gc_data = Port::<u8>::new(0x3CF);
+        gc_index.write(0x06);
+        let gc6 = gc_data.read();
+        let mut crtc_index = Port::<u8>::new(0x3D4);
+        let mut crtc_data = Port::<u8>::new(0x3D5);
+        crtc_index.write(0x01);
+        let crtc1 = crtc_data.read();
+        (misc, seq4, gc6, crtc1)
+    }
+}
+
+/// Load 256-color DAC entries for mode 13h (QEMU defaults are often all black).
+///
+/// Indices 0–15 carry the standard VGA 16-color palette (the UI block colors:
+/// `COLOR_DESKTOP`=cyan, `COLOR_TITLEBAR`=blue, …); 16–255 are a grayscale ramp.
 fn init_vga_palette() {
-    const COLORS: [(u8, u8, u8); 16] = [
+    // 6-bit DAC RGB triplets for the standard VGA 16-color palette.
+    const STD16: [(u8, u8, u8); 16] = [
         (0, 0, 0),
         (0, 0, 42),
         (0, 42, 0),
@@ -197,10 +239,15 @@ fn init_vga_palette() {
         let mut dac_write = Port::<u8>::new(0x3C8);
         let mut dac_data = Port::<u8>::new(0x3C9);
         dac_write.write(0);
-        for (r, g, b) in COLORS {
+        for (r, g, b) in STD16 {
             dac_data.write(r);
             dac_data.write(g);
             dac_data.write(b);
+        }
+        for i in 16..=255u8 {
+            dac_data.write(i >> 2);
+            dac_data.write(i >> 2);
+            dac_data.write(i >> 2);
         }
     }
 }
@@ -299,7 +346,9 @@ pub fn flush_to_screen(buf: &[u8; BUFFER_LEN]) {
         return;
     }
     unsafe {
-        core::ptr::copy_nonoverlapping(buf.as_ptr(), FRAMEBUFFER, BUFFER_LEN);
+        for (i, &byte) in buf.iter().enumerate() {
+            FRAMEBUFFER.add(i).write_volatile(byte);
+        }
     }
     FLUSH_COUNT.fetch_add(1, Ordering::Relaxed);
 }

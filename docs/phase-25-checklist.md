@@ -1,3 +1,5 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 25 Checklist: CPU syscall / sysret Path
 
 ## Scope
@@ -6,13 +8,13 @@
 - [x] Run tick-probe syscall from hardware user code.
 - [x] Return to kernel through `int 0x80` after `syscall`.
 - [x] Add blocked `UserHwSyscallReturned` process metadata.
-- [x] Emit `Phase25-SyscallHw` boot smoke output.
+- [x] Covered by boot gate `hw_paging` (`AresOS-BootGate: name=hw_paging ok=true`)
 
 ## Validation
 
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/phase25_syscall_hw_check.py --timeout 180`
+- [x] `python scripts/gate/boot.py --phase 25 --timeout 180
 
 ## Deferred
 

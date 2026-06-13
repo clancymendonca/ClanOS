@@ -9,7 +9,7 @@ Phases 44–46 expose bounded user/kernel data transfer for paths and file I/O t
 Boot smoke:
 
 ```text
-Phase44-UserPath: probes=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Phase 45 — FD Table
@@ -22,7 +22,7 @@ Bring-up uses a global `fd_table` (spin `Mutex`) mapping small integer FDs to st
 Boot smoke:
 
 ```text
-Phase45-FileFd: opens=..., closes=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Phase 46 — FD I/O
@@ -33,7 +33,7 @@ Phase45-FileFd: opens=..., closes=..., ok=true
 Boot smoke:
 
 ```text
-Phase46-FdIO: reads=..., writes=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 Hardware syscall dispatch passes `arg1`/`arg2` from `rsi`/`rdx` for these calls.
@@ -41,9 +41,9 @@ Hardware syscall dispatch passes `arg1`/`arg2` from `rsi`/`rdx` for these calls.
 ## Validation
 
 ```bash
-python scripts/phase44_user_path_check.py --timeout 180
-python scripts/phase45_file_fd_check.py --timeout 180
-python scripts/phase46_fd_io_check.py --timeout 180
+python scripts/gate/legacy.py --phase 44 --timeout 180
+python scripts/gate/legacy.py --phase 45 --timeout 180
+python scripts/gate/legacy.py --phase 46 --timeout 180
 ```
 
 ## Deferred

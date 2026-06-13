@@ -113,10 +113,10 @@ Continues from [ROADMAP_POST100.md](ROADMAP_POST100.md) milestone 150. Living pl
 
 | Line | Epoch |
 |------|-------|
-| `Phase175-Epoch7` | 7 |
-| `Phase200-Milestone` | 8 |
-| `Phase250-Milestone` | 10 |
-| `Phase300-Milestone` | 12 |
-| `Phase350-Milestone` | 14 |
+| `AresOS-Gate: name=integrity ok=true` | 7 |
+| `AresOS-Gate: name=scheduling ok=true` | 8 |
+| `AresOS-Gate: name=hardware ok=true` | 10 |
+| `AresOS-Gate: name=federation ok=true` | 12 |
+| `AresOS-Gate: name=release ok=true` | 14 |
 
-Scripts: `phase175_epoch7_check.py`, `phase200_milestone_check.py`, `phase250_milestone_check.py`, `phase300_milestone_check.py`, `phase350_milestone_check.py`.
+Scripts: `python scripts/gate/system.py --gate integrity --timeout 180`, `python scripts/gate/system.py --gate scheduling --timeout 180`, `python scripts/gate/system.py --gate hardware --timeout 180`, `python scripts/gate/system.py --gate federation --timeout 180`, `python scripts/gate/system.py --gate release --timeout 180`.

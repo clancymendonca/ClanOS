@@ -1,16 +1,18 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 35 Checklist: Hardware Syscall Dispatch Table
 
 ## Scope
 
 - [x] `ALLOWED_HW_SYSCALLS` allowlist in `user_syscall_hw`.
 - [x] Reject unknown syscall IDs with accounting.
-- [x] Emit `Phase35-SyscallTable` boot smoke output.
+- [x] Covered by boot gate `sched_userspace` (`AresOS-BootGate: name=sched_userspace ok=true`)
 
 ## Validation
 
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/phase35_syscall_table_check.py --timeout 180`
+- [x] `python scripts/gate/boot.py --phase 35 --timeout 180
 
 ## Deferred
 

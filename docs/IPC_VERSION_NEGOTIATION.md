@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/specs/IPC_VERSION_NEGOTIATION.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/specs/IPC_VERSION_NEGOTIATION.md`](specs/IPC_VERSION_NEGOTIATION.md). This flat copy retained until migration squash reconciles any differences.
+
 # IPC Version Negotiation
 
 ```yaml

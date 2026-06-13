@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/architecture/ERROR_TAXONOMY.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/architecture/ERROR_TAXONOMY.md`](architecture/ERROR_TAXONOMY.md). This flat copy retained until migration squash reconciles any differences.
+
 # Error Taxonomy
 
 ```yaml

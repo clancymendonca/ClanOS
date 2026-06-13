@@ -1,3 +1,5 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 9 Checklist (Stored Program Loader)
 
 **Date**: 2026-05-13  
@@ -29,22 +31,24 @@
 - [x] Shell commands: `programs`, `bin list`, `bin info <program>`
 - [x] Program count, launch count, and failed launch count syscalls
 - [x] `fsinfo` reports program count
-- [x] Boot-time `Phase9-Loader` smoke line
+- [x] Covered by boot gate `loader_security` (`AresOS-BootGate: name=loader_security ok=true`)
 
 ## 5. Validation
 
-- [x] `scripts/phase9-loader-check` for QEMU-backed validation
-- [x] `scripts/validation_matrix.py` includes `phase9-loader-check`
+- [x] `scripts/gate/boot.py --phase 9` for QEMU-backed validation
+- [x] `scripts/validation_matrix.py` includes `boot-gate-check`
 - [x] Integration tests cover parser, discovery, run path, malformed files, and loader syscalls
 
-## Validation Commands
+## Validation
 
 ```bash
 cargo check -p kernel
-cargo test -p kernel --features preemption --test preemption_integration
-python scripts/phase9_loader_check.py --timeout 180
-python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --boot-wait 90 --smoke-timeout 180
+python scripts/gate/boot.py --phase 9 --timeout 180
+python scripts/validation_matrix.py --smoke-timeout 180
 ```
+
+See [VALIDATION_GATES.md](VALIDATION_GATES.md).
+
 
 ## Known Limits
 

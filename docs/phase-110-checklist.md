@@ -1,3 +1,5 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 110 Checklist: Constitutional Sign-Off
 
 ## Layer
@@ -40,9 +42,9 @@ No duplicate cross-layer laws added without derivation note. Subsystem-local rul
 ## Validation
 
 - [x] `python scripts/semantic_lint.py`
-- [x] `python scripts/phase110_constitutional_check.py --timeout 300`
+- [x] `python scripts/gate/boot.py --phase 110 --timeout 180
 - [x] `cargo test -p kernel --features preemption --test preemption_integration` (phase110_constitutional_smoke_works)
-- [x] `Phase110-Constitutional` boot smoke
+- [x] Covered by boot gate `constitutional` (`AresOS-BootGate: name=constitutional ok=true`)
 
 
 ## Deferred

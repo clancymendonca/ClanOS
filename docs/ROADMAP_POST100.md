@@ -37,7 +37,7 @@ Index: [INDEX.md](INDEX.md) · Vision: [NATIVE_MODEL.md](NATIVE_MODEL.md)
 
 Integration milestone: **110**.
 
-**Status (documentation + validation):** phases 101–110 complete — `semantic_lint.py`, `phase110_constitutional_check.py`, `Phase110-Constitutional` boot smoke.
+**Status (documentation + validation):** phases 101–110 complete — `semantic_lint.py`, `python scripts/gate/legacy.py --phase 110 --timeout 180`, `AresOS-BootGate: name=constitutional ok=true` boot smoke.
 
 ---
 
@@ -58,7 +58,7 @@ Integration milestone: **110**.
 
 Integration milestone: **120**.
 
-**Status (implementation + validation):** phases 111–120 complete — `kernel_object.rs`, `native_syscall.rs` (256–258 kernel-only), `path_broker.rs`, `storage_broker.rs`, `phase120_cap_integration_check.py`, `Phase120-CapCompat` boot smoke. Ring-3 native syscall allowlist deferred to phase 128 (G4).
+**Status (implementation + validation):** phases 111–120 complete — `kernel_object.rs`, `native_syscall.rs` (256–258 kernel-only), `path_broker.rs`, `storage_broker.rs`, `python scripts/gate/legacy.py --phase 120 --timeout 180`, `AresOS-BootGate: name=capabilities ok=true` boot smoke. Ring-3 native syscall allowlist deferred to phase 128 (G4).
 
 ---
 
@@ -75,7 +75,7 @@ Integration milestone: **120**.
 | 127 | Service crash isolation | platform | native | **complete** — tier-2 `service_isolation.rs` |
 | 128 | Mandatory `ares-native-v1` manifest | platform | native | **complete** — G4 `native_manifest.rs` |
 | 129 | Scoped grants in manifest | platform | native | **complete** — scoped grant validation |
-| 130 | Integration | platform | governance | **complete** — `Phase130-Platform` smoke |
+| 130 | Integration | platform | governance | **complete** — `AresOS-BootGate: name=platform_brokers ok=true` smoke |
 
 Integration milestone: **130**.
 

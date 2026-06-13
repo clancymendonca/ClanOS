@@ -1,3 +1,5 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 3 Completion Checklist (Memory)
 
 Date: 2026-03-17
@@ -25,3 +27,13 @@ Phase 3 roadmap goals:
 ## Notes
 - Physical memory is identity-mapped via the bootloader's `map_physical_memory` feature.
 - Virtual memory address space management beyond the initial heap is a Phase 6 concern.
+
+## Validation
+
+```bash
+cargo check -p kernel
+python scripts/gate/boot.py --gate boot --timeout 360
+python scripts/validation_matrix.py --smoke-timeout 180
+```
+
+See [VALIDATION_GATES.md](VALIDATION_GATES.md).

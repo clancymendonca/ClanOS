@@ -1,3 +1,5 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 17 Checklist: User Context And Entry Frames
 
 ## Scope
@@ -8,13 +10,13 @@
 - [x] Add user stack descriptors.
 - [x] Add blocked `UserContextReady` process metadata.
 - [x] Expose user-context status through shell and syscall surfaces.
-- [x] Emit `Phase17-UserContext` boot smoke output.
+- [x] Covered by boot gate `userspace_bootstrap` (`AresOS-BootGate: name=userspace_bootstrap ok=true`)
 
 ## Validation
 
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/phase17_user_context_check.py --timeout 180`
+- [x] `python scripts/gate/boot.py --phase 17 --timeout 180
 
 ## Deferred
 

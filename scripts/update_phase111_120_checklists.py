@@ -10,8 +10,8 @@ VALIDATION = """## Validation
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration` (phase120_cap_compat_smoke_works)
 - [x] `python scripts/semantic_lint.py`
-- [x] `python scripts/phase120_cap_integration_check.py --timeout 300`
-- [x] `Phase120-CapCompat` boot smoke (phases 111-120 integration)
+- [x] `python scripts/gate/legacy.py --phase 120 --timeout 300`
+- [x] `python scripts/gate/boot.py --gate capabilities --timeout 300`
 """
 
 SCOPE_DONE = "- [x] Deliverable:"

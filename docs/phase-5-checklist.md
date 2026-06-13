@@ -1,3 +1,5 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 5 Checklist (Preemptive Scheduling & Process Foundation)
 
 **Date**: 2026-05-06  
@@ -68,14 +70,14 @@ Phase 5 builds on Phase 4's context switching infrastructure to establish:
 - [x] Each task increments its own counter and periodically yields
 - [x] Verify all 4 tasks advance roughly equally (fairness test)
 - [x] No single task starves others (validated by 10-minute soak on 2026-03-23)
-- [x] Preemption latency < 100ms (validated by `scripts/phase5-latency-check` on 2026-03-23)
+- [x] Preemption latency < 100ms (validated by `scripts/preemption/latency.py` on 2026-03-23)
 - [x] 10-minute soak test: no stalls, all metrics advance (passed 2026-03-23)
 - [x] Extend `tests/` with preemption-specific integration tests
   - `fairness_test.rs` - 4 tasks, measure quanta distribution
   - `preemption_latency_test.rs` - measure switch delay
   - `process_isolation_test.rs` - verify process table operations
-  - `scripts/phase5-soak-check` - runtime fairness/progress soak checker
-  - `scripts/phase5-latency-check` - runtime preemption latency SLA checker
+  - `scripts/preemption/soak.py` - runtime fairness/progress soak checker
+  - `scripts/preemption/latency.py` - runtime preemption latency SLA checker
 
 ### 7. Documentation & Examples
 - [x] README: section on preemption, quantum tuning, fairness guarantees
@@ -178,3 +180,14 @@ Pass criteria:
 ---
 
 **Next Step**: Phase 6 user-space foundation and shell bring-up.
+
+## Validation
+
+```bash
+cargo check -p kernel
+python scripts/preemption/soak.py --boot-wait 90 --duration 30
+python scripts/preemption/latency.py --boot-wait 90 --duration 30
+python scripts/validation_matrix.py --smoke-timeout 180
+```
+
+See [VALIDATION_GATES.md](VALIDATION_GATES.md).

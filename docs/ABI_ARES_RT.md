@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/specs/ABI_ARES_RT.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/specs/ABI_ARES_RT.md`](specs/ABI_ARES_RT.md). This flat copy retained until migration squash reconciles any differences.
+
 # ares-rt ABI (Epoch 2)
 
 ```yaml

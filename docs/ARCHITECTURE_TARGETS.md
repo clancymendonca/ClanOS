@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/architecture/ARCHITECTURE_TARGETS.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/architecture/ARCHITECTURE_TARGETS.md`](architecture/ARCHITECTURE_TARGETS.md). This flat copy retained until migration squash reconciles any differences.
+
 # Architecture Targets (Epoch 6)
 
 ```yaml

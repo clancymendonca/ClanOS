@@ -49,7 +49,7 @@ The shell exposes:
 Boot emits:
 
 ```text
-Phase13-MappingStub: mapped=..., rejected=..., pages=..., copied=..., zeroed=..., exec_blocked_ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Safety Boundary

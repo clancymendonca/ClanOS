@@ -1,3 +1,5 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 16 Checklist: Inactive User Page Tables
 
 ## Scope
@@ -8,13 +10,13 @@
 - [x] Validate virtual-to-physical translation without switching CR3.
 - [x] Add loader counters and blocked `PageTableReady` process metadata.
 - [x] Expose page-table status through shell and syscall surfaces.
-- [x] Emit `Phase16-PageTables` boot smoke output.
+- [x] Covered by boot gate `memory_layout` (`AresOS-BootGate: name=memory_layout ok=true`)
 
 ## Validation
 
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/phase16_page_table_check.py --timeout 180`
+- [x] `python scripts/gate/boot.py --phase 16 --timeout 180
 
 ## Deferred
 

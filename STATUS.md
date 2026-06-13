@@ -1,61 +1,71 @@
 # AresOS Project Status
 
-## Snapshot (functional OS — milestone 400)
+## Snapshot (fully operational OS)
 
-- **Phases 111-130:** platform brokers + interim IPC (epoch 1)
-- **Phases 131-140:** build integrity, native endpoints, audit wire, IPC integration (epoch 3)
-- **Phases 151-350:** [`ROADMAP_151_350.md`](docs/ROADMAP_151_350.md); epochs 7-14 graduated
-- **Phases 351-400:** [`ROADMAP_351_400.md`](docs/ROADMAP_351_400.md); desktop + userland + network
-- **COMPLETED_PHASE:** 400
+- **Boot gate:** phases 6–150 unified in `kernel/src/boot_gate.rs` (`BOOT_GATE_VERSION = 1.0.0`)
+- **System gate:** post-150 integration in `kernel/src/system_gate.rs` (`SYSTEM_GATE_VERSION = 1.0.0`)
 - **Desktop:** VGA 320×200, double-buffered compositor, PS/2 mouse, window manager, taskbar shell
-- **Userland:** `/bin/demo-hello`, `/bin/ares-info` native packages (ares-rt ABI)
-- **Network:** virtio-net loopback ping + compat sockets
-- **Userland runtime:** `ares-rt` + `install_userland.py`
+- **Userland:** `/bin/demo-hello`, `/bin/ares-info` native packages (`ares-rt` `#![no_std]`)
+- **Network:** virtio-net loopback + external route simulation
 - gap_registry: 0 open, 350 addressed (350 total)
 - threat nodes open: 0
-- phase_checklists: 250 implemented (151-400)
-- release_scorecard: [`RELEASE_SCORECARD_M400.md`](docs/RELEASE_SCORECARD_M400.md)
+- release_scorecard: [`RELEASE_SCORECARD_M500.md`](docs/RELEASE_SCORECARD_M500.md)
+- Track 1 doc migration: **gated** (see `config/track1_scope_freeze.toml`)
 
-## Threat coverage by goal
+## Validation gates
 
-- `privilege_escalation`: 6/8 closed
-- `information_disclosure`: 1/2 closed
-- `denial_of_service`: 3/3 closed
-- `integrity_violation`: 7/9 closed
+Boot and system validation emit two serial families at boot:
 
-## Integration milestones
+| Family | Final line | Module |
+|--------|------------|--------|
+| Boot (6–150) | `AresOS-BootGate: ok=true` | `boot_gate.rs` |
+| System (151–500) | `AresOS-SystemGate: ok=true` | `system_gate.rs` |
 
-| Milestone | Serial line | Script |
-|-----------|-------------|--------|
-| M350 | `Phase350-Milestone` | `phase350_milestone_check.py` |
-| M375 | `Phase375-Milestone` | `phase375_milestone_check.py` |
-| **M400** | `Phase400-Milestone` | `phase400_milestone_check.py` |
-| Desktop | `Phase351-Desktop` | `phase351_desktop_check.py` |
+Host checks (no QEMU):
 
-## Boot smokes (QEMU)
+```
+python scripts/gate/host.py
+```
 
-Expected serial lines (all `ok=true`):
+QEMU checks:
 
-- `Phase350-Milestone`
-- `Phase351-Desktop`
-- `Phase375-Milestone`
-- `Phase400-Milestone`
+```
+python scripts/gate/boot.py --gate boot --timeout 360
+python scripts/gate/system.py --gate system --timeout 360
+```
+
+Legacy phase numbers: `python scripts/gate/legacy.py --phase N`. Thin shims at `scripts/gate/boot.py` etc. remain for older references.
+
+### Boot gate subsystems
+
+| Gate | Covers |
+|------|--------|
+| shell_storage | Phases 6–8 |
+| loader_security | Phases 9–13 |
+| memory_layout | Phases 14–16 |
+| userspace_bootstrap | Phases 17–20 |
+| hw_paging | Phases 21–30 |
+| sched_userspace | Phases 31–40 |
+| dynamic_runtime | Phases 41–50 |
+| fd_mmap | Phases 51–60 |
+| vm_fork | Phases 61–70 |
+| syscall_ring3 | Phases 71–80 |
+| path_exec | Phases 81–90 |
+| smp_depth | Phases 91–100 |
+| constitutional | Phase 110 |
+| capabilities | Phase 120 |
+| service_loader | Phase 121 |
+| platform_brokers | Phase 130 |
+| build_endpoints | Phases 131–140 |
+| virtio_blk | Phase 201 |
+| network_compat | Phase 404 |
+| scheduler_epoch | Phase 149 |
+| boundary | Phase 150 |
 
 ## Running with GUI
 
 ```powershell
 .\scripts\run_desktop.ps1
 ```
-
-Or manually:
-
-```powershell
-$env:Path = "C:\Program Files\qemu;" + $env:Path
-cargo bootimage -p kernel
-qemu-system-x86_64 -drive format=raw,file=target\x86_64-unknown-none\debug\bootimage-kernel.bin -serial stdio -display default -vga std -no-reboot
-```
-
-- **Terminal** (this window): type shell commands after `AresOS shell ready`
-- **QEMU window**: 320×200 desktop (auto-refreshes; click to focus windows)
 
 Shell commands: `help`, `run demo-hello`, `run ares-info`, `ls`, `ps`, `fsinfo`, `desktop`

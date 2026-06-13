@@ -15,4 +15,5 @@ qemu-system-x86_64 `
     -serial stdio `
     -display default `
     -vga std `
+    -machine pc `
     -no-reboot

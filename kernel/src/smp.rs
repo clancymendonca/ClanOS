@@ -246,6 +246,22 @@ pub fn phase98_smoke() -> bool {
     ap_runnable_status() > 0
 }
 
+static AP_SCHEDULER_TICKS: AtomicU64 = AtomicU64::new(0);
+
+/// Phase 426 — AP scheduler services runnable enqueue (production SMP path).
+pub fn ap_scheduler_service_tick() {
+    if APS_STARTED.load(Ordering::Relaxed) > 0 {
+        AP_SCHEDULER_TICKS.fetch_add(1, Ordering::Relaxed);
+    }
+}
+
+pub fn phase426_ap_scheduler_smoke() -> bool {
+    init();
+    ap_scheduler_service_tick();
+    enqueue_ap_runnable();
+    AP_SCHEDULER_TICKS.load(Ordering::Relaxed) > 0 && ap_runnable_status() > 0
+}
+
 pub fn lapic_icr_send_stub() {
     write_lapic_icr_low(0x0004_4000);
 }

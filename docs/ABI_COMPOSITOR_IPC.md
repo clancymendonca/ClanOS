@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/specs/ABI_COMPOSITOR_IPC.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/specs/ABI_COMPOSITOR_IPC.md`](specs/ABI_COMPOSITOR_IPC.md). This flat copy retained until migration squash reconciles any differences.
+
 # Compositor IPC ABI (Epoch 5 prereq)
 
 ```yaml

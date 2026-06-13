@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/process/EPOCH_FAILURE_PROCEDURE.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/process/EPOCH_FAILURE_PROCEDURE.md`](process/EPOCH_FAILURE_PROCEDURE.md). This flat copy retained until migration squash reconciles any differences.
+
 # Epoch Failure Procedure
 
 ```yaml

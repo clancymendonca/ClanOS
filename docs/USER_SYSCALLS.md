@@ -35,7 +35,7 @@ The shell exposes:
 Boot emits:
 
 ```text
-Phase19-SyscallReturn: syscalls=..., returns=..., rejected=..., abi_ok=true, returned_ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Safety Boundary
@@ -62,4 +62,4 @@ Phase 25 enables real `syscall`/`sysret`. Phase 35 registers an allowlist in `us
 
 Arguments for FD and path syscalls use `rsi` / `rdx` in the hardware entry stub. See [FILE_DESCRIPTORS.md](FILE_DESCRIPTORS.md).
 
-Boot smokes include `Phase35-SyscallTable`, `Phase36-StorageCopyin`, `Phase44-UserPath`, `Phase45-FileFd`, and `Phase46-FdIO`.
+Boot smokes include `See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.

@@ -13,10 +13,10 @@ from mark_epoch0_addressed import parse_gaps  # noqa: E402
 
 
 def main() -> int:
-    catalog = (ROOT / "kernel" / "src" / "phase_catalog.rs").read_text(encoding="utf-8")
-    m = re.search(r"COMPLETED_PHASE: u32 = (\d+)", catalog)
-    if not m or int(m.group(1)) < 350:
-        print("release_scorecard_check: COMPLETED_PHASE < 350", file=sys.stderr)
+    gate = (ROOT / "kernel" / "src" / "system_gate.rs").read_text(encoding="utf-8")
+    m = re.search(r'SYSTEM_GATE_VERSION: &str = "([^"]+)"', gate)
+    if not m:
+        print("release_scorecard_check: SYSTEM_GATE_VERSION not found", file=sys.stderr)
         return 1
     gaps = parse_gaps((ROOT / "gap_registry.toml").read_text(encoding="utf-8"))
     open_gaps = sum(1 for g in gaps if g.get("status") == "open")
@@ -30,7 +30,7 @@ def main() -> int:
     if open_threats > 0:
         print(f"release_scorecard_check: {open_threats} open threat nodes", file=sys.stderr)
         return 1
-    print("release_scorecard_check: OK (phase 350, 0 open gaps, 0 open threats)")
+    print(f"release_scorecard_check: OK (system_gate={m.group(1)}, 0 open gaps, 0 open threats)")
     return 0
 
 

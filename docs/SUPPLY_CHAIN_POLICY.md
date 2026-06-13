@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/process/SUPPLY_CHAIN_POLICY.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/process/SUPPLY_CHAIN_POLICY.md`](process/SUPPLY_CHAIN_POLICY.md). This flat copy retained until migration squash reconciles any differences.
+
 # Supply Chain Policy
 
 ```yaml

@@ -1,9 +1,11 @@
 # Rights Algebra (Authority Calculus)
 
 ```yaml
-status: authoritative
+status: superseded-by: docs/architecture/RIGHTS_ALGEBRA.md
 semantics_version: 1.1.0
 ```
+
+> **Canonical:** [`docs/architecture/RIGHTS_ALGEBRA.md`](architecture/RIGHTS_ALGEBRA.md). This flat copy retained until migration squash reconciles any differences.
 
 **Gate G2** — phases **112–113** cap lifecycle implementation blocked until this document is signed off at phase 110.
 

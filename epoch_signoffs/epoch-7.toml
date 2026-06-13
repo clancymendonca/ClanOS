@@ -9,6 +9,6 @@ solo_maintainer = true
 [[signoffs]]
 reviewer_id = "clancy"
 domain = "kernel"
-scope = "loom harness, OOM enforcement, audit chain, Kani CI, Phase175-Epoch7"
+scope = "loom harness, OOM enforcement, audit chain, Kani CI, system gate integrity"
 timestamp = "2026-06-11T20:00:00Z"
 epoch = 7

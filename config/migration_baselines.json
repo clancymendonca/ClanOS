@@ -10,5 +10,26 @@
     "mermaid_diagram_count": 4,
     "cross_ref_count": 21,
     "semantics_version": "1.3.0"
+  },
+  "FE": {
+    "doc_id": "FE",
+    "canonical_path": "docs/architecture/FAULT_ESCALATION.md",
+    "migrated_at_commit": "track1-gate",
+    "semantics_version": "1.2.0",
+    "mermaid_diagram_count": 1
+  },
+  "SM": {
+    "doc_id": "SM",
+    "canonical_path": "docs/architecture/SCHEDULER_MODEL.md",
+    "migrated_at_commit": "track1-gate",
+    "semantics_version": "1.2.0",
+    "mermaid_diagram_count": 1
+  },
+  "RA": {
+    "doc_id": "RA",
+    "canonical_path": "docs/architecture/RIGHTS_ALGEBRA.md",
+    "migrated_at_commit": "track1-gate",
+    "semantics_version": "1.2.0",
+    "mermaid_diagram_count": 1
   }
 }

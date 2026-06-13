@@ -1,3 +1,5 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 21 Checklist: Hardware User Page Tables
 
 ## Scope
@@ -6,13 +8,13 @@
 - [x] Map user stack pages for later Ring 3 entry.
 - [x] Verify hardware translations match descriptor translations.
 - [x] Add blocked `HwPageTableReady` process metadata.
-- [x] Emit `Phase21-HwPageTables` boot smoke output.
+- [x] Covered by boot gate `hw_paging` (`AresOS-BootGate: name=hw_paging ok=true`)
 
 ## Validation
 
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/phase21_hw_page_table_check.py --timeout 180`
+- [x] `python scripts/gate/boot.py --phase 21 --timeout 180
 
 ## Deferred
 

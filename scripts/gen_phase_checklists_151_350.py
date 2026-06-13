@@ -12,11 +12,11 @@ EXPLICIT: dict[int, tuple[str, str, str, str]] = {
     160: ("Epoch 7 OOM Integration", "kernel", "governance", "phase147 OOM enforcement"),
     165: ("Epoch 7 Audit Build Gate", "governance", "governance", "audit tamper + dual-build"),
     170: ("Epoch 7 Evidence Gate", "governance", "governance", "Kani mandatory CI"),
-    175: ("Epoch 7 Signoff", "governance", "governance", "Phase175-Epoch7 smoke"),
-    200: ("Milestone 200 Gate", "governance", "governance", "SCHEDULING_UNIFIED + semantic lint"),
-    250: ("Milestone 250 Gate", "governance", "governance", "hardware + SDK"),
-    300: ("Milestone 300 Gate", "governance", "governance", "federation protocol"),
-    350: ("Milestone 350 Release 1.0", "governance", "governance", "public release scorecard"),
+    175: ("Epoch 7 Signoff", "governance", "governance", "system gate integrity"),
+    200: ("Milestone 200 Gate", "governance", "governance", "system gate scheduling"),
+    250: ("Milestone 250 Gate", "governance", "governance", "system gate hardware"),
+    300: ("Milestone 300 Gate", "governance", "governance", "system gate federation"),
+    350: ("Milestone 350 Release 1.0", "governance", "governance", "system gate release"),
 }
 
 BANDS = [
@@ -45,7 +45,9 @@ def main() -> None:
         title, layer, tag, deliv = title_for(n)
         path = ROOT / f"phase-{n}-checklist.md"
         path.write_text(
-            f"""# Phase {n} Checklist: {title}
+            f"""> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md).
+
+# Phase {n} Checklist: {title}
 
 ## Layer
 {layer}
@@ -65,7 +67,7 @@ future implementation
 ## Validation
 
 - [ ] `cargo check -p kernel`
-- [ ] Smoke script when phase delivers runtime behavior
+- [ ] Gate check via [VALIDATION_GATES.md](VALIDATION_GATES.md)
 
 ## Deferred
 

@@ -38,7 +38,7 @@ The shell exposes:
 Boot emits:
 
 ```text
-Phase16-PageTables: tables=..., rejected=..., pages=..., translate_ok=true, cr3_switched=false
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Safety Boundary
@@ -60,7 +60,7 @@ Phase 30 verifies distinct CR3 values across processes. Phase 31 binds CR3 on pr
 Boot smoke:
 
 ```text
-Phase48-WxPolicy: attempts=..., rejected=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## mprotect (Phase 53)
@@ -70,7 +70,7 @@ Phase48-WxPolicy: attempts=..., rejected=..., ok=true
 Boot smoke:
 
 ```text
-Phase53-Mprotect: applied=..., rejected=..., guard_faults=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## VMA Registry (Phase 63)
@@ -80,7 +80,7 @@ Each process keeps a list of `VmaRegion` records (base, length, protection, back
 Boot smoke:
 
 ```text
-Phase63-Vma: regions=..., overlaps_rejected=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## munmap (Phase 62)
@@ -90,5 +90,5 @@ Phase63-Vma: regions=..., overlaps_rejected=..., ok=true
 Boot smoke:
 
 ```text
-Phase62-Munmap: unmapped=..., rejected=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```

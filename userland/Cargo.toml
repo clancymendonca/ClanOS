@@ -9,8 +9,12 @@ description = "AresOS userspace runtime (epoch 2)"
 name = "ares_rt"
 path = "src/lib.rs"
 
+[features]
+host-std = []
+
 [[bin]]
 name = "demo-hello"
 path = "src/bin/demo_hello.rs"
+required-features = ["host-std"]
 
 [dependencies]

@@ -1,3 +1,5 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 8 Checklist (Device & Block Driver Bring-Up)
 
 **Date**: 2026-05-13  
@@ -35,22 +37,24 @@
 - [x] Shell commands: `devices`, `blk list`, `blk info <id>`, `mount <block-id>`
 - [x] Device/block count syscalls
 - [x] `fsinfo` reports block-device count
-- [x] Boot-time `Phase8-Devices` smoke line
+- [x] Covered by boot gate `shell_storage` (`AresOS-BootGate: name=shell_storage ok=true`)
 
 ## 6. Validation
 
-- [x] `scripts/phase8-device-check` for QEMU-backed validation
-- [x] `scripts/validation_matrix.py` includes `phase8-device-check`
+- [x] `scripts/gate/boot.py --phase 8` for QEMU-backed validation
+- [x] `scripts/validation_matrix.py` includes `boot-gate-check`
 - [x] Integration tests cover device registry, block registry, and storage-through-manager behavior
 
-## Validation Commands
+## Validation
 
 ```bash
 cargo check -p kernel
-cargo test -p kernel --features preemption --test preemption_integration
-python scripts/phase8_device_check.py --timeout 180
-python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --boot-wait 90 --smoke-timeout 180
+python scripts/gate/boot.py --phase 8 --timeout 180
+python scripts/validation_matrix.py --smoke-timeout 180
 ```
+
+See [VALIDATION_GATES.md](VALIDATION_GATES.md).
+
 
 ## Known Limits
 

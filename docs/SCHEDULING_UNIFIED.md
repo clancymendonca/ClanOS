@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/architecture/SCHEDULING_UNIFIED.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/architecture/SCHEDULING_UNIFIED.md`](architecture/SCHEDULING_UNIFIED.md). This flat copy retained until migration squash reconciles any differences.
+
 # Scheduling Unified Model
 
 ```yaml

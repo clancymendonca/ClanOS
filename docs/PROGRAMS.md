@@ -73,7 +73,7 @@ BuiltinDispatch --> Output[Program Output]
 The kernel emits:
 
 ```text
-Phase9-Loader: programs=..., launch_ok=true, storage_backed=true, launches=..., failed_launches=...
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 Loader status is also available through syscall/status helpers:
@@ -90,13 +90,13 @@ Loader status is also available through syscall/status helpers:
 Phase 11 also emits:
 
 ```text
-Phase11-Images: images=..., valid=..., rejected=..., exec_blocked_ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Validation
 
 ```bash
-python scripts/phase9_loader_check.py --timeout 180
+python scripts/gate/legacy.py --phase 9 --timeout 180
 python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --boot-wait 90 --smoke-timeout 180
 ```
 

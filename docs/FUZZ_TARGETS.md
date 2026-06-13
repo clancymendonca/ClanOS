@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/proofs/FUZZ_TARGETS.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/proofs/FUZZ_TARGETS.md`](proofs/FUZZ_TARGETS.md). This flat copy retained until migration squash reconciles any differences.
+
 # Fuzz Targets
 
 ```yaml

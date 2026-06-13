@@ -1,9 +1,11 @@
 # Fault Escalation Model
 
 ```yaml
-status: authoritative
+status: superseded-by: docs/architecture/FAULT_ESCALATION.md
 semantics_version: 1.1.0
 ```
+
+> **Canonical:** [`docs/architecture/FAULT_ESCALATION.md`](architecture/FAULT_ESCALATION.md). This flat copy retained until migration squash reconciles any differences.
 
 Three-tier fault model for services, processes, and kernel paths. Aligns with [`TEMPORAL_SEMANTICS.md`](TEMPORAL_SEMANTICS.md) authority checkpoints.
 

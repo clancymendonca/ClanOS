@@ -40,7 +40,7 @@ The shell exposes:
 Boot emits:
 
 ```text
-Phase15-FrameBackedImage: backed=..., rejected=..., pages=..., frame_allocated=..., copied=..., zeroed=..., smoke_ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Safety Boundary

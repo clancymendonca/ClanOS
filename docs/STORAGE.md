@@ -58,15 +58,11 @@ Primary kernel APIs live in `kernel/src/storage.rs`:
 ## Validation
 
 ```bash
-python scripts/phase7_storage_check.py --timeout 180
+python scripts/gate/boot.py --phase 7 --timeout 180
 python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --boot-wait 90 --smoke-timeout 180
 ```
 
-The kernel emits:
-
-```text
-Phase7-Storage: mounted=true, persistent_rw_ok=true
-```
+Boot validation emits `AresOS-BootGate: name=shell_storage ok=true` (see [VALIDATION_GATES.md](VALIDATION_GATES.md)).
 
 ## Phase 8 Backend
 

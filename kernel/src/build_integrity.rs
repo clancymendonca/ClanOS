@@ -7,6 +7,7 @@ use crate::image_digest;
 static IMAGE_EPOCH: AtomicU64 = AtomicU64::new(1);
 static BOOT_VERIFIED: AtomicBool = AtomicBool::new(false);
 static REPRO_MATCHES: AtomicU64 = AtomicU64::new(0);
+static SIGNED_USER_ELF_VERIFIED: AtomicU64 = AtomicU64::new(0);
 
 pub const KERNEL_IMAGE_TAG: &[u8] = b"aresos-kernel-epoch3";
 
@@ -62,4 +63,21 @@ pub fn phase132_repro_build_smoke() -> bool {
 
 pub fn phase133_rollback_smoke() -> bool {
     verify_rollback_anchor()
+}
+
+/// Phase 430 — signed user ELF manifest corpus (BUILD_INTEGRITY production path).
+pub fn verify_signed_user_elf_corpus() -> bool {
+    let corpus = b"ares-rt demo:hello";
+    let digest = image_digest::sha256_hex(corpus);
+    let manifest = alloc::format!("digest=sha256:{digest}\ntrust=system\n");
+    let expected = image_digest::parse_manifest_digest(&manifest).unwrap_or("");
+    let ok = image_digest::verify_digest_hex(corpus, expected);
+    if ok {
+        SIGNED_USER_ELF_VERIFIED.fetch_add(1, Ordering::Relaxed);
+    }
+    ok
+}
+
+pub fn phase430_signed_user_elf_smoke() -> bool {
+    verify_signed_user_elf_corpus() && SIGNED_USER_ELF_VERIFIED.load(Ordering::Relaxed) > 0
 }

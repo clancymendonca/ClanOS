@@ -9,6 +9,6 @@ solo_maintainer = true
 [[signoffs]]
 reviewer_id = "clancy"
 domain = "platform"
-scope = "QEMU→HW procedure, signed images, Phase250-Milestone"
+scope = "QEMU→HW procedure, signed images, system gate hardware"
 timestamp = "2026-06-11T20:00:00Z"
 epoch = 10

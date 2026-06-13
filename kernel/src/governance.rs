@@ -124,10 +124,31 @@ pub fn phase140_ipc_integration_smoke() -> bool {
         return false;
     };
     let ep = crate::ipc_endpoints::create_endpoint();
+    // 64-message burst through the bounded queue (MAX_ENDPOINT_QUEUE), draining
+    // each chunk and verifying per-sender FIFO order. Backpressure (QueueFull on
+    // overflow) is the specified behavior, not a failure — see ABI_IPC FIFO spec.
     let mut ok = true;
-    for i in 0..64u8 {
-        ok &= crate::ipc_endpoints::send(ep, pid, &[i]).is_ok();
+    let chunk = crate::ipc_endpoints::MAX_ENDPOINT_QUEUE as u8;
+    let mut next = 0u8;
+    while next < 64 {
+        let end = next.saturating_add(chunk).min(64);
+        for i in next..end {
+            ok &= crate::ipc_endpoints::send(ep, pid, &[i]).is_ok();
+        }
+        for expected in next..end {
+            ok &= crate::ipc_endpoints::recv(ep)
+                .map(|m| m.sender == pid && m.payload == [expected])
+                .unwrap_or(false);
+        }
+        next = end;
     }
+    // Overflow returns QueueFull (transient class) rather than dropping or panicking.
+    for i in 0..chunk {
+        let _ = crate::ipc_endpoints::send(ep, pid, &[i]);
+    }
+    ok &= crate::ipc_endpoints::send(ep, pid, &[0xFF])
+        == Err(crate::ipc_endpoints::EndpointError::QueueFull);
+    while crate::ipc_endpoints::recv(ep).is_ok() {}
     let bridge_zero = crate::ipc_interim_bridge::ipc_bridge_compat_internal_count() == 0;
     phase131_build_integrity_smoke()
         && phase134_endpoint_smoke()
@@ -181,23 +202,28 @@ pub fn phase150_milestone_smoke() -> bool {
 }
 
 pub fn phase175_epoch7_smoke() -> bool {
-    crate::post150::phase175_epoch7_smoke()
+    crate::system_gate::integrity_gate()
 }
 
 pub fn phase200_milestone_smoke() -> bool {
-    crate::post150::phase200_milestone_smoke()
+    crate::system_gate::scheduling_gate()
 }
 
 pub fn phase250_milestone_smoke() -> bool {
-    crate::post150::phase250_milestone_smoke()
+    crate::system_gate::hardware_gate()
 }
 
 pub fn phase300_milestone_smoke() -> bool {
-    crate::post150::phase300_milestone_smoke()
+    crate::system_gate::federation_gate()
 }
 
 pub fn phase350_milestone_smoke() -> bool {
-    crate::post150::phase350_milestone_smoke()
+    crate::system_gate::release_gate()
+}
+
+/// Final release compat — compat sunset + build integrity + functional OS.
+pub fn phase500_release_smoke() -> bool {
+    crate::system_gate::release_compat_smoke()
 }
 
 pub fn phase130_platform_integration_smoke() -> bool {

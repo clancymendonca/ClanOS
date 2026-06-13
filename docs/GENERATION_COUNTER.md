@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/architecture/GENERATION_COUNTER.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/architecture/GENERATION_COUNTER.md`](architecture/GENERATION_COUNTER.md). This flat copy retained until migration squash reconciles any differences.
+
 # Generation Counter
 
 ```yaml

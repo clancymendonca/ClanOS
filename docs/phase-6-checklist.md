@@ -1,3 +1,5 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 6 Checklist (User Space, Shell, Storage, Syscalls, Stabilization)
 
 **Date**: 2026-05-06  
@@ -29,7 +31,7 @@
 
 ## 5. Stabilization & QA
 
-- [x] `scripts/phase6-smoke-check` for quick validation
+- [x] `scripts/gate/boot.py --phase 6` for quick validation
 - [x] Build-level validation via `cargo check -p kernel`
 - [x] Existing Phase 5 checks retained for latency/fairness coverage
 - [x] One-command validation matrix (`scripts/validation_matrix.py`) with PASS/FAIL output and thresholds
@@ -38,6 +40,6 @@
 
 ```bash
 cargo check -p kernel
-./scripts/phase6-smoke-check
+python scripts/gate/boot.py --phase 6 --timeout 180
 python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --boot-wait 90 --smoke-timeout 180
 ```

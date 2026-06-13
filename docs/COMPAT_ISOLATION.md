@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/architecture/COMPAT_ISOLATION.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/architecture/COMPAT_ISOLATION.md`](architecture/COMPAT_ISOLATION.md). This flat copy retained until migration squash reconciles any differences.
+
 # Compat Shim Isolation
 
 ```yaml

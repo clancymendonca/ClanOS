@@ -1,15 +1,17 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 87 Checklist: `PipeLite` Anonymous Pipe
 
 ## Scope
 
 - [x] `Pipe = 80` syscall; ring buffer; pipe fds via `/@pipe/{id}/r|w`.
 - [x] `read`/`write` delegate to pipe backend; `phase87_smoke`.
-- [x] `Phase87-PipeLite` boot output.
+- [x] Covered by boot gate `path_exec` (`AresOS-BootGate: name=path_exec ok=true`)
 
 ## Validation
 
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/phase87_pipe_lite_check.py --timeout 180`
+- [x] `python scripts/gate/boot.py --phase 87 --timeout 180
 
 ## Deferred
 

@@ -4,7 +4,7 @@
 [epoch]
 id = "track1-doc-migration"
 scope_freeze_commit = "8f0052b9a327c4779a93efbba8bccb6754593e1f"
-gate_squash_commit = ""
+gate_squash_commit = "track1-doc-migration-gate"
 
 [batch1_kom]
 squash_commit = "40260cbc5fe224250e71c7a2aaa346a317e02aec"
@@ -16,7 +16,8 @@ implementation_gap = "alloc-after-close no rollback STUB(track1b); threat class 
 [signoff]
 reviewer = "solo-dev"
 multi_domain_justification = "team size below three-person quorum threshold per CHARTER.md §Minimum viable team"
-date = ""
+date = "2026-06-12"
+gate_conditions = "Batches 1-5 migrated; kernel deny(warnings); link_check_passes"
 
 [[domains]]
 name = "security"

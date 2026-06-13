@@ -9,7 +9,7 @@ Seed ELFs may include a dynamic section. `parse_dt_needed` records the dependenc
 Boot smoke:
 
 ```text
-Phase39-Dynamic: needed=..., reloc_ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Phase 41 — Mapping
@@ -19,7 +19,7 @@ Phase39-Dynamic: needed=..., reloc_ok=true
 Boot smoke:
 
 ```text
-Phase41-SharedLib: needed=..., mapped=..., base=0x700000, pages=...
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Phase 42 — Import Relocations
@@ -29,14 +29,14 @@ Phase41-SharedLib: needed=..., mapped=..., base=0x700000, pages=...
 Boot smoke:
 
 ```text
-Phase42-DynReloc: glob_dat=..., applied=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Validation
 
 ```bash
-python scripts/phase41_shared_lib_check.py --timeout 180
-python scripts/phase42_dyn_reloc_check.py --timeout 180
+python scripts/gate/legacy.py --phase 41 --timeout 180
+python scripts/gate/legacy.py --phase 42 --timeout 180
 ```
 
 ## Deferred
