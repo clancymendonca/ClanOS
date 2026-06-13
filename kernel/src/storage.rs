@@ -12,7 +12,7 @@ use spin::Mutex;
 
 pub const SECTOR_SIZE: usize = 512;
 pub const DEFAULT_SECTOR_COUNT: usize = 64;
-const MAGIC: &[u8; 8] = b"ARESFS1\0";
+const MAGIC: &[u8; 8] = b"CLANFS1\0";
 const VERSION: u32 = 1;
 const HEADER_SECTOR: usize = 0;
 const DIRECTORY_START_SECTOR: usize = 1;
@@ -713,7 +713,7 @@ pub fn sample_elf_fixture_image() -> String {
     bytes[ph + 32..ph + 40].copy_from_slice(&4u64.to_le_bytes());
     bytes[ph + 40..ph + 48].copy_from_slice(&0x1000u64.to_le_bytes());
     bytes[ph + 48..ph + 56].copy_from_slice(&0x1000u64.to_le_bytes());
-    bytes[120..124].copy_from_slice(b"ARES");
+    bytes[120..124].copy_from_slice(b"CLAN");
     String::from_utf8(bytes).unwrap_or_else(|_| String::new())
 }
 
@@ -723,60 +723,60 @@ fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), Stor
         ("/README.txt", "Clan OS persistent storage"),
         (
             "/bin/echo",
-            "ares-exec-v1\nname=echo\nkind=builtin-alias\nentry=echo\nrequires=execute\ntrust=system\nowner=admin\ndescription=Print arguments",
+            "clan-exec-v1\nname=echo\nkind=builtin-alias\nentry=echo\nrequires=execute\ntrust=system\nowner=admin\ndescription=Print arguments",
         ),
         (
             "/bin/time",
-            "ares-exec-v1\nname=time\nkind=builtin-alias\nentry=time\nrequires=execute\ntrust=system\nowner=admin\ndescription=Show uptime",
+            "clan-exec-v1\nname=time\nkind=builtin-alias\nentry=time\nrequires=execute\ntrust=system\nowner=admin\ndescription=Show uptime",
         ),
         (
             "/bin/sysinfo",
-            "ares-exec-v1\nname=sysinfo\nkind=builtin-alias\nentry=sysinfo\nrequires=execute\ntrust=system\nowner=admin\ndescription=Show system metrics",
+            "clan-exec-v1\nname=sysinfo\nkind=builtin-alias\nentry=sysinfo\nrequires=execute\ntrust=system\nowner=admin\ndescription=Show system metrics",
         ),
         (
             "/bin/fsinfo",
-            "ares-exec-v1\nname=fsinfo\nkind=builtin-alias\nentry=fsinfo\nrequires=execute\ntrust=system\nowner=admin\ndescription=Show filesystem status",
+            "clan-exec-v1\nname=fsinfo\nkind=builtin-alias\nentry=fsinfo\nrequires=execute\ntrust=system\nowner=admin\ndescription=Show filesystem status",
         ),
         (
             "/bin/demo-hello",
-            "ares-exec-v1\nname=demo-hello\nkind=builtin-alias\nentry=demo-hello\ndescription=ares-rt demo\ntrust=system\nowner=admin\n",
+            "clan-exec-v1\nname=demo-hello\nkind=builtin-alias\nentry=demo-hello\ndescription=clan-rt demo\ntrust=system\nowner=admin\n",
         ),
         (
-            "/bin/ares-info",
-            "ares-exec-v1\nname=ares-info\nkind=builtin-alias\nentry=ares-info\ndescription=System info\ntrust=system\nowner=admin\n",
+            "/bin/clan-info",
+            "clan-exec-v1\nname=clan-info\nkind=builtin-alias\nentry=clan-info\ndescription=System info\ntrust=system\nowner=admin\n",
         ),
         (
             "/bin/hello",
-            "ares-exec-v1\nname=hello\nkind=elf64-image\nentry=0x400000\nimage=/bin/hello.elf\nrequires=execute\ntrust=user\nowner=user\ndescription=ELF image validation fixture",
+            "clan-exec-v1\nname=hello\nkind=elf64-image\nentry=0x400000\nimage=/bin/hello.elf\nrequires=execute\ntrust=user\nowner=user\ndescription=ELF image validation fixture",
         ),
         ("/bin/hello.elf", sample_elf.as_str()),
         (
             "/bin/exit42",
-            "ares-exec-v1\nname=exit42\nkind=elf64-image\nentry=0x400000\nimage=/bin/exit42.elf\nrequires=execute\ntrust=user\nowner=user\ndescription=Exit code 42 fixture",
+            "clan-exec-v1\nname=exit42\nkind=elf64-image\nentry=0x400000\nimage=/bin/exit42.elf\nrequires=execute\ntrust=user\nowner=user\ndescription=Exit code 42 fixture",
         ),
         ("/bin/exit42.elf", sample_elf.as_str()),
         (
             "/bin/tickprobe",
-            "ares-exec-v1\nname=tickprobe\nkind=elf64-image\nentry=0x400000\nimage=/bin/tickprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=Tick probe ELF fixture",
+            "clan-exec-v1\nname=tickprobe\nkind=elf64-image\nentry=0x400000\nimage=/bin/tickprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=Tick probe ELF fixture",
         ),
         ("/bin/tickprobe.elf", sample_elf.as_str()),
         (
             "/bin/systrust",
-            "ares-exec-v1\nname=systrust\nkind=elf64-image\nentry=0x400000\nimage=/bin/tickprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=Trust-gated ELF fixture",
+            "clan-exec-v1\nname=systrust\nkind=elf64-image\nentry=0x400000\nimage=/bin/tickprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=Trust-gated ELF fixture",
         ),
         (
             "/bin/syscallprobe",
-            "ares-exec-v1\nname=syscallprobe\nkind=elf64-image\nentry=0x400000\nimage=/bin/syscallprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=HW syscall probe ELF fixture",
+            "clan-exec-v1\nname=syscallprobe\nkind=elf64-image\nentry=0x400000\nimage=/bin/syscallprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=HW syscall probe ELF fixture",
         ),
         ("/bin/syscallprobe.elf", sample_elf.as_str()),
         (
             "/bin/chdirprobe",
-            "ares-exec-v1\nname=chdirprobe\nkind=elf64-image\nentry=0x400000\nimage=/bin/chdirprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=HW chdir/getcwd probe ELF fixture",
+            "clan-exec-v1\nname=chdirprobe\nkind=elf64-image\nentry=0x400000\nimage=/bin/chdirprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=HW chdir/getcwd probe ELF fixture",
         ),
         ("/bin/chdirprobe.elf", sample_elf.as_str()),
         (
             "/bin/pipeprobe",
-            "ares-exec-v1\nname=pipeprobe\nkind=elf64-image\nentry=0x400000\nimage=/bin/pipeprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=HW pipe probe ELF fixture",
+            "clan-exec-v1\nname=pipeprobe\nkind=elf64-image\nentry=0x400000\nimage=/bin/pipeprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=HW pipe probe ELF fixture",
         ),
         ("/bin/pipeprobe.elf", sample_elf.as_str()),
         ("/bin/libc_stub.elf", sample_elf.as_str()),

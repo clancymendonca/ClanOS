@@ -25,6 +25,11 @@ SKIP_FILES = {
 # Order matters: longest / most specific first.
 REPLACEMENTS: list[tuple[str, str]] = [
     ("ABI_ARES_RT", "ABI_CLAN_RT"),
+    ("AREOS DESKTOP", "CLANOS DESKTOP"),
+    ("AREOS SHELL", "CLANOS SHELL"),
+    ("AREOS", "CLANOS"),
+    ("ares-copyin-ok", "clan-copyin-ok"),
+    ("ares-info", "clan-info"),
     ("ares-exec-v1", "clan-exec-v1"),
     ("ARESFS1", "CLANFS1"),
     ("ares-rt-001", "clan-rt-001"),

@@ -360,7 +360,7 @@ pub fn render_desktop_frame() {
     back_buffer_mut(|buf| {
         fill_rect_buf(buf, 0, 0, WIDTH, HEIGHT, COLOR_DESKTOP);
         fill_rect_buf(buf, 0, 0, WIDTH, 16, COLOR_TITLEBAR);
-        draw_text_buf(buf, 8, 4, "AREOS", COLOR_TEXT);
+        draw_text_buf(buf, 8, 4, "CLANOS", COLOR_TEXT);
         crate::desktop_shell::render_shell(buf);
         let (cx, cy) = crate::mouse::cursor_position();
         draw_cursor(buf, cx, cy);
@@ -390,7 +390,7 @@ pub fn smoke_double_buffer() -> bool {
 pub fn smoke_font() -> bool {
     init_mode_13h() && {
         back_buffer_mut(|buf| {
-            draw_text_buf(buf, 10, 30, "AREOS DESKTOP", COLOR_TEXT);
+            draw_text_buf(buf, 10, 30, "CLANOS DESKTOP", COLOR_TEXT);
             draw_text_buf(buf, 10, 40, "CONSOLE FILES RUN", COLOR_ACCENT);
         });
         true

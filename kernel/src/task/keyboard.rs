@@ -233,7 +233,7 @@ fn execute_console_command(command: &str) {
             con_println!("  metrics");
             con_println!("  whoami");
             con_println!("  su <admin|user|guest>");
-            con_println!("  run <echo|time|sysinfo|fsinfo|demo-hello|ares-info> [args...]");
+            con_println!("  run <echo|time|sysinfo|fsinfo|demo-hello|clan-info> [args...]");
             con_println!("  programs");
             con_println!("  bin list");
             con_println!("  bin info <program>");

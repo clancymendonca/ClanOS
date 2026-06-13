@@ -17,7 +17,7 @@ pub fn taskbar_height() -> usize {
 pub fn render_taskbar(back: &mut [u8]) {
     let y = framebuffer::HEIGHT.saturating_sub(TASKBAR_H);
     framebuffer::fill_rect_buf(back, 0, y, framebuffer::WIDTH, TASKBAR_H, 8);
-    framebuffer::draw_text_buf(back, 8, y + 5, "AREOS SHELL", framebuffer::COLOR_TEXT);
+    framebuffer::draw_text_buf(back, 8, y + 5, "CLANOS SHELL", framebuffer::COLOR_TEXT);
 
     let mut x = LAUNCHER_W;
     for label in ["RUN", "LS", "PS"] {

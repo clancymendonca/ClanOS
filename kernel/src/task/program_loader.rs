@@ -245,7 +245,7 @@ static TRUST_EXEC_REJECTED: AtomicU64 = AtomicU64::new(0);
 
 pub fn parse_manifest(contents: &str) -> Result<ProgramManifest, ProgramLoadError> {
     let mut lines = contents.lines();
-    if lines.next() != Some("ares-exec-v1") {
+    if lines.next() != Some("clan-exec-v1") {
         return Err(ProgramLoadError::InvalidVersion);
     }
 
@@ -454,7 +454,7 @@ pub fn record_unsupported_execution() {
 
 pub fn manifest_for_builtin(name: &str, description: &str) -> String {
     format!(
-        "ares-exec-v1\nname={}\nkind=builtin-alias\nentry={}\nrequires=execute\ntrust=system\nowner=admin\ndescription={}",
+        "clan-exec-v1\nname={}\nkind=builtin-alias\nentry={}\nrequires=execute\ntrust=system\nowner=admin\ndescription={}",
         name, name, description
     )
 }
@@ -1296,7 +1296,7 @@ pub fn storage_read_probe(user_buf: u64) -> Result<u64, ()> {
             contents.as_bytes()[..len].to_vec()
         })
         .filter(|bytes| !bytes.is_empty())
-        .unwrap_or_else(|| b"ares-exec-v1".to_vec());
+        .unwrap_or_else(|| b"clan-exec-v1".to_vec());
     crate::user_copy::copy_to_user(&sample, user_buf).map_err(|_| ())?;
     STORAGE_COPYIN_READS.fetch_add(1, Ordering::Relaxed);
     Ok(sample.len() as u64)
@@ -2605,7 +2605,7 @@ mod tests {
     #[test_case]
     fn valid_manifest_parses() {
         let manifest = parse_manifest(
-            "ares-exec-v1\nname=echo\nkind=builtin-alias\nentry=echo\ndescription=Echo text",
+            "clan-exec-v1\nname=echo\nkind=builtin-alias\nentry=echo\ndescription=Echo text",
         )
         .expect("manifest should parse");
         assert_eq!(manifest.name, "echo");
@@ -2625,11 +2625,11 @@ mod tests {
     #[test_case]
     fn missing_required_fields_are_rejected() {
         assert_eq!(
-            parse_manifest("ares-exec-v1\nkind=builtin-alias\nentry=echo"),
+            parse_manifest("clan-exec-v1\nkind=builtin-alias\nentry=echo"),
             Err(ProgramLoadError::MissingName)
         );
         assert_eq!(
-            parse_manifest("ares-exec-v1\nname=echo\nkind=builtin-alias"),
+            parse_manifest("clan-exec-v1\nname=echo\nkind=builtin-alias"),
             Err(ProgramLoadError::MissingEntry)
         );
     }
@@ -2637,7 +2637,7 @@ mod tests {
     #[test_case]
     fn unsupported_kind_is_rejected() {
         assert_eq!(
-            parse_manifest("ares-exec-v1\nname=x\nkind=elf\nentry=x"),
+            parse_manifest("clan-exec-v1\nname=x\nkind=elf\nentry=x"),
             Err(ProgramLoadError::UnsupportedKind)
         );
     }
@@ -2645,11 +2645,11 @@ mod tests {
     #[test_case]
     fn unsupported_trust_and_requirement_are_rejected() {
         assert_eq!(
-            parse_manifest("ares-exec-v1\nname=x\nkind=builtin-alias\nentry=x\ntrust=unsigned"),
+            parse_manifest("clan-exec-v1\nname=x\nkind=builtin-alias\nentry=x\ntrust=unsigned"),
             Err(ProgramLoadError::UnsupportedTrust)
         );
         assert_eq!(
-            parse_manifest("ares-exec-v1\nname=x\nkind=builtin-alias\nentry=x\nrequires=network"),
+            parse_manifest("clan-exec-v1\nname=x\nkind=builtin-alias\nentry=x\nrequires=network"),
             Err(ProgramLoadError::UnsupportedRequirement)
         );
     }
