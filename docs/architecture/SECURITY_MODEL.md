@@ -7,7 +7,7 @@ epoch: 0
 authored_by: security
 ```
 
-Overview of the AresOS capability-secured authorization model, attacker taxonomy, and the closure statement defining what "secure" means in the QEMU era through milestone 400.
+Overview of the Clan OS capability-secured authorization model, attacker taxonomy, and the closure statement defining what "secure" means in the QEMU era through milestone 400.
 
 Cross-references: [KERNEL_OBJECT_MODEL.md](KERNEL_OBJECT_MODEL.md), [../THREAT_MODEL.md](../THREAT_MODEL.md), [../THREAT_NODES.toml](../THREAT_NODES.toml), [../RIGHTS_ALGEBRA.md](../RIGHTS_ALGEBRA.md), [../FAULT_ESCALATION.md](../FAULT_ESCALATION.md).
 
@@ -15,7 +15,7 @@ Cross-references: [KERNEL_OBJECT_MODEL.md](KERNEL_OBJECT_MODEL.md), [../THREAT_M
 
 ## Overview
 
-AresOS uses an **object-capability model** as the sole kernel authorization mechanism. There is no ambient authority: every operation on every kernel object requires a capability with sufficient rights. DAC permission bits exist only in the POSIX compatibility server, not in the kernel.
+Clan OS uses an **object-capability model** as the sole kernel authorization mechanism. There is no ambient authority: every operation on every kernel object requires a capability with sufficient rights. DAC permission bits exist only in the POSIX compatibility server, not in the kernel.
 
 Capabilities are unforgeable references `(object_id, kind, generation, rights)` indexed through per-process capability tables. The kernel never accepts a capability value from userspace without table lookup and generation validation.
 
@@ -132,7 +132,7 @@ All security errors map to `docs/ERROR_TAXONOMY.md` classes. Terminal errors on 
 
 ## Closure statement (QEMU era through M400)
 
-**"Secure" for AresOS in the QEMU development era means:**
+**"Secure" for Clan OS in the QEMU development era means:**
 
 1. Every kernel object operation is capability-mediated with generation-checked lookup.
 2. No known open threat nodes in `THREAT_NODES.toml` for in-scope attacker classes.

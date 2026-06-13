@@ -7,15 +7,15 @@ semantics_version: 1.2.0
 
 > **Canonical:** [`docs/architecture/KERNEL_OBJECT_MODEL.md`](architecture/KERNEL_OBJECT_MODEL.md). This flat copy is retained until the doc migration epoch squash reconciles any differences.
 
-**Gate G1** — phases **115+** must not introduce new handle semantics without charter revision.
+**Gate G1** — scopes **115+** must not introduce new handle semantics without charter revision.
 
-Phase **110** constitutional default: **immutable object identity + generation invalidation**.
+Scope **110** constitutional default: **immutable object identity + generation invalidation**.
 
 See: [AXIOMS.md](AXIOMS.md), [RIGHTS_ALGEBRA.md](RIGHTS_ALGEBRA.md), [SEMANTIC_SPECS.md](SEMANTIC_SPECS.md) (R-03, E-03, T-02).
 
 ---
 
-## Design decision (phase 110)
+## Design decision (scope 110)
 
 **Adopted:** each kernel object has a stable `ObjectId` and a monotonic **generation** counter. Authority changes invalidate derived capabilities via generation bump — not in-place mutation of object rights.
 
@@ -62,7 +62,7 @@ Not a literal Rust trait in the kernel yet — architectural contract:
 4. **Revoke** — generation bump and/or slot invalidation per TEMPORAL_SEMANTICS
 5. **Close** — drop handle slot; may not destroy object if other caps exist
 
-Phase 115 **path broker** uses compat handles only — must not add a parallel handle type.
+Scope 115 **path broker** uses compat handles only — must not add a parallel handle type.
 
 ---
 
@@ -77,9 +77,9 @@ Triggers (non-exhaustive): hard revoke, service restart, broker session end, end
 
 ---
 
-## Implementation phases (future)
+## Implementation scopes (future)
 
-| Phase | Work |
+| Scope | Work |
 |------:|------|
 | 111 | `CapHandle` → `KernelObject` ref, single table |
 | 112–113 | Lifecycle syscalls (G2) |

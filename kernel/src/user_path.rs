@@ -1,4 +1,4 @@
-//! User-supplied path validation and copyin (Phase 44).
+//! User-supplied path validation and copyin .
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -61,7 +61,7 @@ pub fn getcwd_to_user(user_buf: u64) -> Result<usize, ()> {
     Ok(len)
 }
 
-pub fn phase82_smoke() -> bool {
+pub fn smoke_getcwd() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let creds = crate::security::Credentials::shell_user();
     let Some(pid) = crate::task::process::create_kernel_process_as("getcwd-smoke", tick, creds)
@@ -89,7 +89,7 @@ pub fn phase82_smoke() -> bool {
         && getcwd_status() > 0
 }
 
-pub fn phase83_smoke() -> bool {
+pub fn smoke_chdir_probe() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let creds = crate::security::Credentials::shell_user();
     let Some(pid) = crate::task::process::create_kernel_process_as("chdirprobe", tick, creds)
@@ -299,14 +299,14 @@ pub fn write_path_probe(user_path_ptr: u64, user_data_ptr: u64) -> Result<u64, (
     Ok(len as u64)
 }
 
-pub fn phase55_smoke() -> bool {
-    let path = "/tmp/phase55";
+pub fn smoke_user_path_write() -> bool {
+    let path = "/tmp/user-path-smoke";
     let creds = crate::security::Credentials::shell_user();
-    if crate::storage::write_file_checked(creds, path, "phase55-ok").is_err()
+    if crate::storage::write_file_checked(creds, path, "user-path-ok").is_err()
         && crate::storage::write_file_checked(
             crate::security::Credentials::admin(),
             path,
-            "phase55-ok",
+            "user-path-ok",
         )
         .is_err()
     {
@@ -314,7 +314,7 @@ pub fn phase55_smoke() -> bool {
     }
     let verified = matches!(
         crate::storage::read_file_checked(creds, path),
-        Ok(Some(contents)) if contents == "phase55-ok"
+        Ok(Some(contents)) if contents == "user-path-ok"
     );
     if verified {
         PATH_WRITES.fetch_add(1, Ordering::Relaxed);
@@ -323,7 +323,7 @@ pub fn phase55_smoke() -> bool {
     verified
 }
 
-pub fn phase72_smoke() -> bool {
+pub fn smoke_ring3_chdir() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let creds = crate::security::Credentials::shell_user();
     let Some(pid) = crate::task::process::create_kernel_process_as("ring3-chdir", tick, creds)
@@ -371,7 +371,7 @@ pub fn phase72_smoke() -> bool {
     chdir_ok && cwd_ok && bad && RING3_CHDIRS.load(Ordering::Relaxed) > 0
 }
 
-pub fn phase44_smoke() -> bool {
+pub fn smoke_user_path_read() -> bool {
     let Some(built) = crate::task::program_loader::build_hw_page_table_program(
         crate::security::Credentials::shell_user(),
         "hello",

@@ -15,7 +15,7 @@ if str(_SCRIPTS) not in sys.path:
 
 from preemption.telemetry import collect_samples  # noqa: E402
 
-LATENCY_RE = re.compile(r"Phase5-Latency:\s+(.*)")
+LATENCY_RE = re.compile(r"ClanOS-Preemption: name=latency\s+(.*)")
 KV_RE = re.compile(
     r"(ticks|quantum|req|pts|backlog|max_backlog|est_ms|max_est_ms)=([0-9]+(?:\.[0-9]+)?)"
 )

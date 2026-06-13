@@ -1,4 +1,4 @@
-//! Hardware user page tables, CR3 activation, and per-process switching (Phases 21-22, 30).
+//! Hardware user page tables, CR3 activation, and per-process switching.
 
 use bootloader::bootinfo::MemoryMap;
 use core::sync::atomic::{AtomicU64, Ordering};
@@ -113,7 +113,7 @@ pub fn sched_cr3_status() -> (u64, u64, u64, bool) {
     )
 }
 
-/// Activate the next context task's user CR3 during preemptive scheduling (Phase 31).
+/// Activate the next context task's user CR3 during preemptive scheduling .
 pub fn apply_scheduler_cr3_for_next(next_cr3: Option<u64>) {
     let _ = restore_kernel_page_table();
     match next_cr3 {
@@ -404,7 +404,7 @@ pub fn validate_page_flags(flags: PageTableFlags) -> bool {
     true
 }
 
-/// Map a demand-zero user page in an active user address space (Phase 38).
+/// Map a demand-zero user page in an active user address space .
 pub fn map_shared_hw_page(
     child_cr3: u64,
     parent_cr3: u64,
@@ -513,7 +513,7 @@ pub fn unmap_user_page(cr3_phys: u64, virtual_address: u64) -> Result<(), UserPa
     })
 }
 
-pub fn phase48_smoke() -> bool {
+pub fn smoke_wx_policy() -> bool {
     let bad = PageTableFlags::PRESENT | PageTableFlags::WRITABLE | PageTableFlags::USER_ACCESSIBLE;
     let good = PageTableFlags::PRESENT
         | PageTableFlags::WRITABLE
@@ -609,7 +609,7 @@ pub fn mprotect_user_page(user_addr: u64, prot: u64) -> Result<(), ()> {
     mprotect_page(cr3, user_addr, want_write).map_err(|_| ())
 }
 
-pub fn phase53_smoke() -> bool {
+pub fn smoke_mprotect() -> bool {
     let Some(built) = crate::task::program_loader::build_hw_page_table_program(
         crate::security::Credentials::shell_user(),
         "hello",

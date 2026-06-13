@@ -1,4 +1,4 @@
-//! Native syscall dispatch (IDs 256+, kernel smokes only until phase 128 G4).
+//! Native syscall dispatch (IDs 256+, kernel smokes only until scope 128 G4).
 
 use crate::governance::NATIVE_SYSCALL_ID_BASE;
 use crate::kernel_object::{self, CapError, Rights};

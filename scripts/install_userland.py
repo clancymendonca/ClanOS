@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build ares-rt demo and stage for QEMU FS install hook (epoch 2)."""
+"""Build Clan OS runtime demo and Mendo; stage for QEMU FS install hook."""
 
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ def main() -> int:
             "cargo",
             "build",
             "-p",
-            "ares-rt",
+            "clan-rt",
             "--bin",
             "demo-hello",
             "--target",
@@ -39,11 +39,30 @@ def main() -> int:
         ],
         cwd=REPO,
     )
+    subprocess.check_call(
+        [
+            "cargo",
+            "build",
+            "-p",
+            "mendo",
+            "--release",
+            "--target",
+            "x86_64-unknown-none",
+        ],
+        cwd=REPO,
+    )
     OUT.mkdir(parents=True, exist_ok=True)
     DEMO.write_text(
-        "ares-rt staged artifact — replace with ring3 ELF install in later epoch\n",
+        "clan-rt staged artifact — Clan OS host demo; ring-3 ELFs use /bin/mendo.elf\n",
         encoding="utf-8",
     )
+    mendo_elf = (
+        REPO / "target" / "x86_64-unknown-none" / "release" / "mendo"
+    )
+    staged_mendo = OUT / "mendo.elf"
+    if mendo_elf.is_file():
+        staged_mendo.write_bytes(mendo_elf.read_bytes())
+        print(f"install_userland: staged {staged_mendo} ({staged_mendo.stat().st_size} bytes)")
     print(f"install_userland: staged {DEMO}")
     return 0
 

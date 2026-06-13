@@ -1,4 +1,4 @@
-# AresOS Architecture Decision Log
+# Clan OS Architecture Decision Log
 
 ```yaml
 status: authoritative
@@ -6,7 +6,7 @@ version: 0.1.0
 epoch: 0
 ```
 
-Top-level architectural decisions resolved at project inception. Phase- and epoch-specific gated decisions are recorded in [`docs/DECISION_LOG.md`](docs/DECISION_LOG.md).
+Top-level architectural decisions resolved at project inception. Scope- and epoch-specific gated decisions are recorded in [`docs/DECISION_LOG.md`](docs/DECISION_LOG.md).
 
 ---
 
@@ -38,7 +38,7 @@ Top-level architectural decisions resolved at project inception. Phase- and epoc
 
 **Consequences:** `docs/SCHEDULER_MODEL.md`; partition capabilities for real-time and AI workload classes.
 
-**Verification:** R-revoke-blocked Kani state machine; loom tests for SMP ordering (phases 141–142).
+**Verification:** R-revoke-blocked Kani state machine; loom tests for SMP ordering (scopes 141–142).
 
 **Reference:** `docs/DECISION_LOG.md` entry `scheduler_priority_inversion`.
 
@@ -112,17 +112,17 @@ Top-level architectural decisions resolved at project inception. Phase- and epoc
 
 **Status:** open  
 **Context:** `#![deny(clippy::all)]` not enabled on kernel crate. Clippy on a 1700+ line kernel without per-lint review would obscure Track 1 doc commits.  
-**Reopen trigger:** first implementation phase commit after Track 1 squash gate.  
-**Resolution:** Dedicated phase commit with clippy allowlist reviewed per-lint; full Kani re-run.
+**Reopen trigger:** first implementation scope commit after Track 1 squash gate.  
+**Resolution:** Dedicated scope commit with clippy allowlist reviewed per-lint; full Kani re-run.
 
 ---
 
-### ares-rt-001 — ares-rt `no_std` enforcement pending
+### clan-rt-001 — clan-rt `no_std` enforcement pending
 
-**Status:** resolved (phase 401)
-**Context:** Workspace `cargo check` fails on the host target because `ares-rt` (`userland/`) does not declare `#![no_std]`. The crate is built for `x86_64-unknown-none` in the OS context; `cargo check -p kernel` passes. This is documentation and build-matrix debt, not a kernel soundness issue.
+**Status:** resolved (scope 401)
+**Context:** Workspace `cargo check` fails on the host target because `clan-rt` (`userland/`) does not declare `#![no_std]`. The crate is built for `x86_64-unknown-none` in the OS context; `cargo check -p kernel` passes. This is documentation and build-matrix debt, not a kernel soundness issue.
 **Reopen trigger:** `architecture_state.toml` → `has_no_std_enforcement = false` (CI-readable; must flip to `true` only after enforcement lands).
-**Resolution:** `#![no_std]` added to `ares-rt` lib; `scripts/gate/ares_rt.py` in validation matrix; `has_no_std_enforcement = true`.
+**Resolution:** `#![no_std]` added to `clan-rt` lib; `scripts/gate/clan_rt.py` in validation matrix; `has_no_std_enforcement = true`.
 
 ---
 

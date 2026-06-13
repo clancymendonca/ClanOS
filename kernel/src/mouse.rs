@@ -1,4 +1,4 @@
-//! PS/2 mouse input (phase 352) — IRQ 12 handler + focus events for window manager.
+//! PS/2 mouse input (scope 352) — IRQ 12 handler + focus events for window manager.
 
 use core::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use crossbeam_queue::ArrayQueue;
@@ -165,7 +165,7 @@ pub fn mouse_irq_vector() -> u8 {
     MOUSE_IRQ
 }
 
-pub fn phase352_mouse_smoke() -> bool {
+pub fn smoke_mouse() -> bool {
     init() && {
         inject_event(100, 80, 0x01);
         event_count() > 0 && poll_event().is_some()

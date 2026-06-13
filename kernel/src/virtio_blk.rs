@@ -61,7 +61,7 @@ pub fn init() -> bool {
     true
 }
 
-pub fn phase201_virtio_blk_smoke() -> bool {
+pub fn smoke_virtio_blk() -> bool {
     if VIRTIO_BLK_ID.lock().is_none() {
         init();
     }

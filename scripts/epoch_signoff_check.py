@@ -32,8 +32,8 @@ def main() -> int:
             errors.append(f"missing {path.name}")
             continue
         data = parse_signoff(path)
-        if "epoch" not in data and "phase" not in data:
-            errors.append(f"{path.name}: missing epoch/phase field")
+        if "epoch" not in data and "scope" not in data:
+            errors.append(f"{path.name}: missing epoch/scope field")
     if errors:
         for e in errors:
             print(f"epoch_signoff_check: {e}", file=sys.stderr)

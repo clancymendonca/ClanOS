@@ -1,4 +1,4 @@
-# AresOS Documentation Index
+# Clan OS Documentation Index
 
 Central index for validation gates, deep-dive guides, and historical scope checklists. The public roadmap lives in the root [README](../README.md).
 
@@ -28,7 +28,7 @@ python scripts/validation_matrix.py --smoke-timeout 180
 
 Canonical scripts live under `scripts/gate/` and `scripts/preemption/`. Legacy shims at `scripts/gate/boot.py` forward to the gate package.
 
-## Boot gate subsystems (phases 6–150)
+## Boot gate subsystems (scopes 6–150)
 
 | Gate | Scope | Check |
 |------|-------|-------|
@@ -89,7 +89,7 @@ Module: `kernel/src/system_gate.rs`
 | [RIGHTS_ALGEBRA.md](RIGHTS_ALGEBRA.md) | Authority calculus; G2 |
 | [TEMPORAL_SEMANTICS.md](TEMPORAL_SEMANTICS.md) | Visibility; G5 |
 | [SEMANTIC_SPECS.md](SEMANTIC_SPECS.md) | Architecture-preservation cases |
-| [ABI_SYSCALL.md](ABI_SYSCALL.md) | Compat `ares-abi-v1` |
+| [ABI_SYSCALL.md](ABI_SYSCALL.md) | Compat `clan-abi-v1` |
 | [ABI_IPC.md](ABI_IPC.md) | Endpoint guarantees; G3 |
 
 ## Deep-dive guides
@@ -107,28 +107,28 @@ Module: `kernel/src/system_gate.rs`
 | [SMP.md](SMP.md) | APs, IPI, work-stealing |
 | [context-lab.md](context-lab.md) | Cooperative context lab |
 
-## Historical phase checklists
+## Historical scope checklists
 
-Per-phase checklists (`phase-*-checklist.md`) record **completed implementation scope**. They are not the runtime validation surface — use [VALIDATION_GATES.md](VALIDATION_GATES.md).
+Per-scope checklists (`scope-*-checklist.md`) record **completed implementation scope**. They are not the runtime validation surface — use [VALIDATION_GATES.md](VALIDATION_GATES.md).
 
 <details>
-<summary>Phases 1–100 (click to expand file links)</summary>
+<summary>Scopes 1–100 (click to expand file links)</summary>
 
-| Phase | Topic | Checklist |
+| Scope | Topic | Checklist |
 |------:|-------|-----------|
-| 1 | Boot | [phase-1-checklist.md](phase-1-checklist.md) |
-| 2 | Hardware / IRQ | [phase-2-checklist.md](phase-2-checklist.md) |
-| 3 | Memory / paging | [phase-3-checklist.md](phase-3-checklist.md) |
-| 4 | Processes | [phase-4-checklist.md](phase-4-checklist.md) |
-| 5 | Preemptive scheduling | [phase-5-checklist.md](phase-5-checklist.md) |
-| 6–100 | Userland through SMP integration | [phase-6-checklist.md](phase-6-checklist.md) … [phase-100-checklist.md](phase-100-checklist.md) |
+| 1 | Boot | [scope-1-checklist.md](scope-1-checklist.md) |
+| 2 | Hardware / IRQ | [scope-2-checklist.md](scope-2-checklist.md) |
+| 3 | Memory / paging | [scope-3-checklist.md](scope-3-checklist.md) |
+| 4 | Processes | [scope-4-checklist.md](scope-4-checklist.md) |
+| 5 | Preemptive scheduling | [scope-5-checklist.md](scope-5-checklist.md) |
+| 6–100 | Userland through SMP integration | [scope-6-checklist.md](scope-6-checklist.md) … [scope-100-checklist.md](scope-100-checklist.md) |
 
 </details>
 
 <details>
-<summary>Phases 101–500 (click to expand)</summary>
+<summary>Scopes 101–500 (click to expand)</summary>
 
-Constitutional (101–110), capabilities (111–120), platform brokers (121–130), build/IPC (131–140), scheduler epoch (141–149), boundary (150), post-150 roadmaps (151–500). Individual files: `phase-NNN-checklist.md`.
+Constitutional (101–110), capabilities (111–120), platform brokers (121–130), build/IPC (131–140), scheduler epoch (141–149), boundary (150), post-150 roadmaps (151–500). Individual files: `scope-NNN-checklist.md`.
 
 </details>
 

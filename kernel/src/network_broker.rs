@@ -1,4 +1,4 @@
-//! Network broker (phase 125) — functional socket caps in epoch 4.
+//! Network broker (scope 125) — functional socket caps in epoch 4.
 
 use core::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
@@ -25,14 +25,14 @@ pub fn request_socket_cap(pid: ProcessId) -> Result<u32, CapError> {
     kernel_object::mint_cap_from_grant(pid, grant)
 }
 
-pub fn phase125_network_broker_smoke() -> bool {
+pub fn smoke_network_broker() -> bool {
     let Some(pid) = crate::kernel_object::ensure_smoke_process() else {
         return false;
     };
     request_socket_cap(pid).is_err() && network_stub_calls() > 0
 }
 
-pub fn phase403_network_broker_functional_smoke() -> bool {
+pub fn smoke_network_broker_functional_smoke() -> bool {
     enable_epoch4_functional();
     let Some(pid) = crate::kernel_object::ensure_smoke_process() else {
         return false;

@@ -2,7 +2,7 @@
 
 Rust is the **first implementation language** for kernel and platform code — not the **definition** of native.
 
-Phase **109** outline; language adapters phases **171–180**.
+Scope **109** outline; language adapters scopes **171–180**.
 
 See: [AXIOMS.md](AXIOMS.md), [NATIVE_MODEL.md](NATIVE_MODEL.md), [ABI_ASYNC.md](ABI_ASYNC.md), [SEMANTIC_JURISDICTION.md](SEMANTIC_JURISDICTION.md).
 
@@ -32,9 +32,9 @@ See: [AXIOMS.md](AXIOMS.md), [NATIVE_MODEL.md](NATIVE_MODEL.md), [ABI_ASYNC.md](
 
 ## Entry (draft)
 
-Native binary format `ares-native-v1` (manifest + image) — distinct from ELF compat:
+Native binary format `clan-native-v1` (manifest + image) — distinct from ELF compat:
 
-- Entry symbol `ares_native_main`
+- Entry symbol `clan_native_main`
 - Receives **cap table handle** and service catalog — not `argc/argv` paths
 - Manifest: [NATIVE_MODEL.md](NATIVE_MODEL.md) — permissions as cap requests
 

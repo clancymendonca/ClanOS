@@ -31,5 +31,5 @@ name = "compat-internal channels"
 replacement = "native endpoint path only (bridge count 0)"
 
 [[graduated_items]]
-name = "ares-rt host std dependency"
-replacement = "ares-rt #![no_std] lib + host cargo check"
+name = "clan-rt host std dependency"
+replacement = "clan-rt #![no_std] lib + host cargo check"

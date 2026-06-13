@@ -1,4 +1,4 @@
-# ares-rt ABI (Epoch 2)
+# clan-rt ABI (Epoch 2)
 
 ```yaml
 status: authoritative
@@ -26,7 +26,7 @@ Userspace runtime for native services. Forward ABI stability policy per epoch ga
 
 ## Stability
 
-**Forward policy (epoch 2 decision):** explicit **recompile required** each epoch until 1.0 (`ABI_FORWARD_POLICY` in `ares-rt`).
+**Forward policy (epoch 2 decision):** explicit **recompile required** each epoch until 1.0 (`ABI_FORWARD_POLICY` in `clan-rt`).
 
 Pre-1.0: breaking bumps allowed with compat review. Post-1.0: semver window TBD at M150.
 

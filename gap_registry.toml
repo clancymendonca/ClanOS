@@ -1,4 +1,4 @@
-# AresOS gap registry — canonical lifecycle tracking
+# Clan OS gap registry — canonical lifecycle tracking
 # Updated by scripts/mark_epoch0_addressed.py
 
 [schema]
@@ -85,7 +85,7 @@ superseded_by_commit = null
 id = 7
 summary = """No admission control"""
 fix = """E-00 + ERROR_TAXONOMY class mapping"""
-when = """Phase 121"""
+when = """Scope 121"""
 status = """addressed"""
 addressing_commit = null
 implementing_doc = """docs/ERROR_TAXONOMY.md"""
@@ -106,7 +106,7 @@ superseded_by_commit = null
 [[gaps]]
 id = 9
 summary = """OOM undefined early"""
-fix = """**MEM_BUDGET_STUB** phase 121; full shed/terminate phase 147"""
+fix = """**MEM_BUDGET_STUB** scope 121; full shed/terminate scope 147"""
 when = """Split"""
 status = """addressed"""
 addressing_commit = null
@@ -127,7 +127,7 @@ superseded_by_commit = null
 
 [[gaps]]
 id = 11
-summary = """Phase 128 allowlist"""
+summary = """Scope 128 allowlist"""
 fix = """[`ABI_NATIVE_SYSCALL.md`](docs/ABI_NATIVE_SYSCALL.md) + V-01"""
 when = """Before 128"""
 status = """addressed"""
@@ -138,8 +138,8 @@ superseded_by_commit = null
 
 [[gaps]]
 id = 12
-summary = """`ares-rt` ABI"""
-fix = """[`ABI_ARES_RT.md`](docs/ABI_ARES_RT.md)"""
+summary = """`clan-rt` ABI"""
+fix = """[`ABI_CLAN_RT.md`](docs/ABI_CLAN_RT.md)"""
 when = """Epoch 2 prereq; forward ABI stability policy"""
 status = """addressed"""
 addressing_commit = null
@@ -292,8 +292,8 @@ superseded_by_commit = null
 
 [[gaps]]
 id = 26
-summary = """Phase co-authorship"""
-fix = """**Phase owner** in checklist / CODEOWNERS; only owner commits `feat(phase-NNN)`"""
+summary = """Scope co-authorship"""
+fix = """**Scope owner** in checklist / CODEOWNERS; only owner commits `feat(scope-NNN)`"""
 when = """Process"""
 status = """addressed"""
 addressing_commit = null
@@ -304,11 +304,11 @@ superseded_by_commit = null
 [[gaps]]
 id = 27
 summary = """Benchmarks unanchored"""
-fix = """**Calibration run** on phase 120; thresholds = % budget vs baseline"""
+fix = """**Calibration run** on scope 120; thresholds = % budget vs baseline"""
 when = """Epoch 0"""
 status = """addressed"""
 addressing_commit = null
-implementing_doc = """benchmarks/phase-120-baseline.json"""
+implementing_doc = """benchmarks/scope-120-baseline.json"""
 split_into = []
 superseded_by_commit = null
 
@@ -437,7 +437,7 @@ superseded_by_commit = null
 id = 39
 summary = """IPC version negotiation"""
 fix = """[`IPC_VERSION_NEGOTIATION.md`](docs/IPC_VERSION_NEGOTIATION.md) — discovery, downgrade, max spread"""
-when = """Before phase 134"""
+when = """Before scope 134"""
 status = """addressed"""
 addressing_commit = null
 implementing_doc = """docs/IPC_VERSION_NEGOTIATION.md"""
@@ -448,7 +448,7 @@ superseded_by_commit = null
 id = 40
 summary = """Fuzz stubs ≠ coverage"""
 fix = """FUZZ_TARGETS — required boundary conditions per target"""
-when = """Epoch 0 def; graduate phase 121+"""
+when = """Epoch 0 def; graduate scope 121+"""
 status = """addressed"""
 addressing_commit = null
 implementing_doc = """docs/FUZZ_TARGETS.md"""
@@ -514,7 +514,7 @@ superseded_by_commit = null
 id = 46
 summary = """Accessibility not reserved"""
 fix = """ABI_COMPOSITOR_IPC **a11y extension point** (screen reader, keyboard nav)"""
-when = """Before phase 145"""
+when = """Before scope 145"""
 status = """addressed"""
 addressing_commit = null
 implementing_doc = """milestone-150-stub"""
@@ -556,9 +556,9 @@ superseded_by_commit = null
 
 [[gaps]]
 id = 50
-summary = """Phase 134 semantic migration"""
+summary = """Scope 134 semantic migration"""
 fix = """Named property: interim-bridge behaviors ⊆ native endpoint; ordering smoke not just connectivity"""
-when = """IPC_VERSION_NEGOTIATION + phase 134"""
+when = """IPC_VERSION_NEGOTIATION + scope 134"""
 status = """addressed"""
 addressing_commit = null
 implementing_doc = """kernel/src/ipc_endpoints.rs"""
@@ -623,7 +623,7 @@ superseded_by_commit = null
 [[gaps]]
 id = 56
 summary = """OOM shed bidirectional path"""
-fix = """Shed/ack wire format + ERROR class + timeout; stub in phase 121 checklist"""
+fix = """Shed/ack wire format + ERROR class + timeout; stub in scope 121 checklist"""
 when = """121 stub; 147 full"""
 status = """addressed"""
 addressing_commit = null
@@ -811,7 +811,7 @@ superseded_by_commit = null
 id = 73
 summary = """IPC negotiation proptest"""
 fix = """Random version pairs across spread; downgrade edge cases"""
-when = """Before phase 134"""
+when = """Before scope 134"""
 status = """addressed"""
 addressing_commit = null
 implementing_doc = """scripts/rights_algebra_check.py"""
@@ -1063,7 +1063,7 @@ superseded_by_commit = null
 [[gaps]]
 id = 96
 summary = """P-134 corpus unstable"""
-fix = """Fixed P-134 corpus — format at IPC_VERSION_NEGOTIATION; **populated phase 133** (see #150)"""
+fix = """Fixed P-134 corpus — format at IPC_VERSION_NEGOTIATION; **populated scope 133** (see #150)"""
 when = """Before 134"""
 status = """addressed"""
 addressing_commit = null
@@ -1085,7 +1085,7 @@ superseded_by_commit = null
 [[gaps]]
 id = 98
 summary = """Delta justification review"""
-fix = """Wrong-direction deltas need **second reviewer** (not phase owner) in commit"""
+fix = """Wrong-direction deltas need **second reviewer** (not scope owner) in commit"""
 when = """Process"""
 status = """addressed"""
 addressing_commit = null
@@ -1228,7 +1228,7 @@ superseded_by_commit = null
 [[gaps]]
 id = 111
 summary = """Registry reconciliation owner"""
-fix = """Phase owner that introduced drift drives fix; multi-phase → most recent owner"""
+fix = """Scope owner that introduced drift drives fix; multi-scope → most recent owner"""
 when = """EPOCH_FAILURE"""
 status = """addressed"""
 addressing_commit = null
@@ -1304,8 +1304,8 @@ superseded_by_commit = null
 
 [[gaps]]
 id = 118
-summary = """Phase commit + doc fixup"""
-fix = """`fixup(phase-NNN): docs` allowed same phase window; no pyramid re-run unless behavior changes"""
+summary = """Scope commit + doc fixup"""
+fix = """`fixup(scope-NNN): docs` allowed same scope window; no pyramid re-run unless behavior changes"""
 when = """Git discipline"""
 status = """addressed"""
 addressing_commit = null
@@ -1349,7 +1349,7 @@ superseded_by_commit = null
 [[gaps]]
 id = 122
 summary = """Benchmark re-baseline"""
-fix = """Rolling baseline = prior epoch gate; phase-120 historical only after epoch 2"""
+fix = """Rolling baseline = prior epoch gate; scope-120 historical only after epoch 2"""
 when = """validation_matrix"""
 status = """addressed"""
 addressing_commit = null
@@ -1657,7 +1657,7 @@ superseded_by_commit = null
 [[gaps]]
 id = 150
 summary = """P-134 corpus timing"""
-fix = """Spec + format at IPC_VERSION_NEGOTIATION; **corpus populated at phase 133** commit"""
+fix = """Spec + format at IPC_VERSION_NEGOTIATION; **corpus populated at scope 133** commit"""
 when = """Before 134"""
 status = """addressed"""
 addressing_commit = null
@@ -1887,8 +1887,8 @@ superseded_by_commit = null
 
 [[gaps]]
 id = 171
-summary = """Phase owner COI"""
-fix = """Security-critical phases: second reviewer from **different domain** (security / kernel ABI / process)"""
+summary = """Scope owner COI"""
+fix = """Security-critical scopes: second reviewer from **different domain** (security / kernel ABI / process)"""
 when = """Process"""
 status = """addressed"""
 addressing_commit = null
@@ -2030,8 +2030,8 @@ superseded_by_commit = null
 
 [[gaps]]
 id = 184
-summary = """Phase regression log"""
-fix = """Append-only phase-level metric snapshots alongside epoch gates — observability"""
+summary = """Scope regression log"""
+fix = """Append-only scope-level metric snapshots alongside epoch gates — observability"""
 when = """project_health"""
 status = """addressed"""
 addressing_commit = null
@@ -2086,7 +2086,7 @@ superseded_by_commit = null
 [[gaps]]
 id = 189
 summary = """Epoch failure time budget"""
-fix = """Max ~2 phase-cycles recovery; then charter-level decision"""
+fix = """Max ~2 scope-cycles recovery; then charter-level decision"""
 when = """EPOCH_FAILURE"""
 status = """addressed"""
 addressing_commit = null
@@ -2108,7 +2108,7 @@ superseded_by_commit = null
 [[gaps]]
 id = 191
 summary = """Prereq graph"""
-fix = """Machine-readable phase/doc adjacency; CI ordering check"""
+fix = """Machine-readable scope/doc adjacency; CI ordering check"""
 when = """project_health epoch 0"""
 status = """addressed"""
 addressing_commit = null
@@ -2162,8 +2162,8 @@ superseded_by_commit = null
 
 [[gaps]]
 id = 196
-summary = """Phase owner succession"""
-fix = """Named **backup reviewer** at phase-start; inherits commit authority if owner unavailable"""
+summary = """Scope owner succession"""
+fix = """Named **backup reviewer** at scope-start; inherits commit authority if owner unavailable"""
 when = """Process"""
 status = """addressed"""
 addressing_commit = null
@@ -2327,9 +2327,9 @@ superseded_by_commit = null
 
 [[gaps]]
 id = 211
-summary = """ares-rt ABI forward stability"""
+summary = """clan-rt ABI forward stability"""
 fix = """Compatibility window or stated recompile requirement per epoch"""
-when = """ABI_ARES_RT epoch 2"""
+when = """ABI_CLAN_RT epoch 2"""
 status = """addressed"""
 addressing_commit = null
 implementing_doc = """milestone-150-stub"""
@@ -2416,7 +2416,7 @@ superseded_by_commit = null
 [[gaps]]
 id = 219
 summary = """Changelog sub-entries"""
-fix = """PROTOCOL_CHANGELOG: section, bump class, phase commit per change"""
+fix = """PROTOCOL_CHANGELOG: section, bump class, scope commit per change"""
 when = """PROTOCOL_CHANGELOG"""
 status = """addressed"""
 addressing_commit = null
@@ -2460,7 +2460,7 @@ superseded_by_commit = null
 [[gaps]]
 id = 223
 summary = """Benchmark archival"""
-fix = """Extend phase_snapshots with bench results; trend query tool (DX)"""
+fix = """Extend scope_snapshots with bench results; trend query tool (DX)"""
 when = """project_health"""
 status = """addressed"""
 addressing_commit = null
@@ -2690,8 +2690,8 @@ superseded_by_commit = null
 
 [[gaps]]
 id = 244
-summary = """Phase checklist schema"""
-fix = """`phase_checklist_schema.toml` — required fields per phase checklist"""
+summary = """Scope checklist schema"""
+fix = """`scope_checklist_schema.toml` — required fields per scope checklist"""
 when = """Epoch 0"""
 status = """addressed"""
 addressing_commit = null
@@ -3142,7 +3142,7 @@ superseded_by_commit = null
 [[gaps]]
 id = 285
 summary = """Milestone 150 timeline projection"""
-fix = """Rolling avg phase duration → projected M150 date in STATUS.md"""
+fix = """Rolling avg scope duration → projected M150 date in STATUS.md"""
 when = """project_health"""
 status = """addressed"""
 addressing_commit = null
@@ -3372,8 +3372,8 @@ superseded_by_commit = null
 
 [[gaps]]
 id = 306
-summary = """phase_snapshots compaction"""
-fix = """Epoch entries permanent; phase entries compact after N epochs"""
+summary = """scope_snapshots compaction"""
+fix = """Epoch entries permanent; scope entries compact after N epochs"""
 when = """project_health"""
 status = """addressed"""
 addressing_commit = null
@@ -3439,7 +3439,7 @@ superseded_by_commit = null
 [[gaps]]
 id = 312
 summary = """First-steps DAG (Upgrade G)"""
-fix = """Epoch-0 authoring order in `prereq_graph.toml` with `blocking_phase: epoch-0`"""
+fix = """Epoch-0 authoring order in `prereq_graph.toml` with `blocking_scope: epoch-0`"""
 when = """Epoch 0"""
 status = """addressed"""
 addressing_commit = null
@@ -3681,8 +3681,8 @@ superseded_by_commit = null
 [[gaps]]
 id = 334
 summary = """Mandatory DECISION_LOG triggers"""
-fix = """8 gated decisions in phase_checklist_schema"""
-when = """phase_checklist_schema"""
+fix = """8 gated decisions in scope_checklist_schema"""
+when = """scope_checklist_schema"""
 status = """addressed"""
 addressing_commit = null
 implementing_doc = """milestone-150-stub"""
@@ -3703,7 +3703,7 @@ superseded_by_commit = null
 [[gaps]]
 id = 336
 summary = """Feature cost tracking"""
-fix = """Marginal overhead per phase in phase_snapshots"""
+fix = """Marginal overhead per scope in scope_snapshots"""
 when = """project_health"""
 status = """addressed"""
 addressing_commit = null
@@ -3834,12 +3834,12 @@ superseded_by_commit = null
 
 [[gaps]]
 id = 348
-summary = """Phase checklists 151–350"""
-fix = """`gen_phase_checklists_151_350.py` + CI spot-check"""
+summary = """Scope checklists 151–350"""
+fix = """`gen_scope_checklists_151_350.py` + CI spot-check"""
 when = """Epoch 7 start"""
 status = """addressed"""
 addressing_commit = null
-implementing_doc = """scripts/gen_phase_checklists_151_350.py"""
+implementing_doc = """scripts/gen_scope_checklists_151_350.py"""
 split_into = []
 superseded_by_commit = null
 

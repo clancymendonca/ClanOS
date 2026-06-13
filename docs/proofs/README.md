@@ -1,4 +1,4 @@
-# AresOS Proof and Verification Docs
+# Clan OS Proof and Verification Docs
 
 | Doc | Path |
 |-----|------|

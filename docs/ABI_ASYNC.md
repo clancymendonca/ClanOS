@@ -1,6 +1,6 @@
-# Async OS Contract (`ares-semantics-v1` draft)
+# Async OS Contract (`clan-semantics-v1` draft)
 
-Async is part of the **operating system contract**, not only a userspace library. Documented phase **104**; implementation phases **131–137**.
+Async is part of the **operating system contract**, not only a userspace library. Documented scope **104**; implementation scopes **131–137**.
 
 See: [AXIOMS.md](AXIOMS.md), [ABI_IPC.md](ABI_IPC.md), [TEMPORAL_SEMANTICS.md](TEMPORAL_SEMANTICS.md), [ABI_RUNTIME.md](ABI_RUNTIME.md).
 
@@ -27,7 +27,7 @@ Blocked native tasks wake on:
 - Cancel acknowledged
 - Timeout expiry
 
-Scheduler integration phase **141–142** — mailbox wake precedes best-effort compat idle (S-01 outline).
+Scheduler integration scope **141–142** — mailbox wake precedes best-effort compat idle (S-01 outline).
 
 ---
 
@@ -47,9 +47,9 @@ ELF programs may use blocking syscall patterns + `PollLite`. Native programs sho
 
 ---
 
-## Implementation phases (reference)
+## Implementation scopes (reference)
 
-| Phase | Feature |
+| Scope | Feature |
 |------:|---------|
 | 134 | Endpoint object |
 | 135 | Mailbox + cancel |

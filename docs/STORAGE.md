@@ -1,6 +1,6 @@
-# Storage Design (Phase 7)
+# Storage Design (Scope 7)
 
-AresOS Phase 7 introduced a small persistent storage stack on top of a block-device boundary. Phase 8 mounts that filesystem through a managed block backend so the same filesystem API can run on driver-plumbed storage.
+Clan OS Scope 7 introduced a small persistent storage stack on top of a block-device boundary. Scope 8 mounts that filesystem through a managed block backend so the same filesystem API can run on driver-plumbed storage.
 
 ## Layers
 
@@ -41,8 +41,8 @@ Primary kernel APIs live in `kernel/src/storage.rs`:
 - `write_file(path, contents)`
 - `delete_file(path)`
 - `info()`
-- `phase7_smoke_check()`
-- `phase8_smoke_check()`
+- `smoke_persistence()`
+- `smoke_driver_backend()`
 
 ## Shell Commands
 
@@ -58,25 +58,25 @@ Primary kernel APIs live in `kernel/src/storage.rs`:
 ## Validation
 
 ```bash
-python scripts/gate/boot.py --phase 7 --timeout 180
+python scripts/gate/boot.py --gate shell_storage --timeout 180
 python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --boot-wait 90 --smoke-timeout 180
 ```
 
-Boot validation emits `AresOS-BootGate: name=shell_storage ok=true` (see [VALIDATION_GATES.md](VALIDATION_GATES.md)).
+Boot validation emits `ClanOS-BootGate: name=shell_storage ok=true` (see [VALIDATION_GATES.md](VALIDATION_GATES.md)).
 
-## Phase 8 Backend
+## Scope 8 Backend
 
-By default, runtime storage uses `ManagedBlockDevice`, which delegates sector I/O to the active block backend. Phase 8 registers `qemu-sim-block0` through the block manager as a deterministic driver-backed backend for QEMU validation.
+By default, runtime storage uses `ManagedBlockDevice`, which delegates sector I/O to the active block backend. Scope 8 registers `qemu-sim-block0` through the block manager as a deterministic driver-backed backend for QEMU validation.
 
 `MemoryBlockDevice` remains available for focused filesystem tests.
 
-## Phases 36, 45–47
+## Scopes 36, 45–47
 
-- Phase 36 — `ReadFileProbe` / `WriteFileProbe` syscalls copy through validated user buffers.
-- Phases 45–46 — FD table maps open files to storage indices (`OpenFile`, `CloseFile`, `ReadFd`, `WriteFd`). See [FILE_DESCRIPTORS.md](FILE_DESCRIPTORS.md).
-- Phase 47 — file-backed demand paging reads filesystem pages on user `#PF`. See [DEMAND_PAGING.md](DEMAND_PAGING.md).
+- Scope 36 — `ReadFileProbe` / `WriteFileProbe` syscalls copy through validated user buffers.
+- Scopes 45–46 — FD table maps open files to storage indices (`OpenFile`, `CloseFile`, `ReadFd`, `WriteFd`). See [FILE_DESCRIPTORS.md](FILE_DESCRIPTORS.md).
+- Scope 47 — file-backed demand paging reads filesystem pages on user `#PF`. See [DEMAND_PAGING.md](DEMAND_PAGING.md).
 
-File owner/mode metadata and checked APIs were introduced in Phase 10 ([SECURITY.md](SECURITY.md)).
+File owner/mode metadata and checked APIs were introduced in Scope 10 ([SECURITY.md](SECURITY.md)).
 
 ## Deferred Work
 

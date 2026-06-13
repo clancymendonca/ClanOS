@@ -1,4 +1,4 @@
-# AresOS Validation Gates
+# Clan OS Validation Gates
 
 
 
@@ -22,13 +22,13 @@ scripts_package: scripts/gate/
 
 
 
-Runtime validation is **gate-based**. Boot no longer emits `PhaseN-*` serial lines. Two gate families run sequentially at boot:
+Runtime validation is **gate-based**. Boot no longer emits `numbered boot serial` serial lines. Two gate families run sequentially at boot:
 
 
 
-1. **Boot gate** (phases 6–150 scope) → `AresOS-BootGate: …`
+1. **Boot gate** (boot subsystems scope) → `ClanOS-BootGate: …`
 
-2. **System gate** (epochs 7–20 / M500 scope) → `AresOS-Gate: …` + `AresOS-SystemGate: …`
+2. **System gate** (epochs 7–20 / M500 scope) → `ClanOS-Gate: …` + `ClanOS-SystemGate: …`
 
 
 
@@ -60,57 +60,57 @@ Legacy shims at `scripts/gate/boot.py` etc. forward to `scripts/gate/` and remai
 
 
 
-| Gate | Phase scope | Serial line |
+| Gate | Legacy milestone (docs) | Serial line |
 
 |------|-------------|-------------|
 
-| `shell_storage` | 6–8 | `AresOS-BootGate: name=shell_storage ok=true` |
+| `shell_storage` | 6–8 | `ClanOS-BootGate: name=shell_storage ok=true` |
 
-| `loader_security` | 9–13 | `AresOS-BootGate: name=loader_security ok=true` |
+| `loader_security` | 9–13 | `ClanOS-BootGate: name=loader_security ok=true` |
 
-| `memory_layout` | 14–16 | `AresOS-BootGate: name=memory_layout ok=true` |
+| `memory_layout` | 14–16 | `ClanOS-BootGate: name=memory_layout ok=true` |
 
-| `userspace_bootstrap` | 17–20 | `AresOS-BootGate: name=userspace_bootstrap ok=true` |
+| `userspace_bootstrap` | 17–20 | `ClanOS-BootGate: name=userspace_bootstrap ok=true` |
 
-| `hw_paging` | 21–30 | `AresOS-BootGate: name=hw_paging ok=true` |
+| `hw_paging` | 21–30 | `ClanOS-BootGate: name=hw_paging ok=true` |
 
-| `sched_userspace` | 31–40 | `AresOS-BootGate: name=sched_userspace ok=true` |
+| `sched_userspace` | 31–40 | `ClanOS-BootGate: name=sched_userspace ok=true` |
 
-| `dynamic_runtime` | 41–50 | `AresOS-BootGate: name=dynamic_runtime ok=true` |
+| `dynamic_runtime` | 41–50 | `ClanOS-BootGate: name=dynamic_runtime ok=true` |
 
-| `fd_mmap` | 51–60 | `AresOS-BootGate: name=fd_mmap ok=true` |
+| `fd_mmap` | 51–60 | `ClanOS-BootGate: name=fd_mmap ok=true` |
 
-| `vm_fork` | 61–70 | `AresOS-BootGate: name=vm_fork ok=true` |
+| `vm_fork` | 61–70 | `ClanOS-BootGate: name=vm_fork ok=true` |
 
-| `syscall_ring3` | 71–80 | `AresOS-BootGate: name=syscall_ring3 ok=true` |
+| `syscall_ring3` | 71–80 | `ClanOS-BootGate: name=syscall_ring3 ok=true` |
 
-| `path_exec` | 81–90 | `AresOS-BootGate: name=path_exec ok=true` |
+| `path_exec` | 81–90 | `ClanOS-BootGate: name=path_exec ok=true` |
 
-| `smp_depth` | 91–100 | `AresOS-BootGate: name=smp_depth ok=true` |
+| `smp_depth` | 91–100 | `ClanOS-BootGate: name=smp_depth ok=true` |
 
-| `constitutional` | 110 | `AresOS-BootGate: name=constitutional ok=true` |
+| `constitutional` | 110 | `ClanOS-BootGate: name=constitutional ok=true` |
 
-| `capabilities` | 120 | `AresOS-BootGate: name=capabilities ok=true` |
+| `capabilities` | 120 | `ClanOS-BootGate: name=capabilities ok=true` |
 
-| `service_loader` | 121 | `AresOS-BootGate: name=service_loader ok=true` |
+| `service_loader` | 121 | `ClanOS-BootGate: name=service_loader ok=true` |
 
-| `platform_brokers` | 130 | `AresOS-BootGate: name=platform_brokers ok=true` |
+| `platform_brokers` | 130 | `ClanOS-BootGate: name=platform_brokers ok=true` |
 
-| `build_endpoints` | 131–140 | `AresOS-BootGate: name=build_endpoints ok=true` |
+| `build_endpoints` | 131–140 | `ClanOS-BootGate: name=build_endpoints ok=true` |
 
-| `virtio_blk` | 201 | `AresOS-BootGate: name=virtio_blk ok=true` |
+| `virtio_blk` | 201 | `ClanOS-BootGate: name=virtio_blk ok=true` |
 
-| `network_compat` | 404 | `AresOS-BootGate: name=network_compat ok=true` |
+| `network_compat` | 404 | `ClanOS-BootGate: name=network_compat ok=true` |
 
-| `scheduler_epoch` | 149 | `AresOS-BootGate: name=scheduler_epoch ok=true` |
+| `scheduler_epoch` | 149 | `ClanOS-BootGate: name=scheduler_epoch ok=true` |
 
-| `boundary` | 150 | `AresOS-BootGate: name=boundary ok=true` |
+| `boundary` | 150 | `ClanOS-BootGate: name=boundary ok=true` |
 
-| **boot** (summary) | all above | `AresOS-BootGate: ok=true` |
+| **boot** (summary) | all above | `ClanOS-BootGate: ok=true` |
 
 
 
-Legacy phase numbers: `python scripts/gate/legacy.py --phase N` or `scripts/gate/boot.py --phase N`.
+Historical scope indices map to gates via `scripts/gate/map.py` (`gate_for_scope`). Prefer `python scripts/gate/boot.py --gate <name>` or `python scripts/gate/system.py --gate <name>`.
 
 
 
@@ -118,45 +118,67 @@ Legacy phase numbers: `python scripts/gate/legacy.py --phase N` or `scripts/gate
 
 
 
-| Gate | Former milestone | Serial line |
+| Gate | Role | Serial line |
 
-|------|------------------|-------------|
+|------|------|-------------|
 
-| `integrity` | Phase 175 / epoch 7 | `AresOS-Gate: name=integrity ok=true` |
+| `integrity` | Build integrity, audit, OOM | `ClanOS-Gate: name=integrity ok=true` |
 
-| `scheduling` | Phase 200 | `AresOS-Gate: name=scheduling ok=true` |
+| `scheduling` | Unified service scheduling | `ClanOS-Gate: name=scheduling ok=true` |
 
-| `hardware` | Phase 250 | `AresOS-Gate: name=hardware ok=true` |
+| `hardware` | Virtio + SDK path | `ClanOS-Gate: name=hardware ok=true` |
 
-| `federation` | Phase 300 | `AresOS-Gate: name=federation ok=true` |
+| `federation` | Federation + observability | `ClanOS-Gate: name=federation ok=true` |
 
-| `release` | Phase 350 | `AresOS-Gate: name=release ok=true` |
+| `release` | Checkpoint, scorecard | `ClanOS-Gate: name=release ok=true` |
 
-| `desktop_preview` | Phase 351 | `AresOS-Gate: name=desktop_preview ok=true` |
+| `desktop_preview` | Compositor preview | `ClanOS-Gate: name=desktop_preview ok=true` |
 
-| `desktop` | Phase 375 | `AresOS-Gate: name=desktop ok=true` |
-
-| `functional` | Phase 400 | `AresOS-Gate: name=functional ok=true` |
-
-| `ci` | Phase 425 | `AresOS-Gate: name=ci ok=true` |
-
-| `production` | Phase 450 | `AresOS-Gate: name=production ok=true` |
-
-| `network` | Phase 475 | `AresOS-Gate: name=network ok=true` |
-
-| **system** (summary) | Phase 500 | `AresOS-SystemGate: ok=true` |
+| `desktop` | Full desktop stack | `ClanOS-Gate: name=desktop ok=true` |
 
 
 
-Milestone phases: `scripts/gate/system.py --phase N` or `--gate <name>`.
 
 
 
-## Phase 5 (preemption)
 
 
 
-Not part of either gate serial surface. Validated via:
+
+| `compat_runtime` | Ring-3 clan-rt corpus | `ClanOS-Gate: name=compat_runtime ok=true` |
+| `compat_fd_vm` | FD / mmap / CoW | `ClanOS-Gate: name=compat_fd_vm ok=true` |
+| `compat_signal` | Signal skeleton + delivery | `ClanOS-Gate: name=compat_signal ok=true` |
+| `storage_depth` | Buddy / VFS / ext2 | `ClanOS-Gate: name=storage_depth ok=true` |
+| `posix_compat` | POSIX server skeleton | `ClanOS-Gate: name=posix_compat ok=true` |
+
+
+
+
+
+
+| **system** (summary) | all above | `ClanOS-SystemGate: ok=true` |
+
+
+
+Use `scripts/gate/system.py --gate <name>` for individual subsystems.
+
+
+
+## Preemption validation
+
+
+
+Not part of boot/system gate serial lines. Kernel emits:
+
+
+
+- `ClanOS-Preemption: name=fairness T1=… T2=… T3=… T4=… score=…`
+
+- `ClanOS-Preemption: name=latency ticks=… req=… est_ms=…`
+
+
+
+Requires `cargo run -p kernel --features preemption` (context lab; CI only).
 
 
 
@@ -170,19 +192,15 @@ python scripts/preemption/latency.py --boot-wait 90 --duration 30
 
 
 
-Or `scripts/validation_matrix.py` (includes soak + latency checks).
+Or `scripts/validation_matrix.py` (`preemption-soak-check`, `preemption-latency-check`).
 
 
 
-## Phase checklists (historical)
+## Scope checklists (historical)
 
 
 
-Per-phase checklists under `docs/phase-*-checklist.md` record **implementation scope** for completed work. They are not the runtime validation surface. Use this document and `scripts/gate/` for CI and QEMU smokes.
-
-
-
-Phases 1–4 fold into boot gate indirectly once phase 6+ subsystems run.
+Per-scope checklists under `docs/scope-*-checklist.md` record **implementation scope** for completed work. They are not the runtime validation surface. Use this document and `scripts/gate/` for CI and QEMU smokes.
 
 
 
@@ -204,11 +222,11 @@ Phases 1–4 fold into boot gate indirectly once phase 6+ subsystems run.
 
 | `system-gate-check` | `scripts/gate/system.py --gate system` |
 
-| `phase401-ares-rt-check` | `scripts/gate/ares_rt.py` |
+| `compat-subsystems-host-check` | `scripts/gate/compat_subsystems.py` |
 
-| `phase5-soak-check` | `scripts/preemption/soak.py` |
+| `preemption-soak-check` | `scripts/preemption/soak.py` |
 
-| `phase5-latency-check` | `scripts/preemption/latency.py` |
+| `preemption-latency-check` | `scripts/preemption/latency.py` |
 
 
 

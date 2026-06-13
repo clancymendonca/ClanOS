@@ -1,4 +1,4 @@
-# Epoch 9 gate — native SDK / UX (phases 201–225).
+# Epoch 9 gate — native SDK / UX (scopes 201–225).
 
 [manifest]
 epoch = 9
@@ -9,6 +9,6 @@ solo_maintainer = true
 [[signoffs]]
 reviewer_id = "clancy"
 domain = "platform"
-scope = "ares-rt SDK path, manifest tooling, userland install"
+scope = "clan-rt SDK path, manifest tooling, userland install"
 timestamp = "2026-06-11T20:00:00Z"
 epoch = 9

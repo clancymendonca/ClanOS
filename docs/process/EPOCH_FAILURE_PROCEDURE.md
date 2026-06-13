@@ -18,13 +18,13 @@ See [`CHARTER.md`](../CHARTER.md), [`DESIGN_NORTH_STAR.md`](DESIGN_NORTH_STAR.md
 
 ## Stale epoch
 
-Epoch marked stale on compound hard-gate failure or unresolved cross-doc drift. Recovery budget: ~2 phase-cycles; beyond → charter-level decision.
+Epoch marked stale on compound hard-gate failure or unresolved cross-doc drift. Recovery budget: ~2 scope-cycles; beyond → charter-level decision.
 
 ---
 
 ## Benchmark regression
 
-Multi-phase regression uses bisection. Standard tool: `scripts/project_health.py --bisect <metric> <start> <end>` — binary search over git log re-running health checks.
+Multi-scope regression uses bisection. Standard tool: `scripts/project_health.py --bisect <metric> <start> <end>` — binary search over git log re-running health checks.
 
 ---
 
@@ -36,7 +36,7 @@ Signed image must be reproducible from tagged source. Divergence procedures docu
 
 ## CAP_REGISTRY reconciliation
 
-Registry ↔ markdown mismatch → epoch stale. Owner = phase owner who introduced drift.
+Registry ↔ markdown mismatch → epoch stale. Owner = scope owner who introduced drift.
 
 ---
 
@@ -54,7 +54,7 @@ Additive/clarification semver OK with second reviewer. Breaking foundational cha
 
 ## Soak test failure
 
-Triage owner: epoch lead or named soak owner. Distinct from phase revert path.
+Triage owner: epoch lead or named soak owner. Distinct from scope revert path.
 
 ---
 

@@ -1,4 +1,4 @@
-//! Service scheduler + E-00 priority ceiling (phases 141–142).
+//! Service scheduler + E-00 priority ceiling (scopes 141–142).
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -28,7 +28,7 @@ pub fn schedule_service(pid: ProcessId, priority: u8) -> bool {
     true
 }
 
-pub fn phase141_service_scheduler_smoke() -> bool {
+pub fn smoke_service_scheduler() -> bool {
     let Some(pid) = crate::kernel_object::ensure_smoke_process() else {
         return false;
     };
@@ -37,14 +37,14 @@ pub fn phase141_service_scheduler_smoke() -> bool {
     ok_low && reject_high && ceiling_rejects() > 0
 }
 
-pub fn phase142_smp_readiness_smoke() -> bool {
+pub fn smoke_smp_readiness_smoke() -> bool {
     let (cpus, aps, _tlb) = crate::smp::status();
     cpus >= 1 && aps <= cpus
 }
 
 /// S-01 unified native service admission (`SCHEDULING_UNIFIED.md`).
 pub fn s01_unified_admission_smoke() -> bool {
-    phase141_service_scheduler_smoke() && phase142_smp_readiness_smoke()
+    smoke_service_scheduler() && smoke_smp_readiness_smoke()
 }
 
 /// S-02: priority ceiling rejects above E-00.
@@ -57,7 +57,7 @@ pub fn s02_priority_ceiling_smoke() -> bool {
 
 /// S-03: SMP status consistent under schedule ops.
 pub fn s03_smp_schedule_smoke() -> bool {
-    s02_priority_ceiling_smoke() && phase142_smp_readiness_smoke()
+    s02_priority_ceiling_smoke() && smoke_smp_readiness_smoke()
 }
 
 /// S-04: schedule op counter monotonic.
@@ -78,10 +78,10 @@ pub fn s05_unified_band_smoke() -> bool {
         && s04_schedule_ops_smoke()
 }
 
-pub fn phase200_scheduling_unified_smoke() -> bool {
+pub fn smoke_scheduling_unified_smoke() -> bool {
     s05_unified_band_smoke()
 }
 
 pub fn epoch8_scheduling_graduated() -> bool {
-    phase200_scheduling_unified_smoke()
+    smoke_scheduling_unified_smoke()
 }

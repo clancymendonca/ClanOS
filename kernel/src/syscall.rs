@@ -1,4 +1,4 @@
-//! Minimal syscall surface for Phase 6+ bring-up.
+//! Minimal syscall surface bring-up.
 
 use alloc::{string::String, vec::Vec};
 

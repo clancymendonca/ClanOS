@@ -1,4 +1,4 @@
-//! Phase 8 device registry and PCI discovery skeleton.
+//! device registry and PCI discovery skeleton.
 
 use alloc::{string::String, vec::Vec};
 use lazy_static::lazy_static;

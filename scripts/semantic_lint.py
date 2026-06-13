@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Architecture-preservation lint for post-100 constitutional docs (phases 101-110)."""
+"""Architecture-preservation lint for post-100 constitutional docs (scopes 101-110)."""
 
 from __future__ import annotations
 
@@ -168,7 +168,7 @@ def check_cap_implementation(repo: Path, errors: list[str]) -> None:
     ]
     for path in required:
         if not path.is_file():
-            errors.append(f"phases 111-120: missing {path.relative_to(repo)}")
+            errors.append(f"scopes 111-120: missing {path.relative_to(repo)}")
 
 
 def parse_native_syscall_enum(native_rs: Path) -> set[int]:
@@ -192,7 +192,7 @@ def check_native_syscall_ids(repo: Path, errors: list[str]) -> None:
     kernel_ids = parse_native_syscall_enum(native_rs)
     abi = repo / "docs" / "ABI_SYSCALL.md"
     abi_text = abi.read_text(encoding="utf-8")
-    start = abi_text.find("## Native syscall IDs (phase 112)")
+    start = abi_text.find("## Native syscall IDs (scope 112)")
     if start < 0:
         return
     chunk = abi_text[start : start + 800]
@@ -212,13 +212,13 @@ def print_minimization_audit() -> None:
         ("IPC", "ABI_IPC", "7 guarantee areas"),
         ("Async", "ABI_ASYNC", "4 primitives"),
     ]
-    print("Minimization audit (phase 110):")
+    print("Minimization audit (constitutional gates G1–G5):")
     for layer, doc, count in rows:
         print(f"  {layer:14} {doc:22} {count}")
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Semantic lint for phases 101-110")
+    parser = argparse.ArgumentParser(description="Semantic lint for scopes 101-110")
     parser.add_argument(
         "--repo-root",
         type=Path,

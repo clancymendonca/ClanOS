@@ -1,4 +1,4 @@
-//! Audit IPC correlation on wire — phases 135–138 (ERROR_TAXONOMY + WIRE_SCHEMA).
+//! Audit IPC correlation on wire — scopes 135–138 (ERROR_TAXONOMY + WIRE_SCHEMA).
 
 use alloc::vec::Vec;
 use core::sync::atomic::{AtomicU64, Ordering};
@@ -75,7 +75,7 @@ pub fn kernel_append_event(err: &NativeError) -> WireAuditEvent {
     encode_error_on_wire(err)
 }
 
-pub fn phase135_audit_correlation_smoke() -> bool {
+pub fn smoke_audit_correlation_smoke() -> bool {
     let err = NativeError::e00_saturated();
     let ev = encode_error_on_wire(&err);
     let bytes = serialize_event(&ev);
@@ -88,10 +88,10 @@ pub fn phase135_audit_correlation_smoke() -> bool {
 }
 
 pub fn epoch7_audit_graduated() -> bool {
-    phase135_audit_correlation_smoke()
+    smoke_audit_correlation_smoke()
 }
 
-pub fn phase136_wait_set_smoke() -> bool {
+pub fn smoke_wait_set() -> bool {
     let Some(pid) = crate::kernel_object::ensure_smoke_process() else {
         return false;
     };
@@ -99,7 +99,7 @@ pub fn phase136_wait_set_smoke() -> bool {
     crate::ipc_endpoints::send(ep, pid, b"wait").is_ok()
 }
 
-pub fn phase137_error_taxonomy_wire_smoke() -> bool {
+pub fn smoke_error_taxonomy_wire_smoke() -> bool {
     let structural = NativeError {
         code: crate::service_loader::ERR_CAP_QUOTA,
         class: ErrorClass::StructuralRemediable,
@@ -108,6 +108,6 @@ pub fn phase137_error_taxonomy_wire_smoke() -> bool {
     ev.error_class == 2
 }
 
-pub fn phase138_schema_registry_smoke() -> bool {
-    phase135_audit_correlation_smoke() && phase137_error_taxonomy_wire_smoke()
+pub fn smoke_schema_registry_smoke() -> bool {
+    smoke_audit_correlation_smoke() && smoke_error_taxonomy_wire_smoke()
 }

@@ -2,7 +2,7 @@
 
 Normative scenarios that **must** hold. Not implementation unit tests in this documentation pass — same IDs become executable semantic tests when subsystems exist (QEMU / Rust `#[semantic_spec(...)]`).
 
-**Gate G5** — phase 111+ behavior must not contradict these cases without `ares-semantics-v*` bump.
+**Gate G5** — scope 111+ behavior must not contradict these cases without `clan-semantics-v*` bump.
 
 See: [AXIOMS.md](AXIOMS.md) A8, [SEMANTIC_LINT.md](SEMANTIC_LINT.md).
 
@@ -47,7 +47,7 @@ Use the same ID in docs, code comments, tests, and diagnostics ([SEMANTIC_OBSERV
 | **E-04** | Wait-set timeout | Deterministic wake ordering among ready endpoints |
 | **E-05** | Sustained backpressure | No unbounded kernel queue growth |
 
-**Laws:** [ABI_IPC.md](ABI_IPC.md) — frozen before phase 134 implementation.
+**Laws:** [ABI_IPC.md](ABI_IPC.md) — frozen before scope 134 implementation.
 
 ---
 
@@ -68,7 +68,7 @@ Use the same ID in docs, code comments, tests, and diagnostics ([SEMANTIC_OBSERV
 
 | ID | Scenario | Expected outcome |
 |----|----------|------------------|
-| **M-01** | Same as T-04 | Precedence sketch in TEMPORAL_SEMANTICS; full table phases 156–158 |
+| **M-01** | Same as T-04 | Precedence sketch in TEMPORAL_SEMANTICS; full table scopes 156–158 |
 
 ---
 
@@ -81,7 +81,7 @@ Use the same ID in docs, code comments, tests, and diagnostics ([SEMANTIC_OBSERV
 
 ---
 
-## Law ↔ case linkage matrix (phase 110 audit)
+## Law ↔ case linkage matrix (scope 110 audit)
 
 Every major law in RIGHTS_ALGEBRA and ABI_IPC must link ≥1 case ID above.
 
@@ -98,8 +98,8 @@ Every major law in RIGHTS_ALGEBRA and ABI_IPC must link ≥1 case ID above.
 
 ## Executable tests (future)
 
-| Phase | Work |
+| Scope | Work |
 |------:|------|
 | 112+ | Rust / QEMU tests tagged with R-* |
 | 134+ | E-* endpoint tests |
-| 159–160 | CI requires semantic lint + spec coverage before `ares-semantics-v*` bump |
+| 159–160 | CI requires semantic lint + spec coverage before `clan-semantics-v*` bump |

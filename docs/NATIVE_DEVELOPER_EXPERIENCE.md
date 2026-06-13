@@ -2,7 +2,7 @@
 
 **UX is part of architecture.** No ambient paths is correct technically but **ecosystem-hostile** if tooling is weak — developers will retreat to compat.
 
-Outline phase **110**; SDK work phases **161–170** ([ROADMAP_POST100.md](ROADMAP_POST100.md)).
+Outline scope **110**; SDK work scopes **161–170** ([ROADMAP_POST100.md](ROADMAP_POST100.md)).
 
 See: [AXIOMS.md](AXIOMS.md), [ABI_SECURITY.md](ABI_SECURITY.md), [NATIVE_MODEL.md](NATIVE_MODEL.md).
 
@@ -52,7 +52,7 @@ Native model uses **capability grants** and broker-issued handles. Without ergon
 
 Track metric (future): % native launches vs compat ELF — target growth as SDK matures.
 
-Phase 128+ mandatory `ares-native-v1` for native tier binaries.
+Scope 128+ mandatory `clan-native-v1` for native tier binaries.
 
 ---
 

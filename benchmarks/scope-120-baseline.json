@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0.0",
+  "scope": 120,
+  "calibrated_at": "2026-06-11",
+  "status": "calibrated",
+  "metrics": {
+    "cap_table_smoke_ms": 12,
+    "rights_smoke_ms": 8,
+    "broker_smoke_ms": 15,
+    "ipc_bridge_retired": true,
+    "budget_pct_of_stub": 100
+  },
+  "notes": "Calibrated from capabilities gate smoke; thresholds = 110% budget vs baseline per epoch 0 policy"
+}

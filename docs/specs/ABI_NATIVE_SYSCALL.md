@@ -12,7 +12,7 @@ status: authoritative
 semantics_version: 1.0.0
 ```
 
-Gate **G4** — phase **128** mandatory `ares-native-v1` manifest before ring-3 native enforcement.
+Gate **G4** — scope **128** mandatory `clan-native-v1` manifest before ring-3 native enforcement.
 
 ---
 
@@ -20,13 +20,13 @@ Gate **G4** — phase **128** mandatory `ares-native-v1` manifest before ring-3 
 
 Native syscalls: **256+** (`governance::NATIVE_SYSCALL_ID_BASE`).
 
-| ID | Name | Phase |
+| ID | Name | Scope |
 |----|------|-------|
 | 256 | CapCreate | 112 |
 | 257 | CapClose | 112 |
 | 258 | CapTransfer | 112 |
 
-Ring-3 allowlist expansion gated on valid `ares-native-v1` manifest (phase 128).
+Ring-3 allowlist expansion gated on valid `clan-native-v1` manifest (scope 128).
 
 ---
 

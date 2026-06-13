@@ -14,7 +14,7 @@ semantics_version: 1.1.0
 
 Records alternatives considered, rationale, and epoch. **Routine decisions** are encouraged but non-gating.
 
-**Gated decisions** (see `phase_checklist_schema.toml` `[required_decisions]`): a `DECISION_LOG` entry is **required before phase close** for the epoch where the decision is made.
+**Gated decisions** (see `scope_checklist_schema.toml` `[required_decisions]`): a `DECISION_LOG` entry is **required before scope close** for the epoch where the decision is made.
 
 ---
 
@@ -26,7 +26,7 @@ Records alternatives considered, rationale, and epoch. **Routine decisions** are
 **Alternatives:** priority inheritance; priority ceiling; explicit denial (no inheritance)  
 **Decision:** **Priority ceiling** — when a task holds a cap blocking a higher-priority client, the holder runs at the ceiling of blocked priorities for the duration of the critical section (cap held across syscall/wait).  
 **Rationale:** Bounded latency without unbounded inheritance chains; matches broker-centric epoch 1 architecture.  
-**Consequences:** `SCHEDULER_MODEL.md` § Priority ceiling; Kani target before phase 128 brokers.
+**Consequences:** `SCHEDULER_MODEL.md` § Priority ceiling; Kani target before scope 128 brokers.
 
 ### r_destroy_notify_ordering — R-destroy-notify delivery ordering (epoch 0)
 
@@ -74,7 +74,7 @@ Records alternatives considered, rationale, and epoch. **Routine decisions** are
 **Alternatives:** kernel TCB driver; process + device caps; hybrid  
 **Decision:** **Hybrid** — kernel provides MMIO/IRQ trampoline and DMA mapping gates; **userspace driver host** holds `device.*` caps and virtio protocol stack.  
 **Rationale:** Minimizes TCB while meeting virtio-blk/net epoch 2 schedule; aligns with GpuContext/userspace driver pattern.  
-**Consequences:** `DRIVER_MODEL.md`; VIRTIO_SAFETY.md boundary; phase 122+ driver host checklist.
+**Consequences:** `DRIVER_MODEL.md`; VIRTIO_SAFETY.md boundary; scope 122+ driver host checklist.
 
 ### suspend_flush_timeout — Suspend flush timeout behavior (epoch 0)
 

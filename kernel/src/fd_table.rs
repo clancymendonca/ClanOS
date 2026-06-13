@@ -1,4 +1,4 @@
-//! Per-process file descriptor tables (Phases 45–46, 51–52).
+//! Per-process file descriptor tables.
 
 use alloc::{format, string::String};
 use core::sync::atomic::{AtomicU64, Ordering};
@@ -387,7 +387,7 @@ pub fn fork_lite_status() -> (u64, u64) {
     )
 }
 
-pub fn phase61_smoke() -> bool {
+pub fn smoke_chdir_fd() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let creds = crate::security::Credentials::shell_user();
     let Some(pid) = process::create_kernel_process_as("chdir-smoke", tick, creds) else {
@@ -400,7 +400,7 @@ pub fn phase61_smoke() -> bool {
     chdir_ok && open_ok && bad && normalized > 0 && chdirs > 0
 }
 
-pub fn phase64_smoke() -> bool {
+pub fn smoke_fork_fd_inherit() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let creds = crate::security::Credentials::shell_user();
     let Some(parent) = process::create_kernel_process_as("fork-parent", tick, creds) else {
@@ -422,7 +422,7 @@ pub fn phase64_smoke() -> bool {
     child_open
 }
 
-pub fn phase66_smoke() -> bool {
+pub fn smoke_fcntl_getfd() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let creds = crate::security::Credentials::shell_user();
     let Some(pid) = process::create_kernel_process_as("fcntl-smoke", tick, creds) else {
@@ -440,7 +440,7 @@ pub fn phase66_smoke() -> bool {
     getfd && dup && reject && getfd_n > 0 && dup_n > 0 && rejected > 0
 }
 
-pub fn phase76_smoke() -> bool {
+pub fn smoke_fcntl_setfd() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let creds = crate::security::Credentials::shell_user();
     let Some(pid) = process::create_kernel_process_as("fcntl-setfd-smoke", tick, creds) else {
@@ -458,7 +458,7 @@ pub fn phase76_smoke() -> bool {
     setfd && getfd && reject && setfd_n > 0 && getfd_n > 0 && rejected > 0
 }
 
-pub fn phase45_smoke() -> bool {
+pub fn smoke_file_fd_open() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let Some(pid) = process::create_kernel_process_as(
         "fd-smoke-a",
@@ -477,7 +477,7 @@ pub fn phase45_smoke() -> bool {
     closed && opens > 0 && closes > 0
 }
 
-pub fn phase46_smoke() -> bool {
+pub fn smoke_fd_io_rw() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let Some(pid) = process::create_kernel_process_as(
         "fd-io-smoke",
@@ -511,7 +511,7 @@ pub fn phase46_smoke() -> bool {
     ok && FD_READS.load(Ordering::Relaxed) > before
 }
 
-pub fn phase51_smoke() -> bool {
+pub fn smoke_proc_fd_table() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let creds = crate::security::Credentials::shell_user();
     let Some(pid_a) = process::create_kernel_process_as("proc-fd-a", tick, creds) else {
@@ -535,7 +535,7 @@ pub fn phase51_smoke() -> bool {
     close_a && still_open
 }
 
-pub fn phase52_smoke() -> bool {
+pub fn smoke_fd_dup_relative() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let creds = crate::security::Credentials::shell_user();
     let Some(pid) = process::create_kernel_process_as("fd-dup-smoke", tick, creds) else {
@@ -544,7 +544,7 @@ pub fn phase52_smoke() -> bool {
     let _ = process::set_process_cwd(pid, "/tmp");
     let fd0 = open_file_for_process(pid, "/bin/hello").ok();
     let dup = fd0.and_then(|fd| dup_fd_for_process(pid, fd).ok());
-    let relative = open_file_for_process(pid, "phase52-smoke.txt").ok();
+    let relative = open_file_for_process(pid, "fd-dup-smoke.txt").ok();
     if fd0.is_none() || dup.is_none() || relative.is_none() {
         return false;
     }

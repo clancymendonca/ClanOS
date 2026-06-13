@@ -1,4 +1,4 @@
-//! Phase 18 controlled Ring 3 trampoline model.
+//! controlled Ring 3 trampoline model.
 
 use crate::{interrupts::USER_TRAP_VECTOR, user_context::UserContextDescriptor};
 

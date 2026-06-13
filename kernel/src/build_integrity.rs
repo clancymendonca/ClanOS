@@ -1,4 +1,4 @@
-//! Build integrity — phases 131–133 (BUILD_INTEGRITY.md).
+//! Build integrity — scopes 131–133 (BUILD_INTEGRITY.md).
 
 use core::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
@@ -23,7 +23,7 @@ pub fn repro_match_count() -> u64 {
     REPRO_MATCHES.load(Ordering::Relaxed)
 }
 
-/// Phase 131: signed system image identity (digest stub).
+/// : signed system image identity (digest stub).
 pub fn verify_boot_image() -> bool {
     let digest = image_digest::sha256_hex(KERNEL_IMAGE_TAG);
     let manifest = alloc::format!("digest=sha256:{digest}\n");
@@ -36,7 +36,7 @@ pub fn verify_boot_image() -> bool {
     ok
 }
 
-/// Phase 132: dual-build reproducibility stub — same source → same digest twice.
+/// : dual-build reproducibility stub — same source → same digest twice.
 pub fn verify_reproducible_build() -> bool {
     let a = image_digest::sha256_hex(KERNEL_IMAGE_TAG);
     let b = image_digest::sha256_hex(KERNEL_IMAGE_TAG);
@@ -47,25 +47,25 @@ pub fn verify_reproducible_build() -> bool {
     ok
 }
 
-/// Phase 133: rollback smoke — prior epoch digest still verifiable.
+/// : rollback smoke — prior epoch digest still verifiable.
 pub fn verify_rollback_anchor() -> bool {
     let anchor = image_digest::sha256_hex(b"aresos-epoch-2-anchor");
     image_digest::verify_digest_hex(b"aresos-epoch-2-anchor", &anchor)
 }
 
-pub fn phase131_image_identity_smoke() -> bool {
+pub fn smoke_image_identity() -> bool {
     verify_boot_image() && boot_verified() && system_image_epoch() >= 2
 }
 
-pub fn phase132_repro_build_smoke() -> bool {
+pub fn smoke_repro_build_host() -> bool {
     verify_reproducible_build() && repro_match_count() > 0
 }
 
-pub fn phase133_rollback_smoke() -> bool {
+pub fn smoke_rollback() -> bool {
     verify_rollback_anchor()
 }
 
-/// Phase 430 — signed user ELF manifest corpus (BUILD_INTEGRITY production path).
+/// signed user ELF manifest corpus (BUILD_INTEGRITY production path).
 pub fn verify_signed_user_elf_corpus() -> bool {
     let corpus = b"ares-rt demo:hello";
     let digest = image_digest::sha256_hex(corpus);
@@ -78,6 +78,6 @@ pub fn verify_signed_user_elf_corpus() -> bool {
     ok
 }
 
-pub fn phase430_signed_user_elf_smoke() -> bool {
+pub fn smoke_signed_user_elf() -> bool {
     verify_signed_user_elf_corpus() && SIGNED_USER_ELF_VERIFIED.load(Ordering::Relaxed) > 0
 }

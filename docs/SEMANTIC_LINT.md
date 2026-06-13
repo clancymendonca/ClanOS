@@ -1,6 +1,6 @@
 # Semantic Lint (Architecture Preservation)
 
-Outline at phase **109**; automation scheduled post-110; **CI gate** at phases **159–160** before `ares-semantics-v*` bumps ([ABI_STABILITY.md](ABI_STABILITY.md)).
+Outline at scope **109**; automation scheduled post-110; **CI gate** at scopes **159–160** before `clan-semantics-v*` bumps ([ABI_STABILITY.md](ABI_STABILITY.md)).
 
 Not full theorem proving — **semantic static analysis** assisting human review.
 
@@ -21,13 +21,13 @@ See: [SEMANTIC_SPECS.md](SEMANTIC_SPECS.md), [AXIOMS.md](AXIOMS.md) A10.
 
 ---
 
-## Phase 110 (manual)
+## Scope 110 (manual)
 
 Until `scripts/semantic_lint.py` exists:
 
 - [ ] Every R-/E-/T- case referenced from a law doc
 - [ ] No native law defined only in compat checklists
-- [ ] Minimization audit: law count per hierarchy layer recorded in phase-110 checklist
+- [ ] Minimization audit: law count per hierarchy layer recorded in scope-110 checklist
 
 ---
 
@@ -36,7 +36,7 @@ Until `scripts/semantic_lint.py` exists:
 | Tool | Purpose |
 |------|---------|
 | `scripts/semantic_lint.py` | Parse docs + optional kernel annotations |
-| CI job `semantic-lint` | Required before `ares-semantics-v*` version bump |
+| CI job `semantic-lint` | Required before `clan-semantics-v*` version bump |
 | Doc check in PR template | A10 questions for new law prose |
 
 Optional: Rust proc-macro or comment convention `// semantic_spec: R-01` for linkage to tests.

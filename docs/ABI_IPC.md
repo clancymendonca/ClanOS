@@ -1,14 +1,14 @@
-# IPC ABI — Endpoints (`ares-semantics-v1` draft)
+# IPC ABI — Endpoints (`clan-semantics-v1` draft)
 
-**Gate G3** — native endpoint implementation (phase 134+) blocked until guarantees here are signed at phase 110.
+**Gate G3** — native endpoint implementation (scope 134+) blocked until guarantees here are signed at scope 110.
 
-PipeLite (phase 87) is **compat** only (`/@pipe/` FD paths). Native uses **Endpoint** kernel objects.
+PipeLite (scope 87) is **compat** only (`/@pipe/` FD paths). Native uses **Endpoint** kernel objects.
 
 See: [AXIOMS.md](AXIOMS.md), [SEMANTIC_SPECS.md](SEMANTIC_SPECS.md) E-*, [TEMPORAL_SEMANTICS.md](TEMPORAL_SEMANTICS.md), [ABI_ASYNC.md](ABI_ASYNC.md).
 
 ---
 
-## Guarantees (frozen at phase 103/110)
+## Guarantees (frozen at scope 103/110)
 
 ### Ordering
 
@@ -66,7 +66,7 @@ Peer service death → generation bump / endpoint teardown (E-03, R-03). Waiters
 | Syscall | `Pipe = 80` |
 | Path | `/@pipe/{id}/r`, `/@pipe/{id}/w` |
 | Poll | `Poll = 82` single-fd readiness |
-| Capacity | 64 bytes ring, max 4 pipes (phase 87) |
+| Capacity | 64 bytes ring, max 4 pipes (scope 87) |
 
 Spec **139** (future checklist): compat pipe preserved when native endpoints ship.
 

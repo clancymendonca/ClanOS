@@ -18,6 +18,11 @@ GATES = [
     "release_gate",
     "desktop_gate",
     "functional_gate",
+    "smoke_compat_runtime",
+    "smoke_compat_fd_vm",
+    "smoke_compat_signal",
+    "smoke_storage_depth",
+    "smoke_posix_compat",
     "system_gate",
 ]
 

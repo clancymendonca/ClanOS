@@ -1,4 +1,4 @@
-//! Window manager (phases 352–356) — focus model + damage regions.
+//! Window manager (scopes 352–356) — focus model + damage regions.
 
 use core::sync::atomic::{AtomicU64, Ordering};
 use spin::Mutex;
@@ -134,7 +134,7 @@ pub fn damage_regions_flushed() -> usize {
     STATE.lock().damage_count
 }
 
-pub fn phase353_window_smoke() -> bool {
+pub fn smoke_window_manager() -> bool {
     if window_count() < 2 {
         let _ = create_window(40, 40, 100, 60, "TERM");
         let _ = create_window(160, 50, 120, 70, "FILES");
@@ -143,6 +143,6 @@ pub fn phase353_window_smoke() -> bool {
     window_count() >= 2 && focus_at(45, 45).is_some() && damage_regions_flushed() > 0
 }
 
-pub fn phase356_wm_smoke() -> bool {
-    phase353_window_smoke() && focused_window().is_some() && WM_OPS.load(Ordering::Relaxed) >= 1
+pub fn smoke_wm_smoke() -> bool {
+    smoke_window_manager() && focused_window().is_some() && WM_OPS.load(Ordering::Relaxed) >= 1
 }

@@ -3,6 +3,7 @@ name = "kernel"
 version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
+build = "build.rs"
 
 [[bin]]
 name = "kernel"
@@ -16,7 +17,7 @@ doctest = false
 
 [features]
 default = []
-# Production preemptive scheduling (Phase 5+)
+# Production preemptive scheduling (preemption lab + CI soak)
 preemption = []
 # Real syscall/sysret user probe (QEMU boot only; omitted from host integration tests).
 hw-sysret-probe = []

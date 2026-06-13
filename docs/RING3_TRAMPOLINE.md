@@ -1,6 +1,6 @@
 # Controlled Ring 3 Trampoline
 
-Phase 18 adds a controlled trampoline result path for user-entry validation. It records that a prepared user context entered the controlled path and trapped back through the reserved user trap vector. Phase 19 builds on this with user syscall return metadata.
+Scope 18 adds a controlled trampoline result path for user-entry validation. It records that a prepared user context entered the controlled path and trapped back through the reserved user trap vector. Scope 19 builds on this with user syscall return metadata.
 
 ## Trampoline Result
 
@@ -41,4 +41,4 @@ See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 
 ## Safety Boundary
 
-Phase 18 validates the controlled trampoline path and trap metadata. It does not run arbitrary ELF code. Phase 19 exposes a syscall return ABI for a controlled probe, but still does not execute arbitrary ELF syscall instructions.
+Scope 18 validates the controlled trampoline path and trap metadata. It does not run arbitrary ELF code. Scope 19 exposes a syscall return ABI for a controlled probe, but still does not execute arbitrary ELF syscall instructions.

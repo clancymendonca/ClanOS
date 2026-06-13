@@ -1,4 +1,4 @@
-//! Phase 10 identity and access-control primitives.
+//! identity and access-control primitives.
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -223,7 +223,7 @@ pub fn can_manage_process(actor: Credentials, owner: Credentials) -> bool {
     actor.can_manage() || actor.user == owner.user
 }
 
-pub fn phase10_smoke_check() -> bool {
+pub fn smoke_access_policy() -> bool {
     let user = Credentials::shell_user();
     let admin = Credentials::admin();
     let owner = user.user;

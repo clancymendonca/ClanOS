@@ -23,7 +23,7 @@ use x86_64::VirtAddr;
 entry_point!(kernel_main);
 
 fn kernel_main(boot_info: &'static BootInfo) -> ! {
-    println!("AresOS v{} booting...", env!("CARGO_PKG_VERSION"));
+    println!("ClanOS v{} booting...", env!("CARGO_PKG_VERSION"));
 
     kernel::init();
 
@@ -76,10 +76,10 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     println!("Kernel features: preemption={}", preemption_mode);
 
     if preemption_mode {
-        println!("Preemption mode active. Spawning 4 kernel tasks for fairness testing.");
+        println!("Preemption lab active. Spawning 4 kernel tasks for fairness validation.");
         println!("Console: type 'help' to list runtime scheduler commands.");
         kernel::task::scheduler::set_context_switching_enabled(true);
-        kernel::task::scheduler::spawn_kernel_tasks_phase5();
+        kernel::task::scheduler::spawn_preemption_lab_tasks();
         println!(
             "Kernel tasks spawned. Starting preemptive scheduler. quantum_ticks={}, fairness_interval_ticks={}",
             kernel::task::scheduler::scheduler_quantum_ticks(),
@@ -120,7 +120,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     );
     println!("Context tasks: {:?}", context_names);
     println!("Kernel ready. Entering event loop.");
-    kernel::serial_println!("AresOS shell ready — type here: help | run demo-hello | ls | desktop");
+    kernel::serial_println!("ClanOS shell ready — type here: help | run demo-hello | ls | desktop");
     kernel::serial_println!("(Use this terminal for commands; QEMU window shows the desktop.)");
     executor.run();
 }

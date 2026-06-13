@@ -1,4 +1,4 @@
-//! Saved hardware user trap frames for scheduler preemption (Phase 32).
+//! Saved hardware user trap frames for scheduler preemption .
 
 use core::sync::atomic::{AtomicU64, Ordering};
 use lazy_static::lazy_static;
@@ -51,7 +51,7 @@ pub fn mark_preempted() {
     FRAME_PREEMPTED.store(1, Ordering::Relaxed);
 }
 
-pub fn phase32_smoke() -> bool {
+pub fn smoke_user_hw_frame() -> bool {
     save_frame(UserHwFrame {
         rip: 0x400000,
         rsp: 0x7ffff000,

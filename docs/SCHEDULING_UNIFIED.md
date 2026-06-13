@@ -12,7 +12,7 @@ status: authoritative
 semantics_version: 0.1.0-draft
 ```
 
-Post-150 service-centric scheduler. Extends [SCHEDULER_MODEL.md](SCHEDULER_MODEL.md). Epoch 8 deliverable (phases 176–200).
+Post-150 service-centric scheduler. Extends [SCHEDULER_MODEL.md](SCHEDULER_MODEL.md). Epoch 8 deliverable (scopes 176–200).
 
 ---
 

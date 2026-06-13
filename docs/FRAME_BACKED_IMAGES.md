@@ -1,6 +1,6 @@
 # Frame-Backed Images
 
-Phase 15 converts Phase 13 mapped-image stubs into frame-backed image records. These records consume owned frames from the Phase 14 frame ownership service and attach them to the mapped executable pages. Phase 16 uses these records to build inactive user page-table descriptors.
+Scope 15 converts Scope 13 mapped-image stubs into frame-backed image records. These records consume owned frames from the Scope 14 frame ownership service and attach them to the mapped executable pages. Scope 16 uses these records to build inactive user page-table descriptors.
 
 ## Backed Image Contents
 
@@ -15,7 +15,7 @@ A `FrameBackedImage` records:
 - owner credentials
 - `MappingState::FrameBacked`
 
-The copy and zero-fill operations are still accounting records. They are associated with owned backing frames, but Phase 15 does not install those frames into process page tables or execute from them.
+The copy and zero-fill operations are still accounting records. They are associated with owned backing frames, but Scope 15 does not install those frames into process page tables or execute from them.
 
 ## Loader Flow
 
@@ -45,4 +45,4 @@ See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 
 ## Safety Boundary
 
-`run hello` remains unsupported in Phase 15. Frame-backed records are the data needed by later page-table work, not executable user mappings. Phase 16 adds descriptor translation, but still does not switch CR3.
+`run hello` remains unsupported in Scope 15. Frame-backed records are the data needed by later page-table work, not executable user mappings. Scope 16 adds descriptor translation, but still does not switch CR3.

@@ -30,5 +30,5 @@ semantics_version: 1.0.0
 
 | Prior release | M350 regression-free | `scripts/gate/system.py --gate release` |
 
-| Boot smoke | `AresOS-Gate: name=functional ok=true` | QEMU serial |
+| Boot smoke | `ClanOS-Gate: name=functional ok=true` | QEMU serial |
 

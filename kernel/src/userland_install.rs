@@ -1,4 +1,4 @@
-//! Native userland install hook (phases 376–399) — ares-rt demo + `/bin` manifests.
+//! Native userland install hook (scopes 376–399) — ares-rt demo + `/bin` manifests.
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -29,17 +29,17 @@ pub fn native_launch_count() -> u64 {
     NATIVE_LAUNCHES.load(Ordering::Relaxed)
 }
 
-pub fn phase376_userland_smoke() -> bool {
+pub fn smoke_userland_demo() -> bool {
     install_native_packages()
         && crate::task::userspace::run_program("demo-hello", &[])
             .map(|out| out.contains("ares-rt") || out.contains("userland"))
             .unwrap_or(false)
 }
 
-pub fn phase396_package_smoke() -> bool {
-    phase376_userland_smoke() && crate::network_stack::packages_installed() > 0
+pub fn smoke_package_install() -> bool {
+    smoke_userland_demo() && crate::network_stack::packages_installed() > 0
 }
 
-pub fn phase399_native_app_smoke() -> bool {
+pub fn smoke_native_app() -> bool {
     run_native_demo() && native_launch_count() > 0
 }

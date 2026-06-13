@@ -1,4 +1,4 @@
-//! Universal kernel object model and per-process capability table (phases 111–113).
+//! Universal kernel object model and per-process capability table (scopes 111–113).
 //!
 //! Single cap handle table per process: `(ObjectId, Kind, Rights, Generation)`.
 //! See docs/KERNEL_OBJECT_MODEL.md and docs/RIGHTS_ALGEBRA.md.
@@ -14,7 +14,7 @@ use crate::task::process::{self, ProcessId};
 
 pub const MAX_CAPS: usize = 16;
 
-/// Stable object identity (phase 110 immutable identity decision).
+/// Stable object identity (scope 110 immutable identity decision).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ObjectId(pub u64);
 
@@ -97,7 +97,7 @@ struct KernelObjectRecord {
     kind: ObjectKind,
     generation: Generation,
     max_rights: Rights,
-    /// Broker-local id for FsNode (no path string in cap metadata, phase 114).
+ /// Broker-local id for FsNode (no path string in cap metadata, scope 114).
     fsnode_local_id: Option<u32>,
 }
 
@@ -385,7 +385,7 @@ pub fn ensure_smoke_process() -> Option<ProcessId> {
     process::create_process_for_smoke("cap-smoke")
 }
 
-pub fn phase111_kernel_object_smoke() -> bool {
+pub fn smoke_kernel_object_smoke() -> bool {
     let Some(pid) = ensure_smoke_process() else {
         return false;
     };
@@ -400,7 +400,7 @@ pub fn phase111_kernel_object_smoke() -> bool {
     gen && lookup
 }
 
-pub fn phase112_cap_lifecycle_smoke() -> bool {
+pub fn smoke_cap_lifecycle_smoke() -> bool {
     let Some(pid_a) = ensure_smoke_process() else {
         return false;
     };
@@ -437,7 +437,7 @@ pub fn phase112_cap_lifecycle_smoke() -> bool {
     sender_empty && receiver && closed
 }
 
-pub fn phase113_rights_smoke() -> bool {
+pub fn smoke_rights_smoke() -> bool {
     let Some(pid) = ensure_smoke_process() else {
         return false;
     };
@@ -454,7 +454,7 @@ pub fn phase113_rights_smoke() -> bool {
     child_ok && amp_fail && amp_after
 }
 
-pub fn phase114_storage_grant_smoke() -> bool {
+pub fn smoke_storage_grant_smoke() -> bool {
     let Some(pid) = ensure_smoke_process() else {
         return false;
     };
@@ -469,7 +469,7 @@ pub fn phase114_storage_grant_smoke() -> bool {
     no_path
 }
 
-pub fn phase116_ambient_deny_smoke() -> bool {
+pub fn smoke_ambient_deny_smoke() -> bool {
     let Some(pid) = process::create_process_for_smoke("native-zero-cap") else {
         return false;
     };
@@ -485,7 +485,7 @@ pub fn phase116_ambient_deny_smoke() -> bool {
     count_zero && deny && mint_fail && broker_fail
 }
 
-pub fn phase117_namespace_smoke() -> bool {
+pub fn smoke_namespace_smoke() -> bool {
     let Some(native_pid) = process::create_process_for_smoke("native-ns") else {
         return false;
     };
@@ -501,10 +501,10 @@ pub fn phase117_namespace_smoke() -> bool {
     native_blocked && compat_ok
 }
 
-pub fn phase119_compat_bridge_smoke() -> bool {
-    let hw_ok = crate::user_syscall_hw::phase71_smoke();
-    let fd45 = crate::fd_table::phase45_smoke();
-    let fd51 = crate::fd_table::phase51_smoke();
+pub fn smoke_compat_bridge_smoke() -> bool {
+    let hw_ok = crate::user_syscall_hw::smoke_sysret_probe();
+    let fd45 = crate::fd_table::smoke_file_fd_open();
+    let fd51 = crate::fd_table::smoke_proc_fd_table();
     let allowlist = !crate::user_syscall_hw::ALLOWED_HW_SYSCALLS.is_empty()
         && crate::user_syscall_hw::ALLOWED_HW_SYSCALLS.len() >= 24;
     let max_id = crate::user_syscall_hw::ALLOWED_HW_SYSCALLS

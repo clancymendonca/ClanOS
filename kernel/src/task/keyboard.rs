@@ -887,7 +887,7 @@ mod tests {
 
     #[test_case]
     fn join_parts_preserves_spaces_between_words() {
-        assert_eq!(super::join_parts(&["hello", "phase", "7"]), "hello phase 7");
+        assert_eq!(super::join_parts(&["hello", "scope", "7"]), "hello scope 7");
     }
 
     #[test_case]

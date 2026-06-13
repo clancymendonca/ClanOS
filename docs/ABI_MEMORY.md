@@ -1,12 +1,12 @@
-# Memory ABI (`ares-abi-v1` compat)
+# Memory ABI (`clan-abi-v1` compat)
 
-VMA, mmap, COW, and user copy contracts from phases 1–100. Native **MemoryRegion** caps extend this without breaking compat VMA behavior.
+VMA, mmap, COW, and user copy contracts from scopes 1–100. Native **MemoryRegion** caps extend this without breaking compat VMA behavior.
 
 See: [AXIOMS.md](AXIOMS.md), [USER_PAGE_TABLES.md](USER_PAGE_TABLES.md), [kernel/src/vma.rs](../kernel/src/vma.rs), [KERNEL_OBJECT_MODEL.md](KERNEL_OBJECT_MODEL.md).
 
 ---
 
-## User copy (phase 26)
+## User copy (scope 26)
 
 - `copy_from_user` / `copy_to_user` — bounded, fault-safe
 - `UserCopyProbe` syscall (60) — validation path
@@ -15,11 +15,11 @@ Native cap transfers may move **MemoryRegion** handles instead of implicit share
 
 ---
 
-## VMA registry (phase 63+)
+## VMA registry (scope 63+)
 
 Per-process `VmaRegion`: `base`, `len`, `prot`, `backing` (`Anon`, `File`, `Image`).
 
-| Feature | Phase |
+| Feature | Scope |
 |---------|------:|
 | mmap | 54 |
 | munmap + length | 73 |
@@ -31,15 +31,15 @@ Overlaps rejected; counters `REGIONS_REGISTERED`, `OVERLAPS_REJECTED`.
 
 ---
 
-## W^X (phase 48)
+## W^X (scope 48)
 
 Executable mappings policy enforced for user images — compat ELFs remain under existing allowlist/trust model ([SECURITY.md](SECURITY.md)).
 
 ---
 
-## Fork-lite COW (phase 91)
+## Fork-lite COW (scope 91+)
 
-Anonymous page **COW break** on write after `ForkLite` — parent/child isolation smoke. File-backed shared COW deferred (phase 100 checklist).
+Anonymous pages duplicated by `fork_lite` / `fork_duplicate_cr3` are shared read-only with frame refcounts (`kernel/src/cow_fork.rs`). User writes trigger `#PF` → `try_break_on_write` → private writable copy. File-backed shared COW remains deferred.
 
 ---
 
@@ -48,6 +48,6 @@ Anonymous page **COW break** on write after `ForkLite` — parent/child isolatio
 | Feature | Law |
 |---------|-----|
 | Cap-scoped shared memory | MemoryRegion object + RIGHTS_ALGEBRA move/borrow |
-| Mapping via grant not path | Phase 114 storage grant |
+| Mapping via grant not path | Scope 114 storage grant |
 
 Compat `Mmap`/`Munmap` remain for ELF/compat processes.

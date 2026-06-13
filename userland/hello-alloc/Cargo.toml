@@ -1,0 +1,13 @@
+[package]
+name = "hello-alloc"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Clan OS ring-3 demo — clan-rt bump heap + alloc::Vec"
+
+[[bin]]
+name = "hello-alloc"
+path = "src/main.rs"
+
+[dependencies]
+clan-rt = { path = "..", default-features = false, features = ["ring3-heap"] }

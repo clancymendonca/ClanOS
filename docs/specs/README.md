@@ -1,4 +1,4 @@
-# AresOS Interface Specifications
+# Clan OS Interface Specifications
 
 Canonical ABI and wire-format specs migrated from flat `docs/` during Track 1.
 
@@ -8,6 +8,6 @@ Canonical ABI and wire-format specs migrated from flat `docs/` during Track 1.
 | Wire schemas | [WIRE_SCHEMA_REGISTRY.md](WIRE_SCHEMA_REGISTRY.md) |
 | IPC negotiation | [IPC_VERSION_NEGOTIATION.md](IPC_VERSION_NEGOTIATION.md) |
 | Native syscalls | [ABI_NATIVE_SYSCALL.md](ABI_NATIVE_SYSCALL.md) |
-| ares-rt ABI | [ABI_ARES_RT.md](ABI_ARES_RT.md) |
+| clan-rt ABI | [ABI_CLAN_RT.md](ABI_CLAN_RT.md) |
 | Compositor IPC | [ABI_COMPOSITOR_IPC.md](ABI_COMPOSITOR_IPC.md) |
 | Protocol changelog | [PROTOCOL_CHANGELOG.md](PROTOCOL_CHANGELOG.md) |

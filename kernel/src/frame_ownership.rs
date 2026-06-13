@@ -1,4 +1,4 @@
-//! Phase 14 persistent frame ownership bookkeeping.
+//! persistent frame ownership bookkeeping.
 
 use alloc::vec::Vec;
 use bootloader::bootinfo::{MemoryMap, MemoryRegionType};
@@ -200,7 +200,7 @@ pub fn status() -> FrameOwnershipStatus {
     REGISTRY.lock().status()
 }
 
-pub fn phase14_smoke_check() -> bool {
+pub fn smoke_frame_registry() -> bool {
     let before = status();
     if !before.initialized || before.available_frames == 0 {
         return false;

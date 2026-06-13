@@ -8,12 +8,12 @@ import subprocess
 import sys
 import time
 
-from smoke_qemu import cleanup_qemu_processes
-
-
-def is_objcopy_lock_error(output: str) -> bool:
-    lowered = output.lower()
-    return "llvm-objcopy" in lowered and "permission denied" in lowered
+from smoke_qemu import (
+    cleanup_qemu_processes,
+    ensure_qemu_on_path,
+    is_objcopy_lock_error,
+    wait_for_bootimage_unlock,
+)
 
 
 def run_command_with_retries(
@@ -35,6 +35,7 @@ def run_command_with_retries(
 
 
 def run_command(cmd: list[str], timeout: int | None = None) -> tuple[int, str]:
+    ensure_qemu_on_path()
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
@@ -58,13 +59,13 @@ def run_command(cmd: list[str], timeout: int | None = None) -> tuple[int, str]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run AresOS validation matrix with practical thresholds.")
+    parser = argparse.ArgumentParser(description="Run Clan OS validation matrix with practical thresholds.")
     parser.add_argument("--soak-duration", type=int, default=60)
     parser.add_argument("--latency-duration", type=int, default=60)
     parser.add_argument("--max-latency-ms", type=int, default=300)
     parser.add_argument("--max-fairness-score", type=float, default=1.10)
     parser.add_argument("--smoke-timeout", type=int, default=180)
-    parser.add_argument("--boot-wait", type=int, default=150, help="Seconds to wait for Phase5 telemetry after boot")
+    parser.add_argument("--boot-wait", type=int, default=150, help="Seconds to wait for preemption telemetry after boot")
     parser.add_argument(
         "--from-check",
         type=str,
@@ -128,13 +129,17 @@ def main() -> int:
             ],
             None,
         ),
-        ("phase401-ares-rt-check", ["python", "scripts/gate/ares_rt.py"], 120),
+        (
+            "compat-subsystems-host-check",
+            ["python", "scripts/gate/compat_subsystems.py"],
+            180,
+        ),
         ("semantic-lint", ["python", "scripts/semantic_lint.py"], None),
         ("covenant-ci", ["python", "scripts/covenant_ci.py"], 120),
         ("loom-gate", ["python", "scripts/loom_gate.py"], None),
         ("transfer-toctou-check", ["python", "scripts/transfer_toctou_check.py"], None),
         (
-            "phase5-soak-check",
+            "preemption-soak-check",
             [
                 "python",
                 "scripts/preemption/soak.py",
@@ -150,7 +155,7 @@ def main() -> int:
             None,
         ),
         (
-            "phase5-latency-check",
+            "preemption-latency-check",
             [
                 "python",
                 "scripts/preemption/latency.py",
@@ -177,14 +182,21 @@ def main() -> int:
         checks = checks[start_idx:]
         print(f"Resuming from {args.from_check} ({len(checks)} checks)")
 
-    phase5_timeout = args.boot_wait + max(args.soak_duration, args.latency_duration) + 180
+    preemption_timeout = args.boot_wait + max(args.soak_duration, args.latency_duration) + 180
 
     any_failed = False
     cleanup_qemu_processes()
+    if not ensure_qemu_on_path():
+        print(
+            "WARN: qemu-system-x86_64 not on PATH and not found in common install dirs; "
+            "QEMU checks will fail (install: winget install SoftwareFreedomConservancy.QEMU)"
+        )
     print("Validation matrix start")
     for name, cmd, timeout in checks:
-        if name in ("phase5-soak-check", "phase5-latency-check"):
-            timeout = phase5_timeout
+        if name in ("preemption-soak-check", "preemption-latency-check"):
+            timeout = preemption_timeout
+        if name == "system-gate-check":
+            timeout = max(timeout or 0, args.smoke_timeout, 480)
         print(f"\n=== {name} ===")
         print("Command:", " ".join(cmd))
         start = time.time()
@@ -195,8 +207,9 @@ def main() -> int:
         if name == "preemption-integration" and os.name == "nt":
             print("Waiting for bootimage artifacts to unlock (Windows)...")
             time.sleep(20)
-        elif os.name == "nt":
-            time.sleep(5)
+            wait_for_bootimage_unlock()
+        else:
+            wait_for_bootimage_unlock()
 
         if code != 0:
             print(f"FAIL: {name} exited with {code} in {elapsed:.1f}s")

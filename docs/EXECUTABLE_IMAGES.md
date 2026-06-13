@@ -1,13 +1,13 @@
 # Executable Image Groundwork
 
-Phase 11 adds executable-image recognition and address-space descriptors. Phase 12 adds load plans that model page-aligned placement, copy actions, zero-fill actions, and reservation accounting. Neither phase executes arbitrary machine code yet.
+Scope 11 adds executable-image recognition and address-space descriptors. Scope 12 adds load plans that model page-aligned placement, copy actions, zero-fill actions, and reservation accounting. Neither scope executes arbitrary machine code yet.
 
 ## Image Manifest
 
-Image programs use the existing `ares-exec-v1` envelope:
+Image programs use the existing `clan-exec-v1` envelope:
 
 ```text
-ares-exec-v1
+clan-exec-v1
 name=hello
 kind=elf64-image
 entry=0x400000
@@ -18,7 +18,7 @@ owner=user
 description=ELF image validation fixture
 ```
 
-The loader still supports `kind=builtin-alias` for current stored programs. `kind=elf64-image` is discoverable and validatable, but `run hello` returns an unsupported-execution error until a future phase adds executable mappings and privilege transitions.
+The loader still supports `kind=builtin-alias` for current stored programs. `kind=elf64-image` is discoverable and validatable, but `run hello` returns an unsupported-execution error until a future scope adds executable mappings and privilege transitions.
 
 ## ELF64 Validation
 
@@ -35,7 +35,7 @@ The parser rejects invalid magic, unsupported architecture, invalid header layou
 
 ## Address-Space Descriptors
 
-Phase 11 introduces descriptor-only address spaces:
+Scope 11 introduces descriptor-only address spaces:
 
 - `AddressSpaceId`
 - `VirtualRegion`
@@ -46,7 +46,7 @@ Descriptors validate user ranges, overlap, empty regions, and writable+executabl
 
 ## Load Plans
 
-Phase 12 converts validated images into load plans:
+Scope 12 converts validated images into load plans:
 
 - page-aligned regions
 - file-backed copy ranges

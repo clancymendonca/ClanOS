@@ -12,7 +12,7 @@ status: authoritative
 semantics_version: 1.0.0
 ```
 
-Required before phase **134** endpoint cutover.
+Required before scope **134** endpoint cutover.
 
 ---
 
@@ -20,7 +20,7 @@ Required before phase **134** endpoint cutover.
 
 - Discovery handshake returns supported `ipc.interim.v1` / future `endpoint.v1` ranges
 - Max spread documented; downgrade edges proptest-covered before 134
-- **P-134 property:** interim FIFO-per-session behaviors ⊆ native endpoint ordering smoke corpus (populated phase 133)
+- **P-134 property:** interim FIFO-per-session behaviors ⊆ native endpoint ordering smoke corpus (populated scope 133)
 
 ---
 

@@ -1,5 +1,5 @@
-# Phase and document prerequisite graph for CI enforcement.
-# blocking_phase = "epoch-0" edges govern foundational doc authoring order.
+# Scope and document prerequisite graph for CI enforcement.
+# blocking_scope = "epoch-0" edges govern foundational doc authoring order.
 
 [schema]
 version = "1.0.0"
@@ -9,92 +9,92 @@ version = "1.0.0"
 [[nodes]]
 id = "CHARTER.md"
 path = "CHARTER.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[nodes]]
 id = "gap_registry.toml"
 path = "gap_registry.toml"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[nodes]]
 id = "SECURITY.md"
 path = "SECURITY.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[nodes]]
 id = "KERNEL_OBJECT_MODEL.md"
 path = "docs/KERNEL_OBJECT_MODEL.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[nodes]]
 id = "RIGHTS_ALGEBRA.md"
 path = "docs/RIGHTS_ALGEBRA.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[nodes]]
 id = "FAULT_ESCALATION.md"
 path = "docs/FAULT_ESCALATION.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[nodes]]
 id = "THREAT_MODEL.md"
 path = "docs/THREAT_MODEL.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[nodes]]
 id = "THREAT_NODES.toml"
 path = "docs/THREAT_NODES.toml"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[nodes]]
 id = "DESIGN_NORTH_STAR.md"
 path = "docs/DESIGN_NORTH_STAR.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[nodes]]
 id = "DECISION_LOG.md"
 path = "docs/DECISION_LOG.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[nodes]]
 id = "CAP_REGISTRY.toml"
 path = "docs/CAP_REGISTRY.toml"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[nodes]]
 id = "CAP_TRANSFER_PROTOCOL.md"
 path = "docs/CAP_TRANSFER_PROTOCOL.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[nodes]]
 id = "SCHEDULER_MODEL.md"
 path = "docs/SCHEDULER_MODEL.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[nodes]]
 id = "PROOF_COVERAGE.md"
 path = "docs/PROOF_COVERAGE.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[nodes]]
 id = "KANI_SCOPE.md"
 path = "docs/KANI_SCOPE.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[nodes]]
 id = "EPOCH_FAILURE_PROCEDURE.md"
 path = "docs/EPOCH_FAILURE_PROCEDURE.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[nodes]]
 id = "formal_semantics_framework_decision"
 path = "docs/DECISION_LOG.md#formal-semantics-framework"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[nodes]]
 id = "formal_model_tier_d"
 path = "docs/FORMAL_MODEL.md"
-blocking_phase = "post-150"
+blocking_scope = "post-150"
 tier = "D"
 
 # --- Epoch 0 edges ---
@@ -102,115 +102,115 @@ tier = "D"
 [[edges]]
 from = "gap_registry.toml"
 to = "CHARTER.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[edges]]
 from = "SECURITY.md"
 to = "CHARTER.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[edges]]
 from = "KERNEL_OBJECT_MODEL.md"
 to = "CHARTER.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[edges]]
 from = "RIGHTS_ALGEBRA.md"
 to = "KERNEL_OBJECT_MODEL.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[edges]]
 from = "FAULT_ESCALATION.md"
 to = "KERNEL_OBJECT_MODEL.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[edges]]
 from = "FAULT_ESCALATION.md"
 to = "RIGHTS_ALGEBRA.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[edges]]
 from = "THREAT_MODEL.md"
 to = "FAULT_ESCALATION.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[edges]]
 from = "THREAT_NODES.toml"
 to = "FAULT_ESCALATION.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[edges]]
 from = "DESIGN_NORTH_STAR.md"
 to = "THREAT_MODEL.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[edges]]
 from = "DESIGN_NORTH_STAR.md"
 to = "CHARTER.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[edges]]
 from = "DECISION_LOG.md"
 to = "CHARTER.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[edges]]
 from = "CAP_REGISTRY.toml"
 to = "KERNEL_OBJECT_MODEL.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[edges]]
 from = "CAP_TRANSFER_PROTOCOL.md"
 to = "KERNEL_OBJECT_MODEL.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[edges]]
 from = "CAP_TRANSFER_PROTOCOL.md"
 to = "RIGHTS_ALGEBRA.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[edges]]
 from = "SCHEDULER_MODEL.md"
 to = "KERNEL_OBJECT_MODEL.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[edges]]
 from = "SCHEDULER_MODEL.md"
 to = "FAULT_ESCALATION.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[edges]]
 from = "PROOF_COVERAGE.md"
 to = "RIGHTS_ALGEBRA.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[edges]]
 from = "KANI_SCOPE.md"
 to = "PROOF_COVERAGE.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 [[edges]]
 from = "EPOCH_FAILURE_PROCEDURE.md"
 to = "CHARTER.md"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 
 # Formal semantics framework gates all Tier D / formal model work (#338)
 
 [[edges]]
 from = "formal_model_tier_d"
 to = "formal_semantics_framework_decision"
-blocking_phase = "epoch-0"
+blocking_scope = "epoch-0"
 blocking = true
 
-# --- Cross-epoch examples (implementation phases) ---
+# --- Cross-epoch examples (implementation scopes) ---
 
 [[edges]]
-from = "phase-121"
+from = "scope-121"
 to = "KERNEL_OBJECT_MODEL.md"
 blocking_epoch = 1
 
 [[edges]]
-from = "phase-134"
+from = "scope-134"
 to = "CAP_TRANSFER_PROTOCOL.md"
 blocking_epoch = 3
 
@@ -257,16 +257,16 @@ to = "formal_semantics_framework_decision"
 blocking_epoch = 13
 
 [[edges]]
-from = "phase-200"
+from = "scope-200"
 to = "SCHEDULING_UNIFIED.md"
 blocking_epoch = 8
 
 [[edges]]
-from = "phase-250"
+from = "scope-250"
 to = "DRIVER_MODEL.md"
 blocking_epoch = 11
 
 [[edges]]
-from = "phase-350"
+from = "scope-350"
 to = "FORMAL_MODEL.md"
 blocking_epoch = 14

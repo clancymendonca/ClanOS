@@ -1,4 +1,4 @@
-//! Anonymous pipe ring buffer (Phase 87).
+//! Anonymous pipe ring buffer .
 
 use alloc::format;
 use core::sync::atomic::{AtomicU64, Ordering};
@@ -178,7 +178,7 @@ pub fn write_pipe(pipe_id: u32, user_buf: u64, max_len: u64) -> Result<u64, ()> 
     write_pipe_kernel(pipe_id, &buf[..len]).map(|n| n as u64)
 }
 
-pub fn phase87_smoke() -> bool {
+pub fn smoke_pipe_lite() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let creds = crate::security::Credentials::shell_user();
     let Some(pid) = process::create_kernel_process_as("pipe-smoke", tick, creds) else {
@@ -210,7 +210,7 @@ pub fn phase87_smoke() -> bool {
     wrote && read_ok && pipes > 0 && bytes > 0
 }
 
-pub fn phase92_smoke() -> bool {
+pub fn smoke_poll_lite() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let creds = crate::security::Credentials::shell_user();
     let Some(pid) = process::create_kernel_process_as("poll-smoke", tick, creds) else {
@@ -228,7 +228,7 @@ pub fn phase92_smoke() -> bool {
     empty && ready && polls > 0 && ready_n > 0
 }
 
-pub fn phase95_smoke() -> bool {
+pub fn smoke_pipe_probe() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let creds = crate::security::Credentials::shell_user();
     let Some(pid) = process::create_kernel_process_as("pipeprobe", tick, creds) else {

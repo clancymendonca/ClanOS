@@ -9,6 +9,6 @@ solo_maintainer = true
 [[signoffs]]
 reviewer_id = "clancy"
 domain = "kernel"
-scope = "build_integrity 131-133, ipc_endpoints 134, audit_wire 135-138, phase140 integration"
+scope = "build_integrity 131-133, ipc_endpoints 134, audit_wire 135-138, scope140 integration"
 timestamp = "2026-06-11T18:00:00Z"
 epoch = 3

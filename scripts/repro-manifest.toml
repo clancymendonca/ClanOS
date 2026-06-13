@@ -12,5 +12,5 @@ package = "kernel"
 [userland]
 # Host triple for epoch-2 demo; ring3 ELF on x86_64-unknown-none deferred.
 target = "host"
-package = "ares-rt"
+package = "clan-rt"
 install_hook = "scripts/install_userland.py"

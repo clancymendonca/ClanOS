@@ -1,4 +1,4 @@
-//! Process abstraction for Phase 5 preemptive scheduling.
+//! Process abstraction preemptive scheduling.
 //!
 //! Provides process identification, lifecycle management, and registry for
 //! multi-process kernel support. Processes wrap kernel tasks with isolated
@@ -142,7 +142,7 @@ impl ProcessState {
     }
 }
 
-/// Compat (ELF/FD/path) vs native capability process (phases 116–117).
+/// Compat (ELF/FD/path) vs native capability process (scopes 116–117).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ProcessMode {
     Compat,
@@ -174,23 +174,23 @@ pub struct Process {
     owner: Credentials,
     /// Optional image metadata for loader-backed process records.
     image: Option<ProcessImageMetadata>,
-    /// Optional executable load-plan metadata for Phase 12 preparation records.
+ /// Optional executable load-plan metadata preparation records.
     load: Option<ProcessLoadMetadata>,
-    /// Hardware user page table CR3 (Phase 31+).
+ /// Hardware user page table CR3 .
     cr3_phys: Option<u64>,
-    /// Exit status waited on by parent (Phase 34+).
+ /// Exit status waited on by parent .
     wait_status: Option<i32>,
-    /// Per-process file descriptors (Phase 51+).
+ /// Per-process file descriptors .
     fds: [Option<FdSlotStorage>; MAX_FDS],
-    /// Per-process capability handles (Phase 111+).
+ /// Per-process capability handles .
     caps: [Option<CapSlotStorage>; MAX_CAPS],
-    /// Native vs compat authority surface (Phase 116+).
+ /// Native vs compat authority surface .
     mode: ProcessMode,
-    /// Current working directory for relative opens (Phase 52+).
+ /// Current working directory for relative opens .
     cwd: String,
-    /// Virtual memory areas (Phase 63+).
+ /// Virtual memory areas .
     vma_regions: Vec<VmaRegion>,
-    /// Last exec argv strings (Phase 94+).
+ /// Last exec argv strings .
     exec_argv: Vec<String>,
 }
 
@@ -717,7 +717,7 @@ pub fn wait_lite(parent: ProcessId, child: ProcessId) -> Result<i32, ()> {
     Ok(code)
 }
 
-pub fn phase74_smoke() -> bool {
+pub fn smoke_wait_lite() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let creds = crate::security::Credentials::shell_user();
     let Some(parent) = create_kernel_process_as("wait-parent", tick, creds) else {
@@ -865,7 +865,7 @@ pub fn fork_lite(parent: ProcessId, created_tick: u64) -> Option<ProcessId> {
     Some(child_id)
 }
 
-pub fn phase85_smoke() -> bool {
+pub fn smoke_fork_dup() -> bool {
     let _ = reap_terminated_processes();
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let creds = crate::security::Credentials::shell_user();
@@ -888,7 +888,7 @@ pub fn phase85_smoke() -> bool {
     get_process(child).is_some() && child_has_cr3 && children > 0
 }
 
-pub fn phase91_smoke() -> bool {
+pub fn smoke_fork_cow_break() -> bool {
     let _ = reap_terminated_processes();
     let creds = crate::security::Credentials::shell_user();
     let Some(built) = crate::task::program_loader::build_hw_page_table_program(creds, "hello").ok()
@@ -927,7 +927,7 @@ pub fn phase91_smoke() -> bool {
     break_ok && isolated && breaks > 0 && isolated_n > 0
 }
 
-pub fn phase94_smoke() -> bool {
+pub fn smoke_exec_argv() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let creds = crate::security::Credentials::shell_user();
     let Some(pid) = create_kernel_process_as("exec-argv", tick, creds) else {
@@ -969,7 +969,7 @@ pub fn phase94_smoke() -> bool {
     argv_ok && argv_stored && exec_argv_status() > 0
 }
 
-pub fn phase86_smoke() -> bool {
+pub fn smoke_exec_lite() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let creds = crate::security::Credentials::shell_user();
     let Some(pid) = create_kernel_process_as("exec-lite", tick, creds) else {
@@ -1170,7 +1170,7 @@ pub fn set_process_mode(pid: ProcessId, mode: ProcessMode) -> bool {
     .is_some()
 }
 
-/// Phase 117: native processes must not use path enumeration probes.
+/// : native processes must not use path enumeration probes.
 pub fn native_blocks_path_probe(pid: ProcessId) -> bool {
     process_mode(pid) == ProcessMode::Native
 }

@@ -1,4 +1,4 @@
-//! Phase 12 executable load-plan model.
+//! executable load-plan model.
 
 use alloc::vec::Vec;
 
@@ -226,7 +226,7 @@ mod tests {
         crate::exec_image::parse_elf64_image(
             "hello",
             "/bin/hello.elf",
-            crate::storage::phase11_sample_elf_image().as_bytes(),
+            crate::storage::sample_elf_fixture_image().as_bytes(),
             crate::task::program_loader::ProgramTrust::User,
             crate::security::Credentials::shell_user().user,
         )

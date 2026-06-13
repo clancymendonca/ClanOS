@@ -1,4 +1,4 @@
-//! Validated user pointer copies (Phase 26).
+//! Validated user pointer copies .
 
 use core::sync::atomic::{AtomicU64, Ordering};
 

@@ -11,4 +11,4 @@ Placeholder for gap #100 — required before adding `ObjectKind` variants post-1
 2. Threat node in [`THREAT_NODES.toml`](THREAT_NODES.toml)
 3. Proof harness tier A/B in [`kani_harness_registry.toml`](../kani_harness_registry.toml)
 4. Native error code in ERROR_TAXONOMY
-5. Phase owner sign-off in epoch gate manifest
+5. Scope owner sign-off in epoch gate manifest

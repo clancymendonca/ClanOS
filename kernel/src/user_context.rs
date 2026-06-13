@@ -1,4 +1,4 @@
-//! Phase 17 user entry context descriptors.
+//! user entry context descriptors.
 
 use crate::{gdt::UserSelectors, user_memory::InactiveUserPageTable};
 

@@ -1,0 +1,13 @@
+[package]
+name = "sig-demo"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Clan OS ring-3 demo — SIGUSR1 handler + SigReturn"
+
+[[bin]]
+name = "sig-demo"
+path = "src/main.rs"
+
+[dependencies]
+clan-rt = { path = "..", default-features = false, features = ["ring3"] }

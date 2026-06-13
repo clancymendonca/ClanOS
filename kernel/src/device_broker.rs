@@ -1,4 +1,4 @@
-//! Device broker skeleton (phase 124).
+//! Device broker skeleton (scope 124).
 
 use crate::kernel_object::{self, CapError, ObjectKind, Rights};
 use crate::task::process::ProcessId;
@@ -17,7 +17,7 @@ pub fn grant_device_cap(pid: ProcessId, device_local_id: u32) -> Result<u32, Cap
     Ok(slot)
 }
 
-pub fn phase124_device_broker_smoke() -> bool {
+pub fn smoke_device_broker() -> bool {
     let Some(pid) = crate::kernel_object::ensure_smoke_process() else {
         return false;
     };

@@ -1,0 +1,11 @@
+# Per-scope snapshots including marginal feature cost (#336).
+# feature_cost_marginal: estimated overhead vs minimal kernel config (rough, epoch gate).
+
+[schema]
+version = "1.0.0"
+
+[[snapshots]]
+scope = 120
+epoch = 0
+notes = "Calibration baseline — see benchmarks/scope-120-baseline.json"
+feature_cost_marginal = null

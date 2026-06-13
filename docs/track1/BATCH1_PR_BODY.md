@@ -2,13 +2,13 @@
 
 **Reconciled from flat `docs/KERNEL_OBJECT_MODEL.md` into canonical `docs/architecture/KERNEL_OBJECT_MODEL.md` (semantics 1.3.0):**
 
-- Phase-110 design decision (immutable identity + generation invalidation)
+- Scope-110 design decision (immutable identity + generation invalidation)
 - Universal interface table (`ObjectId`, `Kind`, `Generation`, `Rights`, `Metadata`)
-- G1 handle semantics numbered list (create/transfer/delegate/revoke/close) + phase-115 path broker note
+- G1 handle semantics numbered list (create/transfer/delegate/revoke/close) + scope-115 path broker note
 - Generation invalidation section (R-03, triggers)
 - Full mint vs delegation authority section (kernel root mint only)
 - Cap kind schema version, cap send/confinement, kind semantics freeze
-- Historical implementation-phase table (111–115)
+- Historical implementation-scope table (111–115)
 - **BrokerSession** kind row (already in `docs/CAP_REGISTRY.toml` as `kernel.broker_session`)
 - Orphan endpoint policy under Endpoint per-kind section
 - Implementation-verified TOCTOU transfer state machine + property table
@@ -54,7 +54,7 @@ No new threat nodes opened. `T-transfer-toctou` remains **closed** (tier B happy
 - Batch 2 migrations (FE, SM, RA)
 - `CAP_TRANSFER_PROTOCOL.md` canonical spec (Batch 5 `CTP`)
 - Physical move of `THREAT_NODES.toml` / `CAP_REGISTRY.toml` to `config/`
-- `ares-rt` no_std fix (`ares-rt-001`)
+- `clan-rt` no_std fix (`clan-rt-001`)
 - Workspace restructure (`servers/` extraction)
 - `#![deny(warnings)]` on `kernel` lib crate (deny on bin `main.rs` only per scope-freeze)
 - Opening `T-transfer-toctou` for receiver_failed rollback (track1b)

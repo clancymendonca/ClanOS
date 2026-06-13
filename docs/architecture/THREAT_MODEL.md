@@ -1,4 +1,4 @@
-# AresOS Threat Model
+# Clan OS Threat Model
 
 ```yaml
 status: authoritative
@@ -12,7 +12,7 @@ status: authoritative
 semantics_version: 1.0.0
 ```
 
-Scope: phases 121–150 QEMU-first development. Structured nodes in [`THREAT_NODES.toml`](THREAT_NODES.toml).
+Scope: scopes 121–150 QEMU-first development. Structured nodes in [`THREAT_NODES.toml`](THREAT_NODES.toml).
 
 See: [`FAULT_ESCALATION.md`](FAULT_ESCALATION.md), [`KERNEL_OBJECT_MODEL.md`](KERNEL_OBJECT_MODEL.md), [`SECURITY.md`](../SECURITY.md).
 

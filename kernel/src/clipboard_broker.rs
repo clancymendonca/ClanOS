@@ -1,4 +1,4 @@
-//! Clipboard broker stub (phase 126).
+//! Clipboard broker stub (scope 126).
 
 use crate::kernel_object::CapError;
 use crate::task::process::ProcessId;
@@ -14,7 +14,7 @@ pub fn request_clipboard_cap(_pid: ProcessId) -> Result<u32, CapError> {
     Err(CapError::NotFound)
 }
 
-pub fn phase126_clipboard_broker_smoke() -> bool {
+pub fn smoke_clipboard_broker() -> bool {
     let Some(pid) = crate::kernel_object::ensure_smoke_process() else {
         return false;
     };

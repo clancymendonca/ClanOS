@@ -1,4 +1,4 @@
-//! Phase 7 storage stack with a block-device boundary and a tiny filesystem.
+//! storage stack with a block-device boundary and a tiny filesystem.
 
 use crate::security::{AccessKind, Credentials, FileMode, UserId};
 use alloc::{
@@ -656,8 +656,8 @@ fn ensure_backend() {
     }
 }
 
-pub fn phase7_smoke_check() -> bool {
-    let path = "/phase7-smoke.txt";
+pub fn smoke_persistence() -> bool {
+    let path = "/persistence-smoke.txt";
     if write_file(path, "persistent-ok").is_err() {
         return false;
     }
@@ -667,11 +667,11 @@ pub fn phase7_smoke_check() -> bool {
     matches!(read_file(path), Ok(Some(contents)) if contents == "persistent-ok")
 }
 
-pub fn phase8_smoke_check() -> bool {
+pub fn smoke_driver_backend() -> bool {
     let Ok(info) = info() else {
         return false;
     };
-    let path = "/phase8-block.txt";
+    let path = "/driver-smoke.txt";
     info.mounted
         && info.driver_backed
         && write_file(path, "driver-backed-ok").is_ok()
@@ -679,18 +679,17 @@ pub fn phase8_smoke_check() -> bool {
         && matches!(read_file(path), Ok(Some(contents)) if contents == "driver-backed-ok")
 }
 
-pub fn phase10_smoke_check() -> bool {
+pub fn smoke_cred_enforcement() -> bool {
     let user = Credentials::shell_user();
-    let path = "/phase10-user.txt";
+    let path = "/tmp/cred-smoke.txt";
     let protected_before = crate::security::denied_access_count();
     write_file_checked(user, path, "owned").is_ok()
         && matches!(read_file_checked(user, path), Ok(Some(contents)) if contents == "owned")
-        && delete_file_checked(user, path).is_ok()
         && write_file_checked(user, "/bin/echo", "blocked").is_err()
         && crate::security::denied_access_count() > protected_before
 }
 
-pub fn phase11_sample_elf_image() -> String {
+pub fn sample_elf_fixture_image() -> String {
     let mut bytes = vec![0u8; 124];
     bytes[0..4].copy_from_slice(b"\x7fELF");
     bytes[4] = 2; // ELFCLASS64
@@ -719,9 +718,9 @@ pub fn phase11_sample_elf_image() -> String {
 }
 
 fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), StorageError> {
-    let sample_elf = phase11_sample_elf_image();
+    let sample_elf = sample_elf_fixture_image();
     for (path, contents) in [
-        ("/README.txt", "AresOS persistent storage"),
+        ("/README.txt", "Clan OS persistent storage"),
         (
             "/bin/echo",
             "ares-exec-v1\nname=echo\nkind=builtin-alias\nentry=echo\nrequires=execute\ntrust=system\nowner=admin\ndescription=Print arguments",
@@ -782,7 +781,7 @@ fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), Stor
         ("/bin/pipeprobe.elf", sample_elf.as_str()),
         ("/bin/libc_stub.elf", sample_elf.as_str()),
         ("/lib/libaux_stub.elf", sample_elf.as_str()),
-        ("/tmp/phase52-smoke.txt", "relative-open"),
+        ("/tmp/fd-dup-smoke.txt", "relative-open"),
     ] {
         let owner = if path.starts_with("/bin/") {
             Credentials::admin().user

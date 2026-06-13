@@ -1,4 +1,4 @@
-//! In-kernel storage broker (phase 118/122); mints FsNode caps from grants via interim IPC.
+//! In-kernel storage broker (scope 118/122); mints FsNode caps from grants via interim IPC.
 
 use crate::ipc_interim_bridge;
 use crate::kernel_object::{self, CapError, Rights};
@@ -20,7 +20,7 @@ pub fn grant_fsnode(pid: ProcessId, grant_id: u32) -> Result<u32, CapError> {
     Ok(slot)
 }
 
-/// Phase 122: IPC-mediated storage grant (compat-internal FIFO session).
+/// : IPC-mediated storage grant (compat-internal FIFO session).
 pub fn request_fs_grant_via_ipc(
     pid: ProcessId,
     session_id: u32,
@@ -43,7 +43,7 @@ pub fn request_fs_grant_via_endpoint(pid: ProcessId, grant_id: u32) -> Result<u3
     grant_fsnode(pid, grant_id)
 }
 
-pub fn phase122_storage_broker_smoke() -> bool {
+pub fn smoke_storage_broker() -> bool {
     let Some(pid) = kernel_object::ensure_smoke_process() else {
         return false;
     };
@@ -56,7 +56,7 @@ pub fn phase122_storage_broker_smoke() -> bool {
     ok
 }
 
-pub fn phase118_broker_mint_smoke() -> bool {
+pub fn smoke_broker_mint_smoke() -> bool {
     let Some(pid) = kernel_object::ensure_smoke_process() else {
         return false;
     };

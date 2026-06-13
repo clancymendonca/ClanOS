@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Enforce plan covenant CI rules (aresos_full_os_build plan lines 1614-1636)."""
+"""Enforce plan covenant CI rules (Clan OS full build plan lines 1614-1636)."""
 
 from __future__ import annotations
 
@@ -26,8 +26,8 @@ SCRIPTS = [
     "loom_gate.py",
     "transfer_toctou_check.py",
     "kani_gate.py",
-    "phase_checklist_spot_check.py",
-    "scripts/gate/host.py",
+    "scope_checklist_spot_check.py",
+    "gate/host.py",
     "proof_cache_check.py",
     "release_scorecard_check.py",
 ]

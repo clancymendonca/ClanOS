@@ -1,4 +1,4 @@
-//! Permission broker (phase 123) — attenuated cap mint with broker session.
+//! Permission broker (scope 123) — attenuated cap mint with broker session.
 
 use crate::ipc_interim_bridge;
 use crate::kernel_object::{self, CapError, ObjectKind, Rights};
@@ -26,7 +26,7 @@ pub fn request_attenuated_cap(
     Ok(slot)
 }
 
-pub fn phase123_permission_broker_smoke() -> bool {
+pub fn smoke_permission_broker() -> bool {
     let Some(pid) = crate::kernel_object::ensure_smoke_process() else {
         return false;
     };

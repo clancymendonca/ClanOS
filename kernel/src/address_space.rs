@@ -1,4 +1,4 @@
-//! Phase 11 descriptor-only address-space model.
+//! descriptor-only address-space model.
 
 use alloc::vec::Vec;
 

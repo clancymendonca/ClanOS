@@ -1,4 +1,4 @@
-# AresOS Security Governance
+# Clan OS Security Governance
 
 ```yaml
 status: authoritative
@@ -13,7 +13,7 @@ Full disclosure playbooks and key-compromise runbooks are required before **mile
 
 ## Responsible disclosure
 
-Report vulnerabilities to **security@aresos.dev** (placeholder inbox until public release).
+Report vulnerabilities to **security@clanos.dev** (placeholder inbox until public release).
 Include reproduction steps, affected commit, and threat-node id if known.
 
 ---

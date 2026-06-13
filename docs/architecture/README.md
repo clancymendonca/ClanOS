@@ -7,7 +7,7 @@ epoch: 14
 authored_by: architecture
 ```
 
-Canonical architecture docs live here per the AresOS repository structure spec. During the M400 era, many authoritative specs remain at flat `docs/*.md` paths; this directory is the migration target. Cross-references in new docs should prefer paths under `docs/architecture/`.
+Canonical architecture docs live here per the Clan OS repository structure spec. During the M400 era, many authoritative specs remain at flat `docs/*.md` paths; this directory is the migration target. Cross-references in new docs should prefer paths under `docs/architecture/`.
 
 ## Authoritative in this directory
 

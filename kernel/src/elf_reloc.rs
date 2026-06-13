@@ -1,4 +1,4 @@
-//! Static ELF relocations for frame-backed images (Phase 27).
+//! Static ELF relocations for frame-backed images .
 
 use alloc::vec::Vec;
 use core::sync::atomic::{AtomicU64, Ordering};
@@ -80,7 +80,7 @@ pub fn try_ring3_plt_fault(fault_addr: u64) -> bool {
         return false;
     }
     RING3_PLT_FAULT.fetch_add(1, Ordering::Relaxed);
-    phase67_smoke()
+    smoke_lazy_plt()
 }
 
 pub fn parse_dt_needed(image_bytes: &[u8]) -> Option<&str> {
@@ -247,14 +247,14 @@ fn apply_dynamic_imports_inner(
     Ok(applied)
 }
 
-pub fn phase77_smoke() -> bool {
+pub fn smoke_ring3_lazy_plt() -> bool {
     RING3_PLT_SMOKE.store(1, Ordering::Relaxed);
-    let ok = phase67_smoke() && ring3_plt_status() > 0;
+    let ok = smoke_lazy_plt() && ring3_plt_status() > 0;
     RING3_PLT_SMOKE.store(0, Ordering::Relaxed);
     ok
 }
 
-pub fn phase88_smoke() -> bool {
+pub fn smoke_ring3_plt_fault() -> bool {
     RING3_PLT_SMOKE.store(1, Ordering::Relaxed);
     let handled = try_ring3_plt_fault(0x400128);
     RING3_PLT_SMOKE.store(0, Ordering::Relaxed);
@@ -262,8 +262,8 @@ pub fn phase88_smoke() -> bool {
     handled && faults > 0 && bound > 0
 }
 
-pub fn phase67_smoke() -> bool {
-    let sample = crate::storage::phase11_sample_elf_image();
+pub fn smoke_lazy_plt() -> bool {
+    let sample = crate::storage::sample_elf_fixture_image();
     let Some(img) = crate::task::program_loader::back_mapped_program_with_relocs(
         crate::security::Credentials::shell_user(),
         "hello",
@@ -290,8 +290,8 @@ pub fn phase67_smoke() -> bool {
     lazy > 0 && lazy_count > 0 && bound > 0 && bound_after > bound_before
 }
 
-pub fn phase57_smoke() -> bool {
-    let sample = crate::storage::phase11_sample_elf_image();
+pub fn smoke_plt_reloc() -> bool {
+    let sample = crate::storage::sample_elf_fixture_image();
     let Some(img) = crate::task::program_loader::back_mapped_program_with_relocs(
         crate::security::Credentials::shell_user(),
         "hello",

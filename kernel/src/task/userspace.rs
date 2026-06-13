@@ -1,4 +1,4 @@
-//! User-space program facade and Phase 9 loader dispatch.
+//! User-space program facade and loader dispatch.
 
 use alloc::{format, string::String};
 use core::sync::atomic::Ordering;

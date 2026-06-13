@@ -1,4 +1,4 @@
-//! Interim IPC bridge (`compat-internal`) — phases 122–133.
+//! Interim IPC bridge (`compat-internal`) — scopes 122–133.
 //! See docs/IPC_INTERIM_BRIDGE.md.
 
 use alloc::collections::VecDeque;
@@ -36,7 +36,7 @@ lazy_static! {
         Mutex::new(alloc::collections::BTreeMap::new());
 }
 
-/// CI counter — must reach zero by phase 134.
+/// CI counter — must reach zero by scope 134.
 pub fn ipc_bridge_compat_internal_count() -> u64 {
     IPC_BRIDGE_COMPAT_INTERNAL.load(Ordering::Relaxed)
 }
@@ -45,7 +45,7 @@ pub fn is_retired() -> bool {
     BRIDGE_RETIRED.load(Ordering::Acquire)
 }
 
-/// Retire compat-internal bridge; reset CI counter to zero (phase 134).
+/// Retire compat-internal bridge; reset CI counter to zero (scope 134).
 pub fn retire_bridge() {
     BRIDGE_RETIRED.store(true, Ordering::Release);
     IPC_BRIDGE_COMPAT_INTERNAL.store(0, Ordering::Release);
@@ -106,7 +106,7 @@ pub fn map_bridge_error(err: BridgeError) -> NativeError {
     }
 }
 
-pub fn phase_interim_ipc_smoke() -> bool {
+pub fn smoke_interim_ipc() -> bool {
     let Some(pid) = crate::kernel_object::ensure_smoke_process() else {
         return false;
     };

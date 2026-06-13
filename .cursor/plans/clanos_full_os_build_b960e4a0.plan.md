@@ -1,5 +1,5 @@
 ---
-name: AresOS Full OS Build
+name: Clan OS Full OS Build
 status: superseded-by: gap_registry.toml
 overview: "COMPLETE — superseded by gap_registry.toml + CHARTER.md + DESIGN_NORTH_STAR.md. Milestone 150 + epoch 0 evidence tier delivered; historical planning record (scope-freeze 5961eb7)."
 todos:
@@ -21,26 +21,26 @@ todos:
   - id: epoch0-process-covenant
     content: "Epoch 0: CHARTER.md; gap_registry.toml; reviewer currency; epoch-0 DAG in prereq_graph; gate commit reviewer"
     status: completed
-  - id: epoch1-phase-121
-    content: "Phase 121: service loader + E-00 + MEM_BUDGET_STUB + CAP_QUOTA_STUB + audit bootstrap; phase-owner in checklist"
+  - id: epoch1-scope-121
+    content: "Scope 121: service loader + E-00 + MEM_BUDGET_STUB + CAP_QUOTA_STUB + audit bootstrap; scope-owner in checklist"
     status: completed
   - id: epoch1-audit-wire-compat
     content: "Epoch 1 prereq: AUDIT_SUBSYSTEM.md + WIRE_SCHEMA_REGISTRY.md + COMPAT_ISOLATION.md + COMPAT_SUNSET; interim IPC spec"
     status: completed
   - id: epoch1-brokers-130
-    content: "Phases 122-130: brokers, compat review, ABI_NATIVE_SYSCALL before 128; IPC_VERSION_NEGOTIATION before 134"
+    content: "Scopes 122-130: brokers, compat review, ABI_NATIVE_SYSCALL before 128; IPC_VERSION_NEGOTIATION before 134"
     status: completed
   - id: epoch2-prereqs
-    content: "Epoch 2: ABI_ARES_RT, VIRTIO_SAFETY, BUILD_INTEGRITY; virtio-blk then userland commits"
+    content: "Epoch 2: ABI_CLAN_RT, VIRTIO_SAFETY, BUILD_INTEGRITY; virtio-blk then userland commits"
     status: completed
   - id: epoch3-ipc-140
-    content: "Phases 131-140: signed images; phase 134 removes interim IPC (counter=0 test); audit correlation"
+    content: "Scopes 131-140: signed images; scope 134 removes interim IPC (counter=0 test); audit correlation"
     status: completed
   - id: epoch4-planning-networking
     content: "Epoch 4: pre-epoch planning commit (network/socket checklists, threat nodes, fuzz targets); then virtio-net + compat sockets"
     status: completed
   - id: epoch5-loom-smp-a11y
-    content: "Phases 141-142 loom tests; ABI_COMPOSITOR_IPC (+ a11y extension point) before 145; OOM phase 147 (suspend=frozen-in-memory, checkpoint post-150)"
+    content: "Scopes 141-142 loom tests; ABI_COMPOSITOR_IPC (+ a11y extension point) before 145; OOM scope 147 (suspend=frozen-in-memory, checkpoint post-150)"
     status: completed
   - id: epoch6-targets
     content: "Epoch 6: ARCHITECTURE_TARGETS.md; real hardware; side-channel/physical threat re-evaluation"
@@ -48,18 +48,18 @@ todos:
 isProject: false
 ---
 
-# AresOS: Build to a Rust-Native OS That Surpasses Linux and Windows
+# Clan OS: Build to a Rust-Native OS That Surpasses Linux and Windows
 
 ## Guiding principle: do not rush
 
-- **One phase per cycle** — validate, soak, benchmark, **commit**, then next phase
+- **One scope per cycle** — validate, soak, benchmark, **commit**, then next scope
 - **Spec before code** — docs + threat-node mapping before kernel changes
 - **Honest evidence tiers** — proptest is **not** formal verification; Kani/Verus are distinct tiers ([`PROOF_COVERAGE.md`](docs/PROOF_COVERAGE.md))
-- **Contract before enforcement** — stubs (`MEM_BUDGET_STUB`, `CAP_QUOTA_STUB`) from phase 121; full policy later
-- **One commit per phase** — phase owner signs off; documented revert + epoch failure procedures
+- **Contract before enforcement** — stubs (`MEM_BUDGET_STUB`, `CAP_QUOTA_STUB`) from scope 121; full policy later
+- **One commit per scope** — scope owner signs off; documented revert + epoch failure procedures
 - **Epoch 0 is deliberately larger** — schedule trade accepted to avoid undefined behavior in epochs 1–4
 
-Estimated pace: **1–3 phases/month**. Milestone 150 is **multi-year**.
+Estimated pace: **1–3 scopes/month**. Milestone 150 is **multi-year**.
 
 ---
 
@@ -101,12 +101,12 @@ Estimated pace: **1–3 phases/month**. Milestone 150 is **multi-year**.
 | 4 | No audit | [`AUDIT_SUBSYSTEM.md`](docs/AUDIT_SUBSYSTEM.md) + impl | Prereq epoch 1; epochs 1–3 |
 | 5 | Coarse epoch gates | Validation pyramid + **calibrated** benchmarks | Epoch 0 |
 | 6 | Rights algebra unproven | proptest **+ Kani** (+ Verus selective) | Epoch 0 |
-| 7 | No admission control | E-00 + ERROR_TAXONOMY class mapping | Phase 121 |
+| 7 | No admission control | E-00 + ERROR_TAXONOMY class mapping | Scope 121 |
 | 8 | Compat no sunset | [`COMPAT_SUNSET.md`](docs/COMPAT_SUNSET.md) + **compat review** each epoch gate | Epoch 1 |
-| 9 | OOM undefined early | **MEM_BUDGET_STUB** phase 121; full shed/terminate phase 147 | Split |
+| 9 | OOM undefined early | **MEM_BUDGET_STUB** scope 121; full shed/terminate scope 147 | Split |
 | 10 | Git no rollback | Revert procedure | Commit discipline |
-| 11 | Phase 128 allowlist | [`ABI_NATIVE_SYSCALL.md`](docs/ABI_NATIVE_SYSCALL.md) + V-01 | Before 128 |
-| 12 | `ares-rt` ABI | [`ABI_ARES_RT.md`](docs/ABI_ARES_RT.md) | Epoch 2 prereq; forward ABI stability policy |
+| 11 | Scope 128 allowlist | [`ABI_NATIVE_SYSCALL.md`](docs/ABI_NATIVE_SYSCALL.md) + V-01 | Before 128 |
+| 12 | `clan-rt` ABI | [`ABI_CLAN_RT.md`](docs/ABI_CLAN_RT.md) | Epoch 2 prereq; forward ABI stability policy |
 | 13 | Compositor IPC | [`ABI_COMPOSITOR_IPC.md`](docs/ABI_COMPOSITOR_IPC.md) | Before 145 |
 | 14 | virtio safety | [`VIRTIO_SAFETY.md`](docs/VIRTIO_SAFETY.md) | Before virtio-blk |
 | 15 | Brokers before endpoints | Interim IPC bridge `compat-internal` | 122–133; removed 134 |
@@ -125,8 +125,8 @@ Estimated pace: **1–3 phases/month**. Milestone 150 is **multi-year**.
 | 23 | Interim IPC semantic debt | FIFO ordering spec, backpressure, **CI `compat-internal` counter → 0 at 134** | Epoch 1 spec |
 | 24 | SMP races | **loom** (or `SharedState<T>`) per shared struct in 141–142 | Before epoch 5 AP |
 | 25 | Compat sunset no feedback | **Compat review** checklist at every epoch gate; metrics in commit + matrix | All epoch gates |
-| 26 | Phase co-authorship | **Phase owner** in checklist / CODEOWNERS; only owner commits `feat(phase-NNN)` | Process |
-| 27 | Benchmarks unanchored | **Calibration run** on phase 120; thresholds = % budget vs baseline | Epoch 0 |
+| 26 | Scope co-authorship | **Scope owner** in checklist / CODEOWNERS; only owner commits `feat(scope-NNN)` | Process |
+| 27 | Benchmarks unanchored | **Calibration run** on scope 120; thresholds = % budget vs baseline | Epoch 0 |
 | 28 | Doc versioning | `status:` header on every `/docs/*.md`; CI lint | Epoch 0 |
 | 29 | Hardware underspecified | [`ARCHITECTURE_TARGETS.md`](docs/ARCHITECTURE_TARGETS.md) — ISA priority, QEMU per epoch | Epoch 6 start |
 | 30 | "Surpasses" undefined | **Falsifiable scorecard** per north-star row in DESIGN_NORTH_STAR | Epoch 0 |
@@ -143,14 +143,14 @@ Estimated pace: **1–3 phases/month**. Milestone 150 is **multi-year**.
 | 36 | Wire schemas diverge | [`WIRE_SCHEMA_REGISTRY.md`](docs/WIRE_SCHEMA_REGISTRY.md) — audit, errors, IPC, cap serialization + compat matrix | Epoch 1 prereq |
 | 37 | Suspend vs checkpoint ambiguous | **Suspend = frozen-in-memory** (no checkpoint); checkpoint **post-150** re-eval | FAULT_ESCALATION epoch 0 |
 | 38 | Compat shim isolation | [`COMPAT_ISOLATION.md`](docs/COMPAT_ISOLATION.md) + threat node; per-caller sessions, no ambient shim cap | Epoch 1 |
-| 39 | IPC version negotiation | [`IPC_VERSION_NEGOTIATION.md`](docs/IPC_VERSION_NEGOTIATION.md) — discovery, downgrade, max spread | Before phase 134 |
-| 40 | Fuzz stubs ≠ coverage | FUZZ_TARGETS — required boundary conditions per target | Epoch 0 def; graduate phase 121+ |
+| 39 | IPC version negotiation | [`IPC_VERSION_NEGOTIATION.md`](docs/IPC_VERSION_NEGOTIATION.md) — discovery, downgrade, max spread | Before scope 134 |
+| 40 | Fuzz stubs ≠ coverage | FUZZ_TARGETS — required boundary conditions per target | Epoch 0 def; graduate scope 121+ |
 | 41 | No project health visibility | `scripts/project_health.py` → [`STATUS.md`](STATUS.md) on epoch gates | Epoch 0 |
 | 42 | Third-party crate policy | [`DEPENDENCY_POLICY.md`](docs/DEPENDENCY_POLICY.md) — TCB allowlist per layer | Epoch 0 |
 | 43 | Revocation window underspecified | FAULT_ESCALATION + TEMPORAL alignment; Kani bounded-window property | Epoch 0 |
 | 44 | Epochs 2/4/5 thin on spec | **Pre-epoch planning commit** — first commit of epoch expands checklists | Process rule |
 | 45 | Source vs image rollback diverge | Source-image reconciliation in EPOCH_FAILURE_PROCEDURE | Epoch 0 |
-| 46 | Accessibility not reserved | ABI_COMPOSITOR_IPC **a11y extension point** (screen reader, keyboard nav) | Before phase 145 |
+| 46 | Accessibility not reserved | ABI_COMPOSITOR_IPC **a11y extension point** (screen reader, keyboard nav) | Before scope 145 |
 
 ### Round 4 (consistency / unstated obligations)
 
@@ -159,13 +159,13 @@ Estimated pace: **1–3 phases/month**. Milestone 150 is **multi-year**.
 | 47 | KERNEL_OBJECT_MODEL not in plan inventory | **Ratify/extend** existing [`KERNEL_OBJECT_MODEL.md`](docs/KERNEL_OBJECT_MODEL.md) — lifecycle states, transitions, cap↔object mapping | Epoch 0 master ref |
 | 48 | Rights composition undefined | Composition laws in PROOF_COVERAGE / RIGHTS_ALGEBRA — chain order, dual-cap union policy | Epoch 0 + Kani |
 | 49 | No transfer protocol | [`CAP_TRANSFER_PROTOCOL.md`](docs/CAP_TRANSFER_PROTOCOL.md) — atomicity, intermediate states, panic mid-transfer | Epoch 0; Kani TOCTOU |
-| 50 | Phase 134 semantic migration | Named property: interim-bridge behaviors ⊆ native endpoint; ordering smoke not just connectivity | IPC_VERSION_NEGOTIATION + phase 134 |
+| 50 | Scope 134 semantic migration | Named property: interim-bridge behaviors ⊆ native endpoint; ordering smoke not just connectivity | IPC_VERSION_NEGOTIATION + scope 134 |
 | 51 | Audit integrity undefined | AUDIT_SUBSYSTEM: kernel-only write, tamper policy (chain hash if any), read-cap copy model | Epoch 1 |
 | 52 | Compat metric undefined | Fixed test corpus denominator; % scenarios native-only end-to-end | COMPAT_SUNSET epoch 1 |
 | 53 | Reproducible build pins vague | Tool manifest (rustc, LLVM, linker, proc-macros); dual-build hash CI | BUILD_INTEGRITY epoch 2 |
 | 54 | No unsafe review policy | [`UNSAFE_AUDIT.md`](docs/UNSAFE_AUDIT.md) — annotations, TCB second reviewer, count in STATUS | Epoch 0 |
 | 55 | Scheduler spec absent until epoch 5 | [`SCHEDULER_MODEL.md`](docs/SCHEDULER_MODEL.md) stub — caps vs handles, revoke while runnable, checkpoints | Epoch 0 / early 1 |
-| 56 | OOM shed bidirectional path | Shed/ack wire format + ERROR class + timeout; stub in phase 121 checklist | 121 stub; 147 full |
+| 56 | OOM shed bidirectional path | Shed/ack wire format + ERROR class + timeout; stub in scope 121 checklist | 121 stub; 147 full |
 | 57 | Kani vacuity on refactor | Coverage assertions in harnesses; reviewer check on modified verified functions | KANI_SCOPE epoch 0 |
 | 58 | Kernel stack overflow | Threat node; no-recursion / depth policy (clippy or lint) | THREAT_MODEL epoch 0 |
 | 59 | STATUS snapshot only | Delta vs prior epoch gate; wrong-direction deltas need commit justification | project_health epoch 0 |
@@ -187,7 +187,7 @@ Estimated pace: **1–3 phases/month**. Milestone 150 is **multi-year**.
 | 70 | MemoryRegion rights | Shared memory cap-mediated; read/write/exec/resize rights | KERNEL_OBJECT_MODEL + THREAT_MODEL |
 | 71 | Machine-readable cap registry | [`CAP_REGISTRY.toml`](docs/CAP_REGISTRY.toml) or Rust enum — CI sync with docs | Epoch 0 |
 | 72 | Versioned threat nodes | Structured nodes (ID, epoch, status, tier, closing-commit); machine-checkable "zero open" | THREAT_MODEL epoch 0 |
-| 73 | IPC negotiation proptest | Random version pairs across spread; downgrade edge cases | Before phase 134 |
+| 73 | IPC negotiation proptest | Random version pairs across spread; downgrade edge cases | Before scope 134 |
 | 74 | Health JSON time series | `health_timeseries.json` appended each epoch gate | project_health epoch 0 |
 | 75 | Never stabilize before 1.0 | Parallel list to "will not do" — interim IPC, stub wire formats, etc. | DESIGN_NORTH_STAR epoch 0 |
 | 76 | Fault injection tier | Compile-time chaos flag for cap/syscall errors; pyramid layer | Epoch 1 stub; graduate epoch 3 |
@@ -215,9 +215,9 @@ Estimated pace: **1–3 phases/month**. Milestone 150 is **multi-year**.
 | 93 | Proptest shrinking | Security props: log pre-shrink case or disable shrink | PROOF_COVERAGE |
 | 94 | Wire schema sunset | Schema version deprecation lifecycle (mirror COMPAT_SUNSET) | WIRE_SCHEMA_REGISTRY |
 | 95 | Cancel vs backpressure | Cancel out-of-band or guaranteed non-blocking | ABI_IPC epoch 3 |
-| 96 | P-134 corpus unstable | Fixed P-134 corpus — format at IPC_VERSION_NEGOTIATION; **populated phase 133** (see #150) | Before 134 |
+| 96 | P-134 corpus unstable | Fixed P-134 corpus — format at IPC_VERSION_NEGOTIATION; **populated scope 133** (see #150) | Before 134 |
 | 97 | health_timeseries retention | Schema version; epoch gates kept forever; intermediate checks capped | project_health |
-| 98 | Delta justification review | Wrong-direction deltas need **second reviewer** (not phase owner) in commit | Process |
+| 98 | Delta justification review | Wrong-direction deltas need **second reviewer** (not scope owner) in commit | Process |
 | 99 | project_health atomicity | Write temp + rename; non-zero exit blocks epoch gate | Epoch 0 |
 | 100 | New cap kind post-150 | **New cap kind checklist** placeholder (registry, threat, proof, error) | Epoch 0 |
 | 101 | A11y minimum contract | Unknown flags must not error; field versioned | ABI_COMPOSITOR_IPC |
@@ -235,18 +235,18 @@ Estimated pace: **1–3 phases/month**. Milestone 150 is **multi-year**.
 | # | Gap / upgrade | Fix | When |
 |---|---------------|-----|------|
 | 110 | Doc sign-off quorum | **Epoch 0: unanimous** (3/3); later doc updates: majority + written dissent | Doc-epoch checklist |
-| 111 | Registry reconciliation owner | Phase owner that introduced drift drives fix; multi-phase → most recent owner | EPOCH_FAILURE |
+| 111 | Registry reconciliation owner | Scope owner that introduced drift drives fix; multi-scope → most recent owner | EPOCH_FAILURE |
 | 112 | Staging cross-doc consistency | **Cross-document review** at squash (not per-PR isolation) — domain sign-offs | Staging workflow |
 | 113 | Fault injection graduation | Deterministic tier triggers in CI; revoke-in-flight also Kani-covered before gate | FUZZ_TARGETS / epoch 3 |
 | 114 | Shim crash ordering | Unordered terminal errors **or** ordered with max teardown timeout | COMPAT_ISOLATION |
 | 115 | Schema sunset read-side | Deprecated schemas **stop write, remain decode forever** (audit forensics) | WIRE_SCHEMA_REGISTRY |
 | 116 | Planning commit reviewer | Epochs 2/4/5 planning commit: **non-owner reviewer** named in commit | Process |
 | 117 | New cap kind CI | New CAP_REGISTRY entry → grep verifies checklist docs mention kind | Epoch 1 CI |
-| 118 | Phase commit + doc fixup | `fixup(phase-NNN): docs` allowed same phase window; no pyramid re-run unless behavior changes | Git discipline |
+| 118 | Scope commit + doc fixup | `fixup(scope-NNN): docs` allowed same scope window; no pyramid re-run unless behavior changes | Git discipline |
 | 119 | TEMPORAL ratification checklist | All cross-refs verified vs epoch-0 FAULT_ESCALATION/SCHEDULER; fixes same commit | Epoch 0 |
 | 120 | Tier downgrade procedure | PROOF_COVERAGE tier decrease → justification + second reviewer; CI signal | Epoch 0 |
 | 121 | Pyramid parallelism | Staging: Kani invalidated only if harness-covered functions or deps change | KANI_SCOPE |
-| 122 | Benchmark re-baseline | Rolling baseline = prior epoch gate; phase-120 historical only after epoch 2 | validation_matrix |
+| 122 | Benchmark re-baseline | Rolling baseline = prior epoch gate; scope-120 historical only after epoch 2 | validation_matrix |
 | 123 | Benchmark stability both ways | Flag large P99 deviation vs prior gate **and** rolling median | project_health |
 | 124 | Kani version in registry | `kani_version` + re-run all security harnesses on Kani upgrade | Harness registry |
 | 125 | Error subcodes explicit | Stable terminal subcodes on wire; WIRE_SCHEMA + sunset per subcode | ERROR_TAXONOMY |
@@ -279,7 +279,7 @@ Estimated pace: **1–3 phases/month**. Milestone 150 is **multi-year**.
 | 147 | Suspend vs audit flush | Security partition **must flush** before suspend; max flush timeout → block suspend or hard terminate | FAULT_ESCALATION + AUDIT |
 | 148 | compat-internal counter scope | Counter = **IPC bridge only** (122–133); epoch 4 sockets use COMPAT_SUNSET, not this counter | Interim IPC spec |
 | 149 | No-shrink wire proptest | `no_shrink` / pre-shrink log applies to IPC_VERSION_NEGOTIATION + wire format proptests | PROOF_COVERAGE |
-| 150 | P-134 corpus timing | Spec + format at IPC_VERSION_NEGOTIATION; **corpus populated at phase 133** commit | Before 134 |
+| 150 | P-134 corpus timing | Spec + format at IPC_VERSION_NEGOTIATION; **corpus populated at scope 133** commit | Before 134 |
 | 151 | Epoch sign-off manifest | Machine-readable `epoch_signoffs/epoch-N.toml`; CI verifies quorum before squash | Epoch 0 |
 | 152 | Threat node lifecycle CI | Define open/closed/regression; bound reduction below H → node re-opens | THREAT_NODES + KANI_SCOPE |
 | 153 | Protocol semver | `breaking.additive.clarification` on protocol docs; CI rules per bump class | Epoch 0 CI |
@@ -305,7 +305,7 @@ Estimated pace: **1–3 phases/month**. Milestone 150 is **multi-year**.
 | 168 | Epoch gate commit signing | GPG-signed squash/gate commits; CI verifies against key registry; SECURITY.md + BUILD_INTEGRITY | Epoch 0 / 2 |
 | 169 | Audit tamper policy | **Resolve at epoch 1** — chain hash OR privileged-write with named threat node; no open OR | AUDIT_SUBSYSTEM |
 | 170 | Object destruction notify | **R-destroy-notify**: destruction → terminal at checkpoint for **all** holders; distinct from R-cascade-revoke | KERNEL_OBJECT_MODEL |
-| 171 | Phase owner COI | Security-critical phases: second reviewer from **different domain** (security / kernel ABI / process) | Process |
+| 171 | Scope owner COI | Security-critical scopes: second reviewer from **different domain** (security / kernel ABI / process) | Process |
 | 172 | Fuzz target retirement | Retire gating target = tier-downgrade procedure; transfer coverage or threat-model waiver | FUZZ_TARGETS |
 | 173 | Structural error recovery | Cap quota: **remediable structural** — caller may release caps and retry; not kernel-fatal | ERROR_TAXONOMY |
 | 174 | Generation cold restart | Explicit policy: (c) pre-restart caps invalidated QEMU-era; document mechanism | GENERATION_COUNTER |
@@ -318,14 +318,14 @@ Estimated pace: **1–3 phases/month**. Milestone 150 is **multi-year**.
 | 181 | Semver vs never-stabilize | Semver tracks changes regardless; never-stabilize = cannot declare stable until 1.0 graduation | DESIGN_NORTH_STAR |
 | 182 | health JSON semver | `format_version` follows additive-only rules; references protocol semver framework | project_health |
 | 183 | architecture_state.toml | Boolean flags: `has_real_hardware_target`, `has_speculative_execution_unit`, etc. | Epoch 0 |
-| 184 | Phase regression log | Append-only phase-level metric snapshots alongside epoch gates — observability | project_health |
+| 184 | Scope regression log | Append-only scope-level metric snapshots alongside epoch gates — observability | project_health |
 | 185 | Attack surface metric | STATUS.md: syscall count, IPC endpoints, cap kinds, compat entry points | project_health |
 | 186 | Protocol changelog | `PROTOCOL_CHANGELOG.md` or per-doc CHANGELOG — epoch, commit, rationale per bump | Epoch 0 |
 | 187 | Audit coverage by op type | Completeness metric broken down: mint, delegate, revoke, transfer, attenuation, expiry | AUDIT epoch 3 |
 | 188 | Never-stabilize CI schemas | Add: epoch_signoffs schema, THREAT_NODES.toml, kani_harness_registry, architecture_state.toml | DESIGN_NORTH_STAR |
-| 189 | Epoch failure time budget | Max ~2 phase-cycles recovery; then charter-level decision | EPOCH_FAILURE |
+| 189 | Epoch failure time budget | Max ~2 scope-cycles recovery; then charter-level decision | EPOCH_FAILURE |
 | 190 | Audit privacy policy | Capture/exclude policy for audit fields; disclosure surface threat node stub | AUDIT + THREAT_MODEL |
-| 191 | Prereq graph | Machine-readable phase/doc adjacency; CI ordering check | project_health epoch 0 |
+| 191 | Prereq graph | Machine-readable scope/doc adjacency; CI ordering check | project_health epoch 0 |
 | 192 | Rust edition upgrade | Dedicated review commit; re-run Kani; edition-guide triage for TCB | UNSAFE_AUDIT |
 | 193 | Scorecard methodology stubs | Per comparative row: measurement definition (even if target TBD) | DESIGN_NORTH_STAR |
 | 194 | Verification toolchain risk | Kani/Verus bug/deprecation contingency — analogous to SUPPLY_CHAIN_POLICY | PROOF_COVERAGE |
@@ -335,7 +335,7 @@ Estimated pace: **1–3 phases/month**. Milestone 150 is **multi-year**.
 | # | Gap / upgrade | Fix | When |
 |---|---------------|-----|------|
 | 195 | Epoch checklist CI boundary | `epoch_checklist.toml` — each item: `ci` \| `human` \| `both` | Epoch 0 |
-| 196 | Phase owner succession | Named **backup reviewer** at phase-start; inherits commit authority if owner unavailable | Process |
+| 196 | Scope owner succession | Named **backup reviewer** at scope-start; inherits commit authority if owner unavailable | Process |
 | 197 | Dissent resolution | Escalation path + timeout → charter override; prevents indefinite stall | epoch_signoffs schema |
 | 198 | Reviewer key rotation | SECURITY.md: key rotation ceremony; CI registry update without breaking history | SECURITY.md |
 | 199 | Cross-epoch prereqs | `prereq_graph.toml` edges with `blocking_epoch`; CI warns on unresolved cross-epoch deps | prereq_graph |
@@ -350,7 +350,7 @@ Estimated pace: **1–3 phases/month**. Milestone 150 is **multi-year**.
 | 208 | Fuzz corpus integrity | Committed corpus hash at graduation; verified each CI run | FUZZ_TARGETS |
 | 209 | Signoff replay protection | `superseded_by` transitively GPG-signed; manifest bound to epoch number | epoch_signoffs schema |
 | 210 | Kernel entropy / CSPRNG | GENERATION_COUNTER: sequential vs unpredictable policy; QEMU entropy threat node | GENERATION_COUNTER |
-| 211 | ares-rt ABI forward stability | Compatibility window or stated recompile requirement per epoch | ABI_ARES_RT epoch 2 |
+| 211 | clan-rt ABI forward stability | Compatibility window or stated recompile requirement per epoch | ABI_CLAN_RT epoch 2 |
 | 212 | Cap table sharding note | SCHEDULER_MODEL: per-core shards in/out of scope post-150; affects uniqueness proof | SCHEDULER_MODEL |
 | 213 | Hypervisor guest target | ARCHITECTURE_TARGETS: guest in/out of scope + reopen_trigger | Epoch 6 / architecture_state |
 | 214 | Firmware update trust | Deferred node: firmware update without OS restart; boot trust boundary | THREAT_NODES epoch 0 |
@@ -358,11 +358,11 @@ Estimated pace: **1–3 phases/month**. Milestone 150 is **multi-year**.
 | 216 | Superseded doc archival | `docs/archive/`; excluded from forward link check; retained in git | Doc conventions |
 | 217 | Onboarding guide | CONTRIBUTING.md — milestone 150 prereq; doc-contribution path | Milestone 150 |
 | 218 | Canonical glossary | `GLOSSARY.toml` — term, doc, anchor; CI consistency check | Epoch 0 |
-| 219 | Changelog sub-entries | PROTOCOL_CHANGELOG: section, bump class, phase commit per change | PROTOCOL_CHANGELOG |
+| 219 | Changelog sub-entries | PROTOCOL_CHANGELOG: section, bump class, scope commit per change | PROTOCOL_CHANGELOG |
 | 220 | QEMU config versioned | Committed QEMU invocation script/config + changelog | ARCHITECTURE_TARGETS |
 | 221 | Test environment manifest | QEMU version, host kernel, network isolation — diffed at epoch gate | BUILD_INTEGRITY / CI |
 | 222 | Soak failure ownership | EPOCH_FAILURE: distinct mode; triage owner; max investigation window | EPOCH_FAILURE |
-| 223 | Benchmark archival | Extend phase_snapshots with bench results; trend query tool (DX) | project_health |
+| 223 | Benchmark archival | Extend scope_snapshots with bench results; trend query tool (DX) | project_health |
 | 224 | Post-quantum signing | SECURITY.md: PQC migration re-eval at milestone 150 | SECURITY.md |
 | 225 | Cap model extensibility | DESIGN_NORTH_STAR forward-extensibility statement for future cap categories | Epoch 0 |
 | 226 | Formal cap system model | Intermediate milestone: formal transfer/delegation model for seL4 comparison | PROOF_COVERAGE / tier D |
@@ -390,7 +390,7 @@ Estimated pace: **1–3 phases/month**. Milestone 150 is **multi-year**.
 | 241 | Endpoint exhaustion DoS | Endpoint creation counts toward CAP_QUOTA_STUB explicitly | CAP_QUOTA / epoch 1 |
 | 242 | Generation counter observation | Generation values sensitive; omit from caller-facing errors (extends cap_id oracle policy) | GENERATION_COUNTER / ERROR_TAXONOMY |
 | 243 | Epoch 0 scope freeze | Scope-freeze commit; additions after freeze need charter approval | EPOCH_FAILURE epoch 0 |
-| 244 | Phase checklist schema | `phase_checklist_schema.toml` — required fields per phase checklist | Epoch 0 |
+| 244 | Scope checklist schema | `scope_checklist_schema.toml` — required fields per scope checklist | Epoch 0 |
 | 245 | Reviewer qualification | Domain reviewer qualification + rotation; new reviewer co-sign first 2 epochs | Process / SECURITY.md |
 | 246 | External breaking-change comms | None before milestone 150; policy in SECURITY.md/CONTRIBUTING before public release | Milestone 150 |
 | 247 | Process hierarchy proptest | Proptest/Kani target for parent/child/orphan/fault-propagation invariants | FUZZ_TARGETS / PROOF_COVERAGE |
@@ -442,7 +442,7 @@ Estimated pace: **1–3 phases/month**. Milestone 150 is **multi-year**.
 | 282 | Epoch retrospective | `epoch_retrospectives/epoch-N.md` — non-gating structured artifact | Process |
 | 283 | Weighted attack surface | Compat entry points weighted > native syscalls; single trending metric | project_health |
 | 284 | New pub API soft warning | Kernel/ABI new `pub` → soft THREAT_NODES check at epoch gate | CI |
-| 285 | Milestone 150 timeline projection | Rolling avg phase duration → projected M150 date in STATUS.md | project_health |
+| 285 | Milestone 150 timeline projection | Rolling avg scope duration → projected M150 date in STATUS.md | project_health |
 | 286 | Shadow audit counter | QEMU/test: independent op counter vs audit log at teardown | AUDIT_SUBSYSTEM epoch 3 |
 
 **Epoch 0 / early epoch-1 priorities:** #265, #263, #260, #261, #266, #281, #274.
@@ -470,13 +470,13 @@ Estimated pace: **1–3 phases/month**. Milestone 150 is **multi-year**.
 | 303 | Information flow position | IFC design goal **or** out-of-scope pre-150 row in DESIGN_NORTH_STAR | Epoch 0 |
 | 304 | Cap op rate DoS | Rate limit in CAP_QUOTA **or** out-of-scope single-tenant QEMU | THREAT_NODES |
 | 305 | Boot attestation chain | Deferred post-150 + unattested-boot node **or** epoch-6 measurement plan | SECURITY.md |
-| 306 | phase_snapshots compaction | Epoch entries permanent; phase entries compact after N epochs | project_health |
+| 306 | scope_snapshots compaction | Epoch entries permanent; scope entries compact after N epochs | project_health |
 | 307 | Benchmark env-change tagging | Join manifests; `env-change` tag exempts wrong-direction; excludes from M150 avg | project_health |
 | 308 | Threat-node proof coverage ratio | closed nodes with proof tier / total non-deferred; STATUS.md | project_health |
 | 309 | Inter-doc heading citations | Foundational heading change → same commit updates all citations | Doc conventions |
 | 310 | Cap kind semantics freeze | Exiting never-stabilize → semantics frozen; reinterpret = new kind | KERNEL_OBJECT_MODEL |
 | 311 | Toolchain EOL procedure | Max unsupported pin duration; mandatory bump + dual-build re-verify | TOOLCHAIN_POLICY |
-| 312 | First-steps DAG (Upgrade G) | Epoch-0 authoring order in `prereq_graph.toml` with `blocking_phase: epoch-0` | Epoch 0 |
+| 312 | First-steps DAG (Upgrade G) | Epoch-0 authoring order in `prereq_graph.toml` with `blocking_scope: epoch-0` | Epoch 0 |
 | 313 | gap_registry.toml (Upgrade H) | `open`/`addressed`/`wontfix`/`split-into`; CI checks stale `when` | Epoch 0 |
 | 314 | Unsafe pub static analysis (Upgrade I) | `extern "C"` + `pub unsafe fn` vs THREAT_NODES soft warning | CI epoch gate |
 | 315 | Epoch-0 doc dep viz (Upgrade J) | Dependency graph in epoch gate health report | project_health epoch 0 |
@@ -514,9 +514,9 @@ Estimated pace: **1–3 phases/month**. Milestone 150 is **multi-year**.
 |---|---------------|-----|------|
 | 332 | AI-assisted code review | TCB paths: same second-reviewer + attestation vs KERNEL_OBJECT_MODEL invariants | UNSAFE_AUDIT + SECURITY |
 | 333 | gap `superseded` status | Moot by design decision; pointer to commit + DECISION_LOG/KERNEL_OBJECT_MODEL | gap_registry |
-| 334 | Mandatory DECISION_LOG triggers | 8 gated decisions in phase_checklist_schema | phase_checklist_schema |
+| 334 | Mandatory DECISION_LOG triggers | 8 gated decisions in scope_checklist_schema | scope_checklist_schema |
 | 335 | Cap kind semantic proximity | New kind checklist: disjoint/specialization/generalization + DECISION_LOG | CAP_REGISTRY |
-| 336 | Feature cost tracking | Marginal overhead per phase in phase_snapshots | project_health |
+| 336 | Feature cost tracking | Marginal overhead per scope in scope_snapshots | project_health |
 | 337 | Attacker goal taxonomy | Escalation, disclosure, DoS, integrity — map classes + nodes | THREAT_MODEL |
 | 338 | Formal framework prereq | prereq_graph edge: framework decision blocks Tier D work | prereq_graph |
 | 339 | Ergonomics retrospective | Process vs implementation time; non-gating in epoch retrospective | epoch_retrospectives |
@@ -556,13 +556,13 @@ Each row has a **finish line**, not just aspiration:
 | **Cap model extensibility** | Forward-extensibility statement: current namespaces/delegation/transfer sufficient for socket, GPU, crypto, TEE caps **or** named revision triggers |
 | **Formal cap model** | Intermediate milestone: formal transfer/delegation model sufficient to operationalize seL4 comparison row |
 | **Contributor onboarding** | [`CONTRIBUTING.md`](CONTRIBUTING.md) maps process to first-contribution path — milestone 150 prereq |
-| **Health dashboard** | Baseline trend visualization from health_timeseries + phase_snapshots — **available by epoch 3 gate** |
+| **Health dashboard** | Baseline trend visualization from health_timeseries + scope_snapshots — **available by epoch 3 gate** |
 | **Tracing channel** | Performance/diagnostic trace separate from audit — out of scope post-150 stub; no audit partition pollution |
 | **Multitenancy** | Post-150 policy layer; cap model structurally supports isolation; quota/namespace/audit partition deferred |
 | **GPU caps** | Separate design doc + IOMMU trust decision before any GPU driver work |
 | **External interop** | Self-contained cap model; interop via explicit translation layer; post-150 interop = separate threat model |
 | **Deterministic replay** | Post-150; seeded fault injection = primary QEMU-era determinism anchor |
-| **Milestone 150 projection** | Rolling average phase duration → projected completion date in STATUS.md |
+| **Milestone 150 projection** | Rolling average scope duration → projected completion date in STATUS.md |
 | **Information flow** | IFC as design goal with mechanisms **or** out-of-scope pre-150; existing nodes address known channels |
 | **Boot attestation** | Deferred post-150 with unattested-boot node **or** epoch-6 measurement plan |
 | **vs Windows** | Falsifiable row(s) **or** explicit: informal goal, no M150 commitment (title ≠ scorecard) |
@@ -578,7 +578,7 @@ Beyond capability-layer attacks:
 
 - **Attacker taxonomy:** local unprivileged, compromised service, kernel exploit, remote, **compromised build host**, **compromised dev signing key**, **compromised CI runner** (QEMU era: out-of-scope if CI not release pipeline — state explicitly), **malicious/coerced insider contributor** (position: second-reviewer on security-critical paths; formal semantic independence post-150; or documented residual risk)
 - **Mint authority escalation:** if mint ≠ delegate — dedicated threat node (see KERNEL_OBJECT_MODEL)
-- **Userspace allocator:** heap exploitation surface in ares-rt — mitigation policy epoch 2 (hardened allocator / Rust safe / defer post-150)
+- **Userspace allocator:** heap exploitation surface in clan-rt — mitigation policy epoch 2 (hardened allocator / Rust safe / defer post-150)
 - **Kernel heap integrity:** slab/double-free — Kani on allocator invariants or TCB allowlist crate
 - **Endpoint exhaustion:** endpoint creation consumes quota beyond cap slots — covered by CAP_QUOTA_STUB
 - **Linker script tampering:** unauthorized layout change — threat node; covered by reproducibility manifest
@@ -636,13 +636,13 @@ Unified versioned error algebra — **not** organic errno growth:
 - **Empty-rights cap operation:** ERROR_TAXONOMY class per RIGHTS_ALGEBRA empty-rights policy (structural or terminal)
 - **Cap quota exceeded:** **remediable structural** — not transient; caller may release caps and retry; not service-restart fatal
 - **Third-party holders:** independent caps to same object unaffected by single-cap revoke; **object destruction** → **R-destroy-notify** terminal at checkpoint for all holders
-- **Bidirectional signals** (OOM shed/ack, userland→kernel reports): registered in WIRE_SCHEMA_REGISTRY; stub contract in phase 121; full spec before 147
+- **Bidirectional signals** (OOM shed/ack, userland→kernel reports): registered in WIRE_SCHEMA_REGISTRY; stub contract in scope 121; full spec before 147
 
 ---
 
 ## KERNEL_OBJECT_MODEL.md — master reference (epoch 0: ratify + extend)
 
-**Exists** from phase 110 ([`docs/KERNEL_OBJECT_MODEL.md`](docs/KERNEL_OBJECT_MODEL.md)) but must be **extended** for implementation epoch 0 — grounding doc for GENERATION_COUNTER, FAULT_ESCALATION, ERROR_TAXONOMY ("wrong cap kind"), COMPAT_ISOLATION, rights algebra.
+**Exists** from scope 110 ([`docs/KERNEL_OBJECT_MODEL.md`](docs/KERNEL_OBJECT_MODEL.md)) but must be **extended** for implementation epoch 0 — grounding doc for GENERATION_COUNTER, FAULT_ESCALATION, ERROR_TAXONOMY ("wrong cap kind"), COMPAT_ISOLATION, rights algebra.
 
 **Epoch 0 additions:**
 
@@ -757,7 +757,7 @@ Defer: deadline scheduling, full fairness metrics (epoch 5).
 - Caller abandoning saturated send: **cancel token** or timeout (align [`ABI_ASYNC.md`](docs/ABI_ASYNC.md))
 - ERROR_TAXONOMY class for abandoned operations
 - Threat-model liveness node — unbounded wait = DoS
-- Interim bridge: E-00 covers saturation; native endpoints need cancel in phase 134+ checklist
+- Interim bridge: E-00 covers saturation; native endpoints need cancel in scope 134+ checklist
 - **Cancel must not block on saturated queue** — out-of-band cancel or guaranteed non-blocking path (liveness deadlock prevention)
 
 ---
@@ -797,7 +797,7 @@ Align with [`TEMPORAL_SEMANTICS.md`](docs/TEMPORAL_SEMANTICS.md) checkpoint mode
 
 | State | Milestone 150 semantics |
 |-------|-------------------------|
-| **Suspend** (phase 147) | **Frozen-in-memory** — no persistent checkpoint; resume = continue or cold restart without saved state beyond generation policy |
+| **Suspend** (scope 147) | **Frozen-in-memory** — no persistent checkpoint; resume = continue or cold restart without saved state beyond generation policy |
 | **Checkpoint/restore** | **Out of scope until post-150** — re-evaluate marker in FAULT_ESCALATION |
 
 **Post-150 threat surface (note now):** serialized memory images expose cap state on disk; generation persistence across power cycles; device state reconstruction — document in FAULT_ESCALATION § Dormancy so post-150 spec is not surprised.
@@ -839,16 +839,16 @@ Each entry: stable numeric ID, canonical doc pointer, **reader/writer compatibil
 
 ---
 
-## IPC_VERSION_NEGOTIATION.md (before phase 134)
+## IPC_VERSION_NEGOTIATION.md (before scope 134)
 
 - Version identifier location in message/envelope
 - Unsupported version: error class (structural vs transient)
 - **Downgrade responsibility:** receiver advertises max; caller negotiates or fails
 - **Max version spread** policy (e.g. N-1 support vs lockstep rebuild — pick one explicitly)
-- **Semantic compatibility (phase 134):** state whether native endpoint ordering is **equivalent superset** of interim FIFO-per-session, or document differences + migration tests
+- **Semantic compatibility (scope 134):** state whether native endpoint ordering is **equivalent superset** of interim FIFO-per-session, or document differences + migration tests
 - **Named property P-134:** all broker behaviors verified under interim bridge also pass under native endpoints (ordering smoke, not connectivity-only)
 - **proptest** (tier A, security): version pairs + wire format — random spread, downgrade paths; **`no_shrink` or pre-shrink log**
-- **P-134 corpus:** format + inclusion rules in IPC_VERSION_NEGOTIATION doc; **corpus populated at phase 133** (last interim-bridge impl) as fixed read-only list — **not** at spec-only commit
+- **P-134 corpus:** format + inclusion rules in IPC_VERSION_NEGOTIATION doc; **corpus populated at scope 133** (last interim-bridge impl) as fixed read-only list — **not** at spec-only commit
 - Required before interim bridge removal
 
 ---
@@ -869,7 +869,7 @@ Each entry: stable numeric ID, canonical doc pointer, **reader/writer compatibil
 - **Metric:** `100% × numerator / denominator`
 - Epoch gate: delta vs previous epoch in commit body + STATUS.md delta
 
-**Transition integration tests:** old-ABI client vs new-kernel at **each epoch boundary** — catches compat cliff between phase tests and full sunset; named test category in epoch gate matrix.
+**Transition integration tests:** old-ABI client vs new-kernel at **each epoch boundary** — catches compat cliff between scope tests and full sunset; named test category in epoch gate matrix.
 
 ---
 
@@ -934,7 +934,7 @@ Full disclosure + key-compromise playbooks required before milestone 150 public 
 |-------|--------|
 | Kernel TCB | Strictest — **zero or curated allowlist** with review |
 | Kernel support | Allowlist + audit |
-| Userland `ares-rt` | Curated |
+| Userland `clan-rt` | Curated |
 | Build tooling | Least restricted |
 | **Proc-macros (TCB-adjacent)** | **Strictest allowlist** — compile-time code generation; separate from runtime deps |
 
@@ -953,12 +953,12 @@ Post-150+ extensions require: KERNEL_OBJECT_MODEL, CAP_REGISTRY.toml, PROOF_COVE
 | Rule | Detail |
 |------|--------|
 | **Annotation** | Every `unsafe` block: justification comment + invariant doc ref (e.g. VIRTIO_SAFETY §) |
-| **TCB kernel** | Second reviewer beyond phase owner for new `unsafe` in cap table / syscall entry / MMIO |
+| **TCB kernel** | Second reviewer beyond scope owner for new `unsafe` in cap table / syscall entry / MMIO |
 | **Complexity** | Kani required for `unsafe` functions above complexity threshold (defined in KANI_SCOPE) |
 | **Limits** | Optional max `unsafe` lines per module — exceptions documented |
 | **Tracking** | `project_health.py` reports **unsafe block count by module**; delta in STATUS.md |
 | **Toolchain bump** | On `rustc` bump: **re-confirm** all TCB `unsafe` invariants — not compile-only |
-| **Rust edition upgrade** | **Dedicated review commit** (not bundled with phase); re-run all Kani harnesses; triage edition-guide semantic changes for TCB |
+| **Rust edition upgrade** | **Dedicated review commit** (not bundled with scope); re-run all Kani harnesses; triage edition-guide semantic changes for TCB |
 | **C-ABI FFI** | Kernel-boundary FFI: **charter approval** + dedicated threat node (gate, not prohibition) |
 
 **Memory safety boundary** ([`MEMORY_SAFETY_BOUNDARY.md`](docs/MEMORY_SAFETY_BOUNDARY.md) or UNSAFE_AUDIT §): spatial map of which crates/modules may contain `unsafe`; directory-level CI deny rules (e.g. cap-table crate except explicitly listed files); TCB modules require second reviewer.
@@ -972,7 +972,7 @@ General policy beyond VIRTIO_SAFETY.md.
 When verified functions change:
 
 - Harnesses include **coverage assertions** (prove interesting path reached), **or**
-- Phase owner attests harness still exercises relevant paths (documented in commit)
+- Scope owner attests harness still exercises relevant paths (documented in commit)
 
 CI fails on vacuous pass for security-critical targets: transfer protocol, revocation window, generation uniqueness.
 
@@ -996,7 +996,7 @@ Refactors that move logic to unverified helpers require KANI_SCOPE update in sam
 
 **Fuzz → Verus:** crash/findings in Kani-covered function → **immediate Verus escalation assessment** (evidence bound was insufficient).
 
-**Parallelism (staging):** prior phase Kani results invalidated only if harness-covered functions or their **transitive deps** change.
+**Parallelism (staging):** prior scope Kani results invalidated only if harness-covered functions or their **transitive deps** change.
 
 **Hardware transition (epoch 6):** each harness with tractability note **re-reviewed** — bound still meaningful or escalate Verus.
 
@@ -1036,11 +1036,11 @@ Beyond signing:
 
 ---
 
-## ABI_ARES_RT.md (epoch 2 prereq — native runtime ABI)
+## ABI_CLAN_RT.md (epoch 2 prereq — native runtime ABI)
 
-- Syscall surface, startup contract, signal/error mapping for `ares-rt`
-- **Forward stability policy:** either (a) **compatibility window** — kernel supports N-1 ares-rt ABI for M epochs, or (b) **explicit recompile required** each epoch — pick one in epoch 2; prevents silent native ABI breaks while compat metric shows 100% native
-- Distinct from compat shim sunset — this is AresOS's **own** native ABI evolution
+- Syscall surface, startup contract, signal/error mapping for `clan-rt`
+- **Forward stability policy:** either (a) **compatibility window** — kernel supports N-1 clan-rt ABI for M epochs, or (b) **explicit recompile required** each epoch — pick one in epoch 2; prevents silent native ABI breaks while compat metric shows 100% native
+- Distinct from compat shim sunset — this is Clan OS's **own** native ABI evolution
 - Registered in WIRE_SCHEMA_REGISTRY where wire formats apply
 
 ---
@@ -1070,7 +1070,7 @@ Extends VIRTIO_SAFETY.md:
 
 ## OOM shed / acknowledge protocol
 
-| Phase | Contract |
+| Scope | Contract |
 |-------|----------|
 | **121 stub** | Outline in checklist: kernel→service shed signal cap, ack timeout → ERROR_TAXONOMY class, FAULT_ESCALATION path |
 | **147 full** | Wire format in WIRE_SCHEMA_REGISTRY; bidirectional; non-ack → suspend → terminate |
@@ -1085,7 +1085,7 @@ Extends VIRTIO_SAFETY.md:
 | Syscall entry | Invalid handle, wrong kind, revoke/use race |
 | Process hierarchy | Parent death, child cap fate, orphan, fault propagation — proptest tier A |
 
-Epoch 0: stubs exist. Phase 121+: targets must meet coverage definition or remain **non-gating** (reported in STATUS.md).
+Epoch 0: stubs exist. Scope 121+: targets must meet coverage definition or remain **non-gating** (reported in STATUS.md).
 
 **Corpus persistence:** fuzz corpora in VCS or artifact storage; **minimum corpus size** per target before gate; corpus wipe (e.g. target signature change) → gate status reset or documented grace period in FUZZ_TARGETS.
 
@@ -1093,7 +1093,7 @@ Epoch 0: stubs exist. Phase 121+: targets must meet coverage definition or remai
 
 **Fault injection error verification:** tier B requirement — when fault injected, caller receives **exact** ERROR_TAXONOMY class/subcode at declared wire schema version (Kani or proptest, not smoke-only).
 
-**Target retirement:** removing a **graduated** gating target (e.g. interim IPC at phase 134) requires same procedure as PROOF_COVERAGE tier downgrade — second reviewer, justification; coverage transferred to new target or threat-model waiver.
+**Target retirement:** removing a **graduated** gating target (e.g. interim IPC at scope 134) requires same procedure as PROOF_COVERAGE tier downgrade — second reviewer, justification; coverage transferred to new target or threat-model waiver.
 
 ---
 
@@ -1128,13 +1128,13 @@ Cross-ref: R-revoke-blocked, IPC cancellation, SCHEDULER_MODEL fairness (epoch 5
 | Open threat nodes ↑ | Justification required |
 | Fuzz graduated count ↓ | Justification required |
 
-Wrong-direction delta: **second reviewer** (not phase owner) must acknowledge justification in commit body.
+Wrong-direction delta: **second reviewer** (not scope owner) must acknowledge justification in commit body.
 
 **Degrade-and-recover same epoch:** metric wrong-direction then recovery within same epoch → commit must justify **both** degradation and recovery (prevents gaming).
 
 **Time series:** `health_timeseries.json` — **`format_version`** from entry `0`; follows **additive-only semver rules** (no required-field removal, no breaking type changes — refs protocol semver framework); unknown fields ignored; **epoch gate entries kept permanently** (entry `0` = epoch 0 baseline).
 
-**Phase regression log:** append-only `phase_snapshots.jsonl` — phase-level snapshots; **epoch gate entries never compacted**; phase entries older than N epochs may compact to summary (second-reviewer commit; raw archived first).
+**Scope regression log:** append-only `scope_snapshots.jsonl` — scope-level snapshots; **epoch gate entries never compacted**; scope entries older than N epochs may compact to summary (second-reviewer commit; raw archived first).
 
 **Benchmark delta tagging:** join current + prior test environment manifests; environment change → tag `env-change` (no wrong-direction justification; optional `rebaseline-env`; excluded from M150 rolling average).
 
@@ -1200,26 +1200,26 @@ Machine-readable [`epoch_checklist.toml`](epoch_checklist.toml) — each item an
 
 ---
 
-## Resource stubs (phase 121 — contract before enforcement)
+## Resource stubs (scope 121 — contract before enforcement)
 
-| Stub | Phase 121/122 | Phase 147 (full) |
+| Stub | Scope 121/122 | Scope 147 (full) |
 |------|---------------|------------------|
-| `MEM_BUDGET_STUB` | Budget struct + loader hook; **reserved fault-handler partition**; over-budget → `AresError::System` | shed → **suspend (frozen-in-memory)** → terminate + G5 log |
+| `MEM_BUDGET_STUB` | Budget struct + loader hook; **reserved fault-handler partition**; over-budget → `ClanError::System` | shed → **suspend (frozen-in-memory)** → terminate + G5 log |
 | `CAP_QUOTA_STUB` | `caps_held(service) ≤ cap_quota(service)` — includes **endpoint creation**; optional **op rate limits** if chosen over out-of-scope; greppable annotation | Enforced on all mint paths + Kani/proptest property |
 
 Soak tests epochs 1–4 exercise stub paths — behavior **defined**, not undefined.
 
 ---
 
-## Interim IPC bridge — full spec (phases 122–133)
+## Interim IPC bridge — full spec (scopes 122–133)
 
-Tagged `compat-internal`; **not** PipeLite (A5); **not** native truth. **Scope:** IPC bridge **only** (phases 122–133) — epoch 4 compat sockets use COMPAT_SUNSET metric, **not** this counter.
+Tagged `compat-internal`; **not** PipeLite (A5); **not** native truth. **Scope:** IPC bridge **only** (scopes 122–133) — epoch 4 compat sockets use COMPAT_SUNSET metric, **not** this counter.
 
 - **Ordering:** FIFO per session; no cross-session ordering (documented subset of eventual endpoint semantics)
 - **Message size:** max message size in wire schema; fragmentation policy explicit (if enabled: fragments covered by same FIFO guarantee; **revoke during partial message** → documented terminal/cancel outcome)
 - **Backpressure:** Bounded queue; saturated → E-00 transient error (not silent drop)
-- **Migration:** Phase 134 narrows to native endpoints — not semantic swap
-- **Removal test:** CI counts **`ipc-bridge-compat-internal`** call sites from phase 121; **asserts zero by phase 134** (not checklist-only); compat socket ABI tracked by COMPAT_SUNSET metric only
+- **Migration:** Scope 134 narrows to native endpoints — not semantic swap
+- **Removal test:** CI counts **`ipc-bridge-compat-internal`** call sites from scope 121; **asserts zero by scope 134** (not checklist-only); compat socket ABI tracked by COMPAT_SUNSET metric only
 - **Spec case** for interim semantics + teardown checklist
 
 ---
@@ -1238,16 +1238,16 @@ flowchart BT
   Unit --> Prop --> Kani --> Fuzz --> Smoke --> Soak --> Bench
 ```
 
-**Calibration:** Phase 120 = historical reference. **Hard gate baseline** = **previous epoch gate** measurement (re-baseline each epoch gate after epoch 2). Threshold = max regression % vs prior epoch gate.
+**Calibration:** Scope 120 = historical reference. **Hard gate baseline** = **previous epoch gate** measurement (re-baseline each epoch gate after epoch 2). Threshold = max regression % vs prior epoch gate.
 
 **Stability:** flag P99 deviations vs prior gate **and** rolling median of all epoch gates (large swings either direction → review in commit).
 
 | Layer | Gate |
 |-------|------|
-| Unit + proptest | Every phase |
-| Kani | In-scope functions per KANI_SCOPE only — every phase |
-| Fuzz | From phase 121 when targets meet FUZZ_TARGETS coverage def |
-| Smoke | Every phase |
+| Unit + proptest | Every scope |
+| Kani | In-scope functions per KANI_SCOPE only — every scope |
+| Fuzz | From scope 121 when targets meet FUZZ_TARGETS coverage def |
+| Smoke | Every scope |
 | Fault injection | **Seeded** chaos; deterministic replay; each tier triggerable in CI; revoke-in-flight Kani; **injected fault → exact ERROR_TAXONOMY at wire version** (tier B) | Epoch 1 stub; gate epoch 3 |
 | Soak | Epoch milestones |
 | Benchmark | Epoch milestones — **hard gate** |
@@ -1266,7 +1266,7 @@ CI lint fails on missing `status:` header. Superseded docs moved to **`docs/arch
 
 **Canonical glossary:** [`GLOSSARY.toml`](GLOSSARY.toml) — term, defining doc, section anchor; CI checks term usage consistency across docs.
 
-**Protocol doc versioning:** `breaking.additive.clarification` semver on KERNEL_OBJECT_MODEL, FAULT_ESCALATION, ERROR_TAXONOMY, WIRE_SCHEMA_REGISTRY — **breaking** → cross-doc review required; **additive** → dependent doc annotation; **clarification** → no extra review. CI enforces bump class rules. Changes recorded in [`PROTOCOL_CHANGELOG.md`](docs/PROTOCOL_CHANGELOG.md) — per bump: class, **affected section**, rationale, **linked phase commit**; multiple sub-entries per epoch when independent changes land together.
+**Protocol doc versioning:** `breaking.additive.clarification` semver on KERNEL_OBJECT_MODEL, FAULT_ESCALATION, ERROR_TAXONOMY, WIRE_SCHEMA_REGISTRY — **breaking** → cross-doc review required; **additive** → dependent doc annotation; **clarification** → no extra review. CI enforces bump class rules. Changes recorded in [`PROTOCOL_CHANGELOG.md`](docs/PROTOCOL_CHANGELOG.md) — per bump: class, **affected section**, rationale, **linked scope commit**; multiple sub-entries per epoch when independent changes land together.
 
 **Foundational heading changes:** same commit must update all known citations; CI lists files referencing old heading on protocol semver bump.
 
@@ -1285,22 +1285,22 @@ CI lint fails on missing `status:` header. Superseded docs moved to **`docs/arch
 **TEMPORAL_SEMANTICS.md ratification (epoch 0 — completion condition):**
 
 - Every cross-reference in TEMPORAL_SEMANTICS resolves to an existing section in its target doc
-- Revocation-window, checkpoint, and suspend semantics verified **against epoch-0 FAULT_ESCALATION and SCHEDULER_MODEL** (not prior phase-110 assumptions)
+- Revocation-window, checkpoint, and suspend semantics verified **against epoch-0 FAULT_ESCALATION and SCHEDULER_MODEL** (not prior scope-110 assumptions)
 - Any inconsistency fixed in the **same epoch-0 squash commit** — not deferred to epoch 1
 - Ratification recorded in doc-epoch checklist sign-off (process domain)
 
 ---
 
-## Process: phase ownership + epoch/compatibility gates
+## Process: scope ownership + epoch/compatibility gates
 
-**Phase owner:** `phase-owner:` in checklist footer or CODEOWNERS per phase directory. Only owner creates `feat(phase-NNN)` after full pyramid green. **`backup-reviewer:`** named at phase-start — inherits commit authority if owner unavailable (mandatory for security-critical phases).
+**Scope owner:** `scope-owner:` in checklist footer or CODEOWNERS per scope directory. Only owner creates `feat(scope-NNN)` after full pyramid green. **`backup-reviewer:`** named at scope-start — inherits commit authority if owner unavailable (mandatory for security-critical scopes).
 
-**Security-critical phases** (cap table, audit subsystem, FAULT_ESCALATION tiers): wrong-direction delta second reviewer must be from a **different domain** than phase owner — domains = epoch sign-off domains (security, kernel ABI, process).
+**Security-critical scopes** (cap table, audit subsystem, FAULT_ESCALATION tiers): wrong-direction delta second reviewer must be from a **different domain** than scope owner — domains = epoch sign-off domains (security, kernel ABI, process).
 
 **Compat review** (every epoch gate commit body — structured, tracked in matrix):
 
 1. Coverage metric delta since last epoch?
-2. Any `ares-abi-v*` surface past deprecation date still present?
+2. Any `clan-abi-v*` surface past deprecation date still present?
 3. New native capability making a compat shim redundant?
 
 **Threat surface snapshot** (parallel to compat review — every epoch gate commit body):
@@ -1335,12 +1335,12 @@ CI verifies: unanimous 3/3 domains for epoch 0; no withdrawn signatures; commit 
 
 | Situation | Action |
 |-----------|--------|
-| Single phase caused failure | `revert(phase-NNN)` → `fix(phase-NNN)` |
-| Multi-phase benchmark regression | Bisect epoch commits; mark epoch **stale** in matrix; block next epoch until re-certified |
+| Single scope caused failure | `revert(scope-NNN)` → `fix(scope-NNN)` |
+| Multi-scope benchmark regression | Bisect epoch commits; mark epoch **stale** in matrix; block next epoch until re-certified |
 | Soft vs hard gate | Benchmark/Kani-in-scope = **hard**; extended soak duration = soft (debt ticket + deadline) |
 | Verus escalation exhausted at N+2 | Accept risk (charter + PROOF_COVERAGE justification) or block epoch indefinitely |
-| Epoch marked stale | **Recovery budget:** ~2 phase-cycles at current pace; beyond → charter-level project decision (not indefinite technical freeze) |
-| Soak test failure | **Triage owner:** epoch lead (or named soak owner); max investigation window before epoch marked stale — distinct from phase revert path |
+| Epoch marked stale | **Recovery budget:** ~2 scope-cycles at current pace; beyond → charter-level project decision (not indefinite technical freeze) |
+| Soak test failure | **Triage owner:** epoch lead (or named soak owner); max investigation window before epoch marked stale — distinct from scope revert path |
 | Compound hard-gate failure | Define: independent revert paths per failure with owners **or** immediate epoch stale on any compound failure |
 
 **Epoch gate commit review:** structured gate body (compat review + threat snapshot) requires **non-author acknowledgment** from different-domain reviewer — distinct from sign-off quorum.
@@ -1352,7 +1352,7 @@ CI verifies: unanimous 3/3 domains for epoch 0; no withdrawn signatures; commit 
 - Git revert without image rollback (QEMU-only) → verify reproducible build still produces bootable signed image from reverted source
 - Procedure in EPOCH_FAILURE_PROCEDURE — not independent rollback silos
 
-**CAP_REGISTRY reconciliation:** registry ↔ markdown mismatch → epoch **stale**; **owner** = phase owner who introduced drift (most recent if multi-phase); reconciled in one commit before gate proceeds.
+**CAP_REGISTRY reconciliation:** registry ↔ markdown mismatch → epoch **stale**; **owner** = scope owner who introduced drift (most recent if multi-scope); reconciled in one commit before gate proceeds.
 
 **Epoch 0 scope freeze:** after **`scope-freeze` commit**, new epoch-0 docs require **charter approval** — prevents unbounded foundation growth; distinct from epoch failure recovery.
 
@@ -1360,16 +1360,16 @@ CI verifies: unanimous 3/3 domains for epoch 0; no withdrawn signatures; commit 
 
 **Epoch 0 post-gate amendment:** additive/clarification protocol semver with second reviewer OK; **breaking** change to foundational doc → full cross-doc review + affected domain re-sign-off (same as epoch gate failure severity).
 
-**Phase checklist schema:** [`phase_checklist_schema.toml`](phase_checklist_schema.toml) — required fields: threat node mapping, proof tier, harness bound, fuzz target (if applicable), compat review entry, OOM stub ref, benchmark baseline ref, `phase-owner`, `backup-reviewer`.
+**Scope checklist schema:** [`scope_checklist_schema.toml`](scope_checklist_schema.toml) — required fields: threat node mapping, proof tier, harness bound, fuzz target (if applicable), compat review entry, OOM stub ref, benchmark baseline ref, `scope-owner`, `backup-reviewer`.
 
 **Pre-epoch planning commit** (epochs 2, 4, 5 especially):
 
-- Expands all phase checklists for that epoch to epoch-1 detail level
+- Expands all scope checklists for that epoch to epoch-1 detail level
 - Lists new threat nodes, fuzz targets, wire schema entries
 - **Reviewed before implementation** — requires **non-owner reviewer** named in commit body (epochs 2, 4, 5 mandatory)
 - **Same CI as doc epochs:** link + heading checker runs on planning commit — not deferred to epoch gate
 
-**Prereq graph:** machine-readable `prereq_graph.toml` (phase/doc adjacency + **cross-epoch edges** with `blocking_epoch` + **epoch-0 authoring DAG** with `blocking_phase: epoch-0`); `project_health.py` enforces doc authoring order on staging branch.
+**Prereq graph:** machine-readable `prereq_graph.toml` (scope/doc adjacency + **cross-epoch edges** with `blocking_epoch` + **epoch-0 authoring DAG** with `blocking_scope: epoch-0`); `project_health.py` enforces doc authoring order on staging branch.
 
 **Gap registry:** [`gap_registry.toml`](gap_registry.toml) — `status`, addressing commit, implementing doc section; **`split-into` acyclic, max depth 3**; CI flags stale `open` gaps. **Bootstrap:** one-time import from canonical gap table (this plan) via script; output reviewed before scope-freeze.
 
@@ -1427,14 +1427,14 @@ flowchart TB
 
 ---
 
-## Epoch 0 — Foundation (before phase 121)
+## Epoch 0 — Foundation (before scope 121)
 
 **Documents (one commit when all green):**
 
 | Doc | Key contents |
 |-----|--------------|
 | [`KERNEL_OBJECT_MODEL.md`](docs/KERNEL_OBJECT_MODEL.md) | Bootstrap caps, send/confinement, kind semantics freeze, orphan endpoints |
-| [`phase_checklist_schema.toml`](phase_checklist_schema.toml) | Required fields per phase checklist |
+| [`scope_checklist_schema.toml`](scope_checklist_schema.toml) | Required fields per scope checklist |
 | [`CAP_REGISTRY.toml`](docs/CAP_REGISTRY.toml) | Machine-readable cap taxonomy; CI ↔ markdown sync |
 | [`CAP_TRANSFER_PROTOCOL.md`](docs/CAP_TRANSFER_PROTOCOL.md) | Transfer atomicity; TOCTOU Kani machine |
 | [`SCHEDULER_MODEL.md`](docs/SCHEDULER_MODEL.md) | Partial wait-set revocation; R-revoke-blocked; SMP cascade note |
@@ -1450,7 +1450,7 @@ flowchart TB
 | [`GLOSSARY.toml`](GLOSSARY.toml) | Canonical terms + CI consistency |
 | [`epoch_signoffs/schema.toml`](epoch_signoffs/schema.toml) + [`epoch-0.toml`](epoch_signoffs/epoch-0.toml) | Formal sign-off schema + dissent resolution |
 | [`architecture_state.toml`](architecture_state.toml) | Deferred threat trigger flags |
-| [`prereq_graph.toml`](prereq_graph.toml) | Phase/doc prereq adjacency for CI |
+| [`prereq_graph.toml`](prereq_graph.toml) | Scope/doc prereq adjacency for CI |
 | [`PROTOCOL_CHANGELOG.md`](docs/PROTOCOL_CHANGELOG.md) | Per-bump rationale for protocol docs |
 | [`DECISION_LOG.md`](docs/DECISION_LOG.md) | Alternatives considered, rationale, epoch — non-gating |
 | [`FAILURE_MODES_LEDGER.md`](docs/FAILURE_MODES_LEDGER.md) | Pathologies + OOM + cap exhaustion |
@@ -1476,14 +1476,14 @@ flowchart TB
 - `cargo audit` / `cargo deny` per SUPPLY_CHAIN_POLICY
 - Doc `status:` lint + **link/heading checker**
 - no-recursion / stack-depth policy (clippy or project lint) — per THREAT_MODEL
-- Phase-120 benchmark calibration → baseline JSON
+- Scope-120 benchmark calibration → baseline JSON
 - `project_health.py` → STATUS.md + delta + `health_timeseries.json`; Kani harness registry check
 - CAP_REGISTRY ↔ KERNEL_OBJECT_MODEL CI; threat node registry CI (zero `open`; deferred trigger check; bound-reduction re-open)
 - `epoch_checklist.toml` + `epoch_signoffs/` + `gap_registry.toml` CI; CHARTER.md present; GPG + key registry; `GLOSSARY.toml`; THREAT_NODES `depends_on`; Kani cache key + `type_params` + `feature_flags`; new-`pub` + `pub unsafe`/`extern C` soft warnings; CAP_REGISTRY staging uniqueness; `prereq_graph.toml` epoch-0 DAG; protocol semver + heading citation check; staging-branch link checker; doc dep graph in gate report
 - IPC negotiation proptest stub (graduate before 134)
 - Fault-injection feature flag stub (`chaos_caps` or similar)
 - Semantic diff on foundational doc headers
-- Expand phase-121 checklist (**OOM shed stub**, scheduler inversion policy ack)
+- Expand scope-121 checklist (**OOM shed stub**, scheduler inversion policy ack)
 
 **Commit:** single squash `docs(epoch-0): constitutional foundation and evidence tiers` + STATUS.md + `health_timeseries.json` entry `0`
 
@@ -1497,9 +1497,9 @@ flowchart TB
 
 **Prereq before 134:** IPC_VERSION_NEGOTIATION
 
-| Phase | Deliverable |
+| Scope | Deliverable |
 |------:|-------------|
-| 121 | Service loader; E-00; **MEM_BUDGET_STUB** + **CAP_QUOTA_STUB**; **OOM shed/ack stub**; audit bootstrap; `phase-owner` |
+| 121 | Service loader; E-00; **MEM_BUDGET_STUB** + **CAP_QUOTA_STUB**; **OOM shed/ack stub**; audit bootstrap; `scope-owner` |
 | — | [`COMPAT_SUNSET.md`](docs/COMPAT_SUNSET.md) + [`COMPAT_ISOLATION.md`](docs/COMPAT_ISOLATION.md) |
 | 122–126 | Brokers on interim IPC (ordering + backpressure); audit on mint; **compat-internal CI counter** starts |
 | 127 | FAULT_ESCALATION tier 2; ERROR_TAXONOMY terminal codes for restart/crash/revoke-in-flight |
@@ -1513,11 +1513,11 @@ flowchart TB
 
 ## Epoch 2 — Storage then userland
 
-**Pre-epoch planning commit (first):** expand phase checklists; virtio + userland threat nodes; fuzz target updates; **DRIVER_MODEL** + **MMIO_SAFETY_POLICY** + **storage access policy** (FsNode vs raw block).
+**Pre-epoch planning commit (first):** expand scope checklists; virtio + userland threat nodes; fuzz target updates; **DRIVER_MODEL** + **MMIO_SAFETY_POLICY** + **storage access policy** (FsNode vs raw block).
 
-**Prereqs:** ABI_ARES_RT, VIRTIO_SAFETY, BUILD_INTEGRITY (doc), DRIVER_MODEL, MMIO_SAFETY_POLICY
+**Prereqs:** ABI_CLAN_RT, VIRTIO_SAFETY, BUILD_INTEGRITY (doc), DRIVER_MODEL, MMIO_SAFETY_POLICY
 
-**Order:** Commit A virtio-blk switchover → Commit B `ares-rt` userland. Sim-block stubbed post-gate.
+**Order:** Commit A virtio-blk switchover → Commit B `clan-rt` userland. Sim-block stubbed post-gate.
 
 **Epoch 2 gate:** compat review; BUILD_INTEGRITY ratified; virtio safety host tests; STATUS.md updated.
 
@@ -1529,7 +1529,7 @@ flowchart TB
 - **134: endpoints; interim bridge removed; CI counter = 0; P-134 semantic ordering smoke**
 - 135–138: audit IPC correlation; ERROR_TAXONOMY on wire
 - 140: 1M message soak; benchmark gate; compat review
-- **Epoch 3 gate:** health trend **dashboard/visualization** deliverable from health_timeseries + phase_snapshots; transition integration tests at epoch 2→3 boundary
+- **Epoch 3 gate:** health trend **dashboard/visualization** deliverable from health_timeseries + scope_snapshots; transition integration tests at epoch 2→3 boundary
 
 ---
 
@@ -1541,14 +1541,14 @@ flowchart TB
 
 - virtio-net driver (shared virtio framework with epoch 2)
 - Compat TCP/UDP + multi-fd `select` — registered in WIRE_SCHEMA_REGISTRY + COMPAT_SUNSET metric
-- Network broker (phase 125) becomes functional
+- Network broker (scope 125) becomes functional
 - Benchmark gate socket P99; compat review; STATUS.md
 
 ---
 
 ## Epoch 5 — Scheduler, GUI, SMP (141–150)
 
-**Pre-epoch planning commit (first):** SMP loom test plan, compositor checklist, OOM phase 147 suspend semantics confirmation.
+**Pre-epoch planning commit (first):** SMP loom test plan, compositor checklist, OOM scope 147 suspend semantics confirmation.
 
 | Item | Detail |
 |------|--------|
@@ -1573,37 +1573,37 @@ flowchart TB
 
 ---
 
-## Per-phase workflow
+## Per-scope workflow
 
 ```mermaid
 flowchart LR
   EpochPlan[Pre-epoch planning commit if epoch start]
   EpochPlan --> Spec[Checklist + docs]
-  Spec --> Owner[Phase owner review]
+  Spec --> Owner[Scope owner review]
   Owner --> Threat[Threat node + proof tier + harness bound]
   Threat --> Impl[Impl]
   Impl --> Pyramid[Unit proptest Kani-scope fuzz-if-graduated]
   Pyramid --> Smoke[Smoke soak bench]
   Smoke --> Ledger[Ledger compat review]
-  Ledger --> Commit[feat phase-NNN]
+  Ledger --> Commit[feat scope-NNN]
 ```
 
 ---
 
 ## Git discipline
 
-- **One commit per phase**; epoch 0 = one commit; epoch 2 = two minimum
-- **Phase owner** only commits when pyramid green
-- **Revert:** `revert(phase-NNN)` → `fix(phase-NNN)`; re-run full pyramid
-- **Doc fixup:** `fixup(phase-NNN): docs` — same phase window; **no pyramid re-run** unless behavior changes
+- **One commit per scope**; epoch 0 = one commit; epoch 2 = two minimum
+- **Scope owner** only commits when pyramid green
+- **Revert:** `revert(scope-NNN)` → `fix(scope-NNN)`; re-run full pyramid
+- **Doc fixup:** `fixup(scope-NNN): docs` — same scope window; **no pyramid re-run** unless behavior changes
 - **Epoch stale:** per EPOCH_FAILURE_PROCEDURE.md
 
 Message format:
 
 ```text
-feat(phase-NNN): <title>
+feat(scope-NNN): <title>
 
-Smoke: scripts/phaseNN_*.py
+Smoke: scripts/gate/boot.py --gate <name>
 Proof: PROOF_COVERAGE rows <ids>
 Ledger: <rows>
 Compat-review: metric=<n> delta=<+/-m>
@@ -1616,7 +1616,7 @@ Compat-review: metric=<n> delta=<+/-m>
 | Rule | CI enforced? |
 |------|----------------|
 | Merge docs without `status:` | Yes |
-| `ipc-bridge-compat-internal` counter > 0 past phase 134 | Yes |
+| `ipc-bridge-compat-internal` counter > 0 past scope 134 | Yes |
 | CAP_REGISTRY ↔ markdown mismatch | Yes |
 | Stabilize never-stabilize interfaces | Yes (lint/export check) |
 | New CAP_REGISTRY kind without checklist docs | Yes (grep-based) |
@@ -1648,14 +1648,14 @@ Compat-review: metric=<n> delta=<+/-m>
 - Start epoch implementation without pre-epoch planning commit
 - Diverge source and signed image without reconciliation procedure
 - Merge docs without `status:` header or broken internal cross-refs
-- Ship phase 134 with connectivity-only migration test (must include P-134 ordering)
+- Ship scope 134 with connectivity-only migration test (must include P-134 ordering)
 - Refactor Kani-verified functions without vacuity check
 - Add kernel `unsafe` without UNSAFE_AUDIT compliance
 - Start epoch 1 brokers without documented priority-inversion policy
 - Treat shared memory as ambient (must be MemoryRegion caps)
 - Add ad-hoc debug introspection without cap model + threat node
 - Stabilize interfaces on **never stabilize before 1.0** list
-- Batch phases in one commit
+- Batch scopes in one commit
 - Extend compat without COMPAT_SUNSET + epoch gate compat review
 
 ---
@@ -1668,7 +1668,7 @@ Compat-review: metric=<n> delta=<+/-m>
 4. **DECISION_LOG.md** + **BUILD_INTEGRITY** CI script stub + remaining epoch 0 docs per DAG
 5. **scope-freeze** commit → 90-day clock starts; staging cross-doc review; no unresolved `[CROSS-REF — TBD]` at squash
 6. **Doc-epoch checklist all green** + domain sign-offs → squash **commit epoch 0** (gap/doc viz in gate report)
-7. Epoch 1 prereqs + Phase 121 per plan
+7. Epoch 1 prereqs + Scope 121 per plan
 
 **If 90-day budget exceeded:** triage to minimum viable Epoch 0 set; defer remainder — not project failure.
 

@@ -27,7 +27,7 @@ static RESCHEDULE_POINTS: AtomicU64 = AtomicU64::new(0);
 static DEMO_CONTEXT_TASKS_SPAWNED: AtomicBool = AtomicBool::new(false);
 static DEMO_A_COUNT: AtomicU64 = AtomicU64::new(0);
 static DEMO_B_COUNT: AtomicU64 = AtomicU64::new(0);
-// Phase 5: Independent multi-task counters for fairness testing
+// Preemption lab: independent multi-task counters for fairness validation
 static KERNEL_TASK_1_COUNT: AtomicU64 = AtomicU64::new(0);
 static KERNEL_TASK_2_COUNT: AtomicU64 = AtomicU64::new(0);
 static KERNEL_TASK_3_COUNT: AtomicU64 = AtomicU64::new(0);
@@ -53,7 +53,7 @@ static TIMER_STALL_FALLBACKS: AtomicU64 = AtomicU64::new(0);
 static IRQ_HANDOFF_QUEUED: AtomicU64 = AtomicU64::new(0);
 static IRQ_HANDOFF_CONSUMED: AtomicU64 = AtomicU64::new(0);
 static HANDOFF_PENDING: AtomicBool = AtomicBool::new(false);
-static LAST_PHASE5_FAIRNESS_LOG_TICK: AtomicU64 = AtomicU64::new(0);
+static LAST_PREEMPTION_TELEMETRY_TICK: AtomicU64 = AtomicU64::new(0);
 static MAX_PREEMPT_BACKLOG: AtomicU64 = AtomicU64::new(0);
 static MAX_ESTIMATED_LATENCY_MS: AtomicU64 = AtomicU64::new(0);
 static DEMO_CTX_A_PTR: AtomicU64 = AtomicU64::new(0);
@@ -65,8 +65,8 @@ static SCHEDULER_LOCK_CONTENTION: AtomicU64 = AtomicU64::new(0);
 const CONTEXT_LAB_MAX_STALL_TICKS: u64 = 10_000;
 const CONTEXT_LAB_TIMER_STALL_SPIN_THRESHOLD: u64 = 20_000;
 const CONTEXT_LAB_LOG_INTERVAL: u64 = 50_000;
-const PHASE5_FAIRNESS_LOG_INTERVAL_TICKS: u64 = 50;
-const PHASE5_VOLUNTARY_YIELD_INTERVAL: u64 = 2048;
+const PREEMPTION_TELEMETRY_INTERVAL_TICKS: u64 = 50;
+const PREEMPTION_VOLUNTARY_YIELD_INTERVAL: u64 = 2048;
 
 lazy_static! {
     static ref CONTEXT_SCHEDULER: Mutex<ContextScheduler> = Mutex::new(ContextScheduler::new());
@@ -631,14 +631,14 @@ fn update_atomic_max(target: &AtomicU64, value: u64) {
     }
 }
 
-fn log_phase5_fairness_if_due() {
+fn log_preemption_telemetry_if_due() {
     let now = TIMER_TICKS.load(Ordering::Relaxed);
-    let last = LAST_PHASE5_FAIRNESS_LOG_TICK.load(Ordering::Relaxed);
-    if now.saturating_sub(last) < PHASE5_FAIRNESS_LOG_INTERVAL_TICKS {
+    let last = LAST_PREEMPTION_TELEMETRY_TICK.load(Ordering::Relaxed);
+    if now.saturating_sub(last) < PREEMPTION_TELEMETRY_INTERVAL_TICKS {
         return;
     }
 
-    if LAST_PHASE5_FAIRNESS_LOG_TICK
+    if LAST_PREEMPTION_TELEMETRY_TICK
         .compare_exchange(last, now, Ordering::Relaxed, Ordering::Relaxed)
         .is_err()
     {
@@ -670,7 +670,7 @@ fn log_phase5_fairness_if_due() {
     let max_estimated_latency_ms = MAX_ESTIMATED_LATENCY_MS.load(Ordering::Relaxed);
 
     crate::serial_println!(
-        "Phase5-Fairness: T1={}, T2={}, T3={}, T4={}, score={:.3}",
+        "ClanOS-Preemption: name=fairness T1={}, T2={}, T3={}, T4={}, score={:.3}",
         counters[0],
         counters[1],
         counters[2],
@@ -679,7 +679,7 @@ fn log_phase5_fairness_if_due() {
     );
 
     crate::serial_println!(
-        "Phase5-Latency: ticks={}, quantum={}, req={}, pts={}, backlog={}, max_backlog={}, est_ms={}, max_est_ms={}",
+        "ClanOS-Preemption: name=latency ticks={}, quantum={}, req={}, pts={}, backlog={}, max_backlog={}, est_ms={}, max_est_ms={}",
         scheduler_stats.timer_ticks,
         scheduler_stats.quantum_ticks,
         scheduler_stats.reschedule_requests,
@@ -691,9 +691,9 @@ fn log_phase5_fairness_if_due() {
     );
 }
 
-fn phase5_task_checkpoint(local_count: u64) {
+fn preemption_lab_checkpoint(local_count: u64) {
     crate::task::keyboard::poll_console_commands();
-    if local_count % PHASE5_VOLUNTARY_YIELD_INTERVAL == 0 {
+    if local_count % PREEMPTION_VOLUNTARY_YIELD_INTERVAL == 0 {
         yield_now();
     } else {
         preempt_if_requested();
@@ -836,15 +836,15 @@ extern "C" fn demo_context_task_b() -> ! {
     }
 }
 
-// Phase 5: Independent kernel task entry points for fairness testing
+// Preemption lab: independent kernel task entry points
 extern "C" fn kernel_task_1() -> ! {
     let mut local_count = 0u64;
     loop {
         interrupts::enable();
         increment_kernel_task_counter(1);
         local_count += 1;
-        log_phase5_fairness_if_due();
-        phase5_task_checkpoint(local_count);
+        log_preemption_telemetry_if_due();
+        preemption_lab_checkpoint(local_count);
     }
 }
 
@@ -854,8 +854,8 @@ extern "C" fn kernel_task_2() -> ! {
         interrupts::enable();
         increment_kernel_task_counter(2);
         local_count += 1;
-        log_phase5_fairness_if_due();
-        phase5_task_checkpoint(local_count);
+        log_preemption_telemetry_if_due();
+        preemption_lab_checkpoint(local_count);
     }
 }
 
@@ -865,8 +865,8 @@ extern "C" fn kernel_task_3() -> ! {
         interrupts::enable();
         increment_kernel_task_counter(3);
         local_count += 1;
-        log_phase5_fairness_if_due();
-        phase5_task_checkpoint(local_count);
+        log_preemption_telemetry_if_due();
+        preemption_lab_checkpoint(local_count);
     }
 }
 
@@ -876,8 +876,8 @@ extern "C" fn kernel_task_4() -> ! {
         interrupts::enable();
         increment_kernel_task_counter(4);
         local_count += 1;
-        log_phase5_fairness_if_due();
-        phase5_task_checkpoint(local_count);
+        log_preemption_telemetry_if_due();
+        preemption_lab_checkpoint(local_count);
     }
 }
 
@@ -917,7 +917,7 @@ pub fn stats() -> SchedulerStats {
     }
 }
 
-// Phase 5: Public accessors for multi-task fairness testing
+// Preemption lab: public accessors for multi-task fairness metrics
 pub fn get_kernel_task_counters() -> [u64; 4] {
     [
         KERNEL_TASK_1_COUNT.load(Ordering::Relaxed),
@@ -937,8 +937,8 @@ pub fn increment_kernel_task_counter(task_id: usize) -> u64 {
     }
 }
 
-/// Clear preemption telemetry accumulated before the Phase 5 context lab.
-pub fn reset_phase5_preemption_telemetry_baseline() {
+/// Clear preemption telemetry accumulated before the context lab.
+pub fn reset_preemption_telemetry_baseline() {
     interrupts::without_interrupts(|| {
         RESCHEDULE_REQUESTS.store(0, Ordering::Relaxed);
         RESCHEDULE_POINTS.store(0, Ordering::Relaxed);
@@ -946,13 +946,13 @@ pub fn reset_phase5_preemption_telemetry_baseline() {
         MAX_ESTIMATED_LATENCY_MS.store(0, Ordering::Relaxed);
         NEED_RESCHEDULE.store(false, Ordering::Relaxed);
         IRQ_PREEMPT_PENDING.store(false, Ordering::Relaxed);
-        LAST_PHASE5_FAIRNESS_LOG_TICK.store(TIMER_TICKS.load(Ordering::Relaxed), Ordering::Relaxed);
+        LAST_PREEMPTION_TELEMETRY_TICK.store(TIMER_TICKS.load(Ordering::Relaxed), Ordering::Relaxed);
     });
 }
 
-/// Phase 5: Spawn 4 independent kernel tasks for fairness testing.
-pub fn spawn_kernel_tasks_phase5() {
-    reset_phase5_preemption_telemetry_baseline();
+/// Spawn 4 independent kernel tasks for preemption fairness lab.
+pub fn spawn_preemption_lab_tasks() {
+    reset_preemption_telemetry_baseline();
     spawn_context_task("kernel-task-1", kernel_task_1);
     spawn_context_task("kernel-task-2", kernel_task_2);
     spawn_context_task("kernel-task-3", kernel_task_3);

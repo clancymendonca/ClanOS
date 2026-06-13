@@ -1,6 +1,6 @@
-//! Phase 121 — service loader contract, resource stubs, and E-00 admission control.
+//! service loader contract, resource stubs, and E-00 admission control.
 //!
-//! See docs/phase-121-checklist.md, docs/KERNEL_OBJECT_MODEL.md (bootstrap ceremony),
+//! See docs/scope-121-checklist.md, docs/KERNEL_OBJECT_MODEL.md (bootstrap ceremony),
 //! docs/ERROR_TAXONOMY.md.
 
 use core::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
@@ -53,7 +53,7 @@ impl NativeError {
     }
 }
 
-/// MEM_BUDGET_STUB — contract before full enforcement (phase 147).
+/// MEM_BUDGET_STUB — contract before full enforcement (scope 147).
 #[derive(Debug, Clone, Copy)]
 pub struct MemBudgetStub {
     pub total_bytes: u64,
@@ -210,8 +210,8 @@ pub fn load_service_with_stubs(pid: ProcessId, mem_need: u64) -> Result<u32, Nat
     Ok(slot)
 }
 
-pub fn phase121_service_loader_smoke() -> bool {
-    let Some(pid) = process::create_process_for_smoke("phase121-svc") else {
+pub fn smoke_service_loader_init() -> bool {
+    let Some(pid) = process::create_process_for_smoke("svc-loader-smoke") else {
         return false;
     };
 

@@ -1,11 +1,11 @@
 ```yaml
-status: superseded-by: docs/specs/ABI_ARES_RT.md
+status: superseded-by: docs/specs/ABI_CLAN_RT.md
 semantics_version: 1.0.0
 ```
 
-> **Canonical:** [`docs/specs/ABI_ARES_RT.md`](specs/ABI_ARES_RT.md). This flat copy retained until migration squash reconciles any differences.
+> **Canonical:** [`docs/specs/ABI_CLAN_RT.md`](specs/ABI_CLAN_RT.md). This flat copy retained until migration squash reconciles any differences.
 
-# ares-rt ABI (Epoch 2)
+# clan-rt ABI (Epoch 2)
 
 ```yaml
 status: authoritative
@@ -26,7 +26,7 @@ Userspace runtime for native services. Forward ABI stability policy per epoch ga
 
 ## Stability
 
-**Forward policy (epoch 2 decision):** explicit **recompile required** each epoch until 1.0 (`ABI_FORWARD_POLICY` in `ares-rt`).
+**Forward policy (epoch 2 decision):** explicit **recompile required** each epoch until 1.0 (`ABI_FORWARD_POLICY` in `clan-rt`).
 
 Pre-1.0: breaking bumps allowed with compat review. Post-1.0: semver window TBD at M150.
 

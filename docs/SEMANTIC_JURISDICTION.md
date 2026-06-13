@@ -1,8 +1,8 @@
 # Semantic Jurisdiction
 
-Who may define new semantics in AresOS — **ownership boundaries**, not bureaucracy.
+Who may define new semantics in Clan OS — **ownership boundaries**, not bureaucracy.
 
-Ratified at phase **110** with [AXIOMS.md](AXIOMS.md) and [NATIVE_MODEL.md](NATIVE_MODEL.md).
+Ratified at scope **110** with [AXIOMS.md](AXIOMS.md) and [NATIVE_MODEL.md](NATIVE_MODEL.md).
 
 ---
 
@@ -20,7 +20,7 @@ Ratified at phase **110** with [AXIOMS.md](AXIOMS.md) and [NATIVE_MODEL.md](NATI
 
 ## Rules
 
-1. **New cross-cutting law** → kernel constitutional review + A10 minimization + `ares-semantics-v*` if guarantees change ([ABI_STABILITY.md](ABI_STABILITY.md)).
+1. **New cross-cutting law** → kernel constitutional review + A10 minimization + `clan-semantics-v*` if guarantees change ([ABI_STABILITY.md](ABI_STABILITY.md)).
 2. **Runtime** cannot introduce implicit amplification (A1) or ambient paths (A2).
 3. **Compat** cannot define native behavior; compat-only features must be tagged `compat-scope` in docs and checklists.
 4. **Scheduler** cannot override IPC ([ABI_IPC.md](ABI_IPC.md)) or temporal ([TEMPORAL_SEMANTICS.md](TEMPORAL_SEMANTICS.md)) guarantees; it only refines wake precedence.

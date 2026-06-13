@@ -1,4 +1,4 @@
-//! AresOS Kernel
+//! Clan OS kernel library.
 //!
 //! A hobby operating system written in Rust, exploring modern systems programming
 //! and kernel development. Focuses on performance, modular design, and system

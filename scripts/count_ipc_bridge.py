@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CI: ipc bridge retired by phase 134 — counter API must reach zero after retire."""
+"""CI: ipc bridge retired by scope 134 — counter API must reach zero after retire."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ def main() -> int:
         print("count_ipc_bridge: retire_bridge() not called from ipc_endpoints", file=sys.stderr)
         return 1
     if "ipc_bridge_compat_internal_count() == 0" not in gov:
-        print("count_ipc_bridge: phase140 bridge_zero check missing", file=sys.stderr)
+        print("count_ipc_bridge: build_endpoints bridge_zero check missing", file=sys.stderr)
         return 1
     refs = len(re.findall(r"ipc_bridge_compat_internal", ep + gov))
     print(f"count_ipc_bridge: OK (retire path present; static_refs={refs})")

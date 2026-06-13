@@ -96,7 +96,7 @@ def check_prereq_acyclic() -> list[str]:
     graph: dict[str, list[str]] = defaultdict(list)
     nodes: set[str] = set()
     for e in edges:
-        if e.get("blocking_phase") == "epoch-0" or e.get("blocking"):
+        if e.get("blocking_scope") == "epoch-0" or e.get("blocking"):
             graph[e["to"]].append(e["from"])
             nodes.add(e["from"])
             nodes.add(e["to"])
@@ -190,14 +190,14 @@ def emit_status(matrix: dict) -> str:
     threats_open = sum(1 for n in nodes if n.get("status") == "open")
     kani_count = count_kani_harnesses()
     lines = [
-        "# AresOS Project Status",
+        "# Clan OS Project Status",
         "",
         "## Snapshot (fully operational OS)",
         "",
         "- **Boot gate:** `kernel/src/boot_gate.rs` (`BOOT_GATE_VERSION = 1.0.0`)",
         "- **System gate:** `kernel/src/system_gate.rs` (`SYSTEM_GATE_VERSION = 1.0.0`)",
         "- **Desktop:** VGA 320×200, compositor, PS/2 mouse, window manager, taskbar",
-        "- **Userland:** `/bin/demo-hello`, `/bin/ares-info` (`ares-rt` `#![no_std]`)",
+        "- **Userland:** `/bin/demo-hello`, `/bin/clan-info`, `/bin/mendo`, `/bin/ring3-io-demo` (Clan OS runtime: `clan-rt` `#![no_std]`)",
         "- **Network:** virtio-net loopback + external route simulation",
         f"- gap_registry: {gaps_open} open, {gaps_addressed} addressed ({gaps_addressed + gaps_open + gaps_wontfix} total)",
         f"- threat nodes open: {threats_open}",
@@ -219,8 +219,8 @@ def emit_status(matrix: dict) -> str:
             "",
             "| Gate family | Final serial line | Host check |",
             "|-------------|-------------------|------------|",
-            "| Boot | `AresOS-BootGate: ok=true` | `scripts/gate/boot_host.py` |",
-            "| System | `AresOS-SystemGate: ok=true` | `scripts/gate/system_host.py` |",
+            "| Boot | `ClanOS-BootGate: ok=true` | `scripts/gate/boot_host.py` |",
+            "| System | `ClanOS-SystemGate: ok=true` | `scripts/gate/system_host.py` |",
             "",
             "QEMU: `scripts/gate/boot.py --gate boot`, `scripts/gate/system.py --gate system`",
             "",

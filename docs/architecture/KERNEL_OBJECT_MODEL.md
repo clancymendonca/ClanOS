@@ -9,15 +9,15 @@ authored_by: kernel
 
 Universal kernel object lifecycle, handle semantics, and per-kind state machines. Canonical location for the model formerly at `docs/KERNEL_OBJECT_MODEL.md` (flat copy superseded-by this path).
 
-**Gate G1** — phases **115+** must not introduce new handle semantics without charter revision.
+**Gate G1** — scopes **115+** must not introduce new handle semantics without charter revision.
 
-Phase **110** constitutional default: **immutable object identity + generation invalidation**.
+Scope **110** constitutional default: **immutable object identity + generation invalidation**.
 
 See: [SECURITY_MODEL.md](SECURITY_MODEL.md), [../AXIOMS.md](../AXIOMS.md), [../RIGHTS_ALGEBRA.md](../RIGHTS_ALGEBRA.md), [../SEMANTIC_SPECS.md](../SEMANTIC_SPECS.md) (R-03, E-03, T-02), [../GENERATION_COUNTER.md](../GENERATION_COUNTER.md), [../CAP_REGISTRY.toml](../CAP_REGISTRY.toml).
 
 ---
 
-## Design decision (phase 110)
+## Design decision (scope 110)
 
 **Adopted:** each kernel object has a stable `ObjectId` and a monotonic **generation** counter. Authority changes invalidate derived capabilities via generation bump — not in-place mutation of object rights.
 
@@ -104,7 +104,7 @@ Registry ground truth: [CAP_REGISTRY.toml](../CAP_REGISTRY.toml) ↔ kernel cap 
 4. **Revoke** — generation bump and/or slot invalidation per [TEMPORAL_SEMANTICS.md](../TEMPORAL_SEMANTICS.md)
 5. **Close** — drop handle slot; may not destroy object if other caps exist
 
-Phase 115 **path broker** uses compat handles only — must not add a parallel handle type.
+Scope 115 **path broker** uses compat handles only — must not add a parallel handle type.
 
 ---
 
@@ -252,9 +252,9 @@ Once a cap kind graduates the never-stabilize list (`never_stabilize_graduated.t
 
 ---
 
-## Implementation phases (historical)
+## Implementation scopes (historical)
 
-| Phase | Work |
+| Scope | Work |
 |------:|------|
 | 111 | `CapHandle` → `KernelObject` ref, single table |
 | 112–113 | Lifecycle syscalls (G2) |
@@ -287,7 +287,7 @@ Once a cap kind graduates the never-stabilize list (`never_stabilize_graduated.t
 
 - Tier B Kani: transfer atomicity, generation uniqueness, revocation window (`transfer_toctou_check.py`).
 - Tier A proptest: rights composition laws (`proof-rights`).
-- Integration: phase 121+ smokes, cap ceremony.
+- Integration: scope 121+ smokes, cap ceremony.
 
 ---
 

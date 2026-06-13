@@ -15,7 +15,7 @@ status: authoritative
 After human review of `gap_registry.toml` import:
 
 - **`gap_registry.toml`** is the canonical gap lifecycle source
-- The Cursor planning document `aresos_full_os_build_b960e4a0.plan.md` is **superseded** — see [`docs/PLAN_SUPERSESSION.md`](docs/PLAN_SUPERSESSION.md)
+- The Cursor planning document `clanos_full_os_build_b960e4a0.plan.md` is **superseded** — see [`docs/PLAN_SUPERSESSION.md`](docs/PLAN_SUPERSESSION.md)
 
 ## Gate remaining
 

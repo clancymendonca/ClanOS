@@ -1,6 +1,6 @@
 # User Syscall Return ABI
 
-Phase 19 adds a user-facing syscall register-frame ABI. It preserves the existing `invoke_raw` dispatcher and wraps it with user entry and return metadata. Phase 20 uses this controlled ABI as part of the guarded `/bin/hello` ELF MVP.
+Scope 19 adds a user-facing syscall register-frame ABI. It preserves the existing `invoke_raw` dispatcher and wraps it with user entry and return metadata. Scope 20 uses this controlled ABI as part of the guarded `/bin/hello` ELF MVP.
 
 ## ABI Records
 
@@ -40,13 +40,13 @@ See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 
 ## Safety Boundary
 
-Phase 19 validates syscall entry/return metadata. It does not yet execute CPU `syscall`/`sysret` instructions or run arbitrary ELF syscall instructions. Phase 20 runs the seeded hello path through the guarded pipeline only.
+Scope 19 validates syscall entry/return metadata. It does not yet execute CPU `syscall`/`sysret` instructions or run arbitrary ELF syscall instructions. Scope 20 runs the seeded hello path through the guarded pipeline only.
 
-## Hardware Syscall Table (Phases 25–46)
+## Hardware Syscall Table (Scopes 25–46)
 
-Phase 25 enables real `syscall`/`sysret`. Phase 35 registers an allowlist in `user_syscall_hw::ALLOWED_HW_SYSCALLS`. Later phases add:
+Scope 25 enables real `syscall`/`sysret`. Scope 35 registers an allowlist in `user_syscall_hw::ALLOWED_HW_SYSCALLS`. Later scopes add:
 
-| ID | Name | Phase |
+| ID | Name | Scope |
 |---:|------|-------|
 | 1 | `GetTickCount` | 25 |
 | 60 | `UserCopyProbe` | 26 |
