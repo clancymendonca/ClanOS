@@ -61,7 +61,7 @@ pub fn integrity_gate() -> bool {
 pub fn scheduling_gate() -> bool {
     integrity_gate()
         && crate::service_scheduler::epoch8_scheduling_graduated()
-        && crate::governance::ARE_SEMANTICS_V1
+        && crate::governance::CLAN_SEMANTICS_V1
 }
 
 fn sdk_path_smoke() -> bool {

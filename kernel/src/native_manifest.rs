@@ -1,4 +1,4 @@
-//! `ares-native-v1` manifest validation (scopes 128–129, G4).
+//! `clan-native-v1` manifest validation (scopes 128–129, G4).
 
 use crate::kernel_object::Rights;
 

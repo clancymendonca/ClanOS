@@ -9,7 +9,7 @@ static BOOT_VERIFIED: AtomicBool = AtomicBool::new(false);
 static REPRO_MATCHES: AtomicU64 = AtomicU64::new(0);
 static SIGNED_USER_ELF_VERIFIED: AtomicU64 = AtomicU64::new(0);
 
-pub const KERNEL_IMAGE_TAG: &[u8] = b"aresos-kernel-epoch3";
+pub const KERNEL_IMAGE_TAG: &[u8] = b"clanos-kernel-epoch3";
 
 pub fn system_image_epoch() -> u64 {
     IMAGE_EPOCH.load(Ordering::Relaxed)
@@ -49,8 +49,8 @@ pub fn verify_reproducible_build() -> bool {
 
 /// : rollback smoke — prior epoch digest still verifiable.
 pub fn verify_rollback_anchor() -> bool {
-    let anchor = image_digest::sha256_hex(b"aresos-epoch-2-anchor");
-    image_digest::verify_digest_hex(b"aresos-epoch-2-anchor", &anchor)
+    let anchor = image_digest::sha256_hex(b"clanos-epoch-2-anchor");
+    image_digest::verify_digest_hex(b"clanos-epoch-2-anchor", &anchor)
 }
 
 pub fn smoke_image_identity() -> bool {
@@ -67,7 +67,7 @@ pub fn smoke_rollback() -> bool {
 
 /// signed user ELF manifest corpus (BUILD_INTEGRITY production path).
 pub fn verify_signed_user_elf_corpus() -> bool {
-    let corpus = b"ares-rt demo:hello";
+    let corpus = b"clan-rt demo:hello";
     let digest = image_digest::sha256_hex(corpus);
     let manifest = alloc::format!("digest=sha256:{digest}\ntrust=system\n");
     let expected = image_digest::parse_manifest_digest(&manifest).unwrap_or("");

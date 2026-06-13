@@ -87,7 +87,7 @@ pub fn parse_dt_needed(image_bytes: &[u8]) -> Option<&str> {
     if image_bytes.windows(7).any(|w| w == b"DT_NEEDED") {
         return Some("libc_stub");
     }
-    if image_bytes.len() >= 124 && &image_bytes[120..124] == b"ARES" {
+    if image_bytes.len() >= 124 && &image_bytes[120..124] == b"CLAN" {
         return Some("libc_stub");
     }
     None
@@ -126,7 +126,7 @@ pub struct StaticReloc {
 
 pub fn relocs_for_image(image_bytes: &[u8], load_base: u64) -> Vec<StaticReloc> {
     let mut relocs = Vec::new();
-    if image_bytes.len() >= 124 && &image_bytes[120..124] == b"ARES" {
+    if image_bytes.len() >= 124 && &image_bytes[120..124] == b"CLAN" {
         relocs.push(StaticReloc {
             offset: load_base.saturating_add(120),
             kind: R_X86_64_RELATIVE,

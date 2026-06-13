@@ -2,7 +2,7 @@
 
 /// Layer 1: kernel TCB
 pub const LAYER_KERNEL: bool = true;
-/// Layer 2: ares-rt runtime
+/// Layer 2: clan-rt runtime
 pub const LAYER_RUNTIME: bool = true;
 /// Layer 3: native services
 pub const LAYER_SERVICES: bool = true;
