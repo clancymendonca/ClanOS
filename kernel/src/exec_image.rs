@@ -1,4 +1,4 @@
-//! Phase 11 executable image parser and validation model.
+//! executable image parser and validation model.
 
 use alloc::{
     string::{String, ToString},
@@ -271,7 +271,7 @@ mod tests {
 
     #[test_case]
     fn valid_minimal_elf64_image_parses() {
-        let bytes = crate::storage::phase11_sample_elf_image();
+        let bytes = crate::storage::sample_elf_fixture_image();
         let image = parse_elf64_image(
             "hello",
             "/bin/hello.elf",

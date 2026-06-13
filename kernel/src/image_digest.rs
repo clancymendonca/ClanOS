@@ -1,4 +1,4 @@
-//! SHA-256 manifest digest verification (Phase 58).
+//! SHA-256 manifest digest verification .
 
 use core::sync::atomic::{AtomicU64, Ordering};
 

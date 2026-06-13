@@ -1,7 +1,7 @@
 [
   {
     "epoch": 0,
-    "phase": "epoch-0-staging",
+    "gate_label": "epoch-0-staging",
     "timestamp": "2026-06-11T00:00:00Z",
     "scope_freeze_commit": "5961eb7",
     "gap_registry_open": 345,
@@ -14,7 +14,7 @@
   },
   {
     "epoch": 0,
-    "phase": "epoch-0-gate",
+    "gate_label": "epoch-0-gate",
     "timestamp": "2026-06-11T12:00:00Z",
     "scope_freeze_commit": "5961eb7",
     "solo_maintainer": true,
@@ -27,36 +27,36 @@
   },
   {
     "epoch": 1,
-    "phase": "epoch-1-gate",
+    "gate_label": "epoch-1-gate",
     "timestamp": "2026-06-11T14:00:00Z",
     "gate_commit": "044d4ef",
     "gap_registry_open": 330,
     "threat_nodes_open": 11,
     "ipc_bridge_compat_internal": "active",
-    "notes": "Phases 121–130 brokers + interim IPC bridge."
+    "notes": "Scopes 121–130 brokers + interim IPC bridge."
   },
   {
     "epoch": 2,
-    "phase": "epoch-2-gate",
+    "gate_label": "epoch-2-gate",
     "timestamp": "2026-06-11T16:00:00Z",
     "gap_registry_open": 330,
     "threat_nodes_open": 11,
     "virtio_blk_stub": true,
-    "ares_rt_host_demo": true,
+    "clan_rt_host_demo": true,
     "notes": "virtio-blk then userland; BUILD_INTEGRITY manifest + install_userland.py."
   },
   {
     "epoch": 3,
-    "phase": "epoch-3-gate",
+    "gate_label": "epoch-3-gate",
     "timestamp": "2026-06-11T17:00:00Z",
     "gap_registry_open": 330,
     "threat_nodes_open": 11,
     "ipc_bridge_compat_internal": 0,
-    "notes": "Phases 131–140: signed image stub, native endpoints, audit wire."
+    "notes": "Scopes 131–140: signed image stub, native endpoints, audit wire."
   },
   {
     "epoch": 4,
-    "phase": "epoch-4-gate",
+    "gate_label": "epoch-4-gate",
     "timestamp": "2026-06-11T17:30:00Z",
     "gap_registry_open": 330,
     "threat_nodes_open": 11,
@@ -65,7 +65,7 @@
   },
   {
     "epoch": 5,
-    "phase": "epoch-5-gate",
+    "gate_label": "epoch-5-gate",
     "timestamp": "2026-06-11T17:45:00Z",
     "gap_registry_open": 330,
     "threat_nodes_open": 11,
@@ -74,20 +74,20 @@
   },
   {
     "epoch": 6,
-    "phase": "milestone-150",
+    "gate_label": "milestone-150",
     "timestamp": "2026-06-11T18:00:00Z",
     "gap_registry_open": 330,
     "threat_nodes_open": 11,
     "ipc_bridge_compat_internal": 0,
     "boot_smokes": [
-      "AresOS-BootGate: ok=true",
-      "AresOS-SystemGate: ok=true"
+      "ClanOS-BootGate: ok=true",
+      "ClanOS-SystemGate: ok=true"
     ],
     "notes": "Four-layer boundary review; QEMU config v1; plan superseded by gap_registry + CHARTER."
   },
   {
     "epoch": 0,
-    "phase": "plan-complete",
+    "gate_label": "plan-complete",
     "timestamp": "2026-06-11T20:00:00Z",
     "gap_registry_open": 321,
     "gap_registry_addressed": 24,
@@ -98,7 +98,7 @@
   },
   {
     "epoch": 6,
-    "phase": "plan-full-close",
+    "gate_label": "plan-full-close",
     "timestamp": "2026-06-11T21:00:00Z",
     "gap_registry_open": 0,
     "gap_registry_addressed": 318,
@@ -110,26 +110,26 @@
   },
   {
     "epoch": 7,
-    "phase": "epoch-7-planning",
+    "gate_label": "epoch-7-planning",
     "timestamp": "2026-06-11T22:00:00Z",
     "gap_registry_total": 350,
     "gap_registry_open": 27,
     "gap_registry_addressed": 323,
-    "phase_checklists_151_350": 200,
+    "scope_checklists_151_350": 200,
     "loom_harness_graduated": 2,
     "epoch_signoffs": "0-14",
     "notes": "ROADMAP_151_350 ratified; gaps 346-350; post-150 wontfix reopened with epoch assignments; milestone smokes 175-350 wired."
   },
   {
     "epoch": 14,
-    "phase": "milestone-350",
+    "gate_label": "milestone-350",
     "timestamp": "2026-06-11T23:30:00Z",
-    "completed_phase": 350,
+    "completed_scope": 350,
     "gap_registry_open": 0,
     "gap_registry_addressed": 350,
     "threat_nodes_open": 0,
     "covenant_ci": true,
     "epoch_graduation": "7-14",
-    "notes": "Mechanical phases 151-350 complete; epochs 7-14 graduated; M350 release scorecard."
+    "notes": "Mechanical scopes 151-350 complete; epochs 7-14 graduated; M350 release scorecard."
   }
 ]

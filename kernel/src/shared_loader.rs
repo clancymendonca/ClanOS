@@ -1,4 +1,4 @@
-//! Shared library mapping for DT_NEEDED dependencies (Phases 41, 56).
+//! Shared library mapping for DT_NEEDED dependencies.
 
 use alloc::{format, string::String, vec};
 use core::sync::atomic::{AtomicU64, Ordering};
@@ -59,7 +59,7 @@ fn map_shared_at(backed: &mut FrameBackedImage, base: u64, path: &str) -> Result
         .ok()
         .flatten()
         .map(|s| s.into_bytes())
-        .unwrap_or_else(|| crate::storage::phase11_sample_elf_image().into_bytes());
+        .unwrap_or_else(|| crate::storage::sample_elf_fixture_image().into_bytes());
 
     let frame = frame_ownership::allocate_frame(FrameOwner::Image).map_err(|_| {
         SHARED_REJECTED.fetch_add(1, Ordering::Relaxed);
@@ -125,8 +125,8 @@ pub fn attach_shared_library(
     Ok(mapped)
 }
 
-pub fn phase41_smoke() -> bool {
-    let sample = crate::storage::phase11_sample_elf_image();
+pub fn smoke_shared_lib_load() -> bool {
+    let sample = crate::storage::sample_elf_fixture_image();
     let backed = crate::task::program_loader::back_mapped_program_with_relocs(
         crate::security::Credentials::shell_user(),
         "hello",
@@ -141,8 +141,8 @@ pub fn phase41_smoke() -> bool {
     pages > 0 && loaded > 0 && mapped > 0
 }
 
-pub fn phase56_smoke() -> bool {
-    let sample = crate::storage::phase11_sample_elf_image();
+pub fn smoke_multi_shlib() -> bool {
+    let sample = crate::storage::sample_elf_fixture_image();
     let mut bytes = sample.into_bytes();
     bytes.extend_from_slice(b"libaux");
     let backed = crate::task::program_loader::back_mapped_program_with_relocs(

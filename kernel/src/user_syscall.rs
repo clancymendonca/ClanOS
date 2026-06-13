@@ -1,4 +1,4 @@
-//! Phase 19 user syscall entry/return ABI descriptors.
+//! user syscall entry/return ABI descriptors.
 
 use core::sync::atomic::{AtomicU64, Ordering};
 

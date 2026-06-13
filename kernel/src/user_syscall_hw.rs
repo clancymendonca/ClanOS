@@ -1,4 +1,4 @@
-//! CPU syscall/sysret user entry (Phase 25+).
+//! CPU syscall/sysret user entry .
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -194,7 +194,7 @@ pub fn run_hw_syscall_probe_rdi(
     }
 }
 
-pub fn phase81_hw_sysret_smoke() -> bool {
+pub fn smoke_hw_sysret_smoke() -> bool {
     init_syscall_msrs();
     let (_, _, ready) = dispatch_table_status();
     if !ready {
@@ -241,7 +241,7 @@ pub fn phase81_hw_sysret_smoke() -> bool {
     }
 }
 
-pub fn phase71_smoke() -> bool {
+pub fn smoke_sysret_probe() -> bool {
     init_syscall_msrs();
     let Some(built) = crate::task::program_loader::build_hw_page_table_program(
         crate::security::Credentials::shell_user(),

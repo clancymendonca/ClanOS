@@ -1,11 +1,11 @@
-# AresOS Project Charter
+# Clan OS Project Charter
 
 ```yaml
 status: authoritative
 semantics_version: 1.0.0
 ```
 
-This document defines **charter-level** authority for AresOS governance. Process rules in epoch checklists, phase checklists, and `EPOCH_FAILURE_PROCEDURE.md` are subordinate to this charter unless explicitly elevated here.
+This document defines **charter-level** authority for Clan OS governance. Process rules in epoch checklists, scope checklists, and `EPOCH_FAILURE_PROCEDURE.md` are subordinate to this charter unless explicitly elevated here.
 
 Referenced by: scope-freeze exceptions, Verus N+2 escalation, emergency dependency bumps, C-ABI FFI gates, compound epoch failures, dissent override, emergency stabilization.
 
@@ -44,8 +44,8 @@ Sign-offs are recorded in `epoch_signoffs/epoch-N.toml` per `epoch_signoffs/sche
 | Level | Examples | Change mechanism |
 |-------|----------|------------------|
 | **Charter** | This document, scope-freeze exceptions, emergency stabilization, Verus N+2 acceptance, C-ABI FFI approval | Quorum + GPG-signed gate commit |
-| **Process** | Phase checklist fields, benchmark thresholds, reviewer currency cadence, compat review checklist | Epoch gate or additive doc semver |
-| **Implementation** | Phase commits, syscall behavior, driver code | Phase owner commit + pyramid gates |
+| **Process** | Scope checklist fields, benchmark thresholds, reviewer currency cadence, compat review checklist | Epoch gate or additive doc semver |
+| **Implementation** | Scope commits, syscall behavior, driver code | Scope owner commit + pyramid gates |
 
 When a process rule says "charter approval," it means quorum per this document.
 
@@ -95,7 +95,7 @@ This is an operational allowance, not a permanent reduction in review rigor.
 
 ## Emergency stabilization procedure
 
-Interfaces on the **never-stabilize before 1.0** list (`DESIGN_NORTH_STAR.md`) cannot receive stability guarantees during phases 121–150.
+Interfaces on the **never-stabilize before 1.0** list (`DESIGN_NORTH_STAR.md`) cannot receive stability guarantees during scopes 121–150.
 
 If an **external dependency or integration partner** requires a stability commitment on such an interface before milestone 1.0:
 

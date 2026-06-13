@@ -1,5 +1,5 @@
-# AresOS QEMU x86_64 config — epoch 6 versioned script (ARCHITECTURE_TARGETS.md)
-# Changelog: v1 — virtio-blk-pci + smp=2 for phases 141+
+# Clan OS QEMU x86_64 config — epoch 6 versioned script (ARCHITECTURE_TARGETS.md)
+# Changelog: v1 — virtio-blk-pci + smp=2 for scopes 141+
 
 param(
     [string]$KernelImage = "target/x86_64-unknown-none/debug/bootimage-kernel.bin",

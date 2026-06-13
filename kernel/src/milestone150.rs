@@ -13,7 +13,7 @@ pub fn four_layer_boundary_review() -> bool {
     LAYER_KERNEL && LAYER_RUNTIME && LAYER_SERVICES && LAYER_COMPAT
 }
 
-pub fn phase150_milestone_smoke() -> bool {
+pub fn smoke_milestone_boundary() -> bool {
     four_layer_boundary_review()
         && crate::build_integrity::boot_verified()
         && crate::ipc_endpoints::endpoint_send_count() > 0

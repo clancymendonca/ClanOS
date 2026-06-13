@@ -1,1 +1,1 @@
-"""Unified AresOS validation gate tooling (boot + system)."""
+"""Unified Clan OS validation gate tooling (boot + system)."""

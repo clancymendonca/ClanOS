@@ -1,4 +1,4 @@
-//! Real Ring 3 entry via iretq and cooperative trap return (Phases 23-24).
+//! Real Ring 3 entry via iretq and cooperative trap return.
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -107,7 +107,7 @@ pub fn handle_user_fault(stack_frame: &mut InterruptStackFrame, from_vector_80: 
     true
 }
 
-/// After a real `syscall` in the Phase 81 QEMU probe, return to the kernel resume site without `sysret`.
+/// After a real `syscall` in the QEMU probe, return to the kernel resume site without `sysret`.
 pub fn return_from_hw_syscall_probe() -> ! {
     crate::user_syscall_hw::record_hw_sysret_real();
     USER_TRAP_COUNT.fetch_add(1, Ordering::Relaxed);
@@ -142,7 +142,7 @@ fn resume_kernel_frame(stack_frame: &mut InterruptStackFrame) {
     }
 }
 
-/// Enter Ring 3 at `entry` using `ud2` as the first instruction (Phase 23).
+/// Enter Ring 3 at `entry` using `ud2` as the first instruction .
 pub fn enter_user_ud2_trap(
     hw: &HwPageTableHandle,
     entry: &UserEntryFrame,
@@ -153,7 +153,7 @@ pub fn enter_user_ud2_trap(
     enter_user_common(hw, entry, selectors, false)
 }
 
-/// Enter Ring 3 and run until vector 0x80 trap (Phase 24).
+/// Enter Ring 3 and run until vector 0x80 trap .
 pub fn enter_user_int80_trap(
     hw: &HwPageTableHandle,
     entry: &UserEntryFrame,
@@ -163,7 +163,7 @@ pub fn enter_user_int80_trap(
     enter_user_common(hw, entry, selectors, false)
 }
 
-/// Run the syscall probe stub under the user page table (Phase 25+).
+/// Run the syscall probe stub under the user page table .
 pub fn enter_user_syscall_hw(
     hw: &HwPageTableHandle,
     entry: &UserEntryFrame,

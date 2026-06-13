@@ -10,7 +10,7 @@ After `gap_registry.toml` import is reviewed and **scope-freeze** is recorded, t
 
 | Superseded | Living reference |
 |------------|------------------|
-| `aresos_full_os_build_b960e4a0.plan.md` | `gap_registry.toml` + `CHARTER.md` + `DESIGN_NORTH_STAR.md` + individual spec docs |
+| `clanos_full_os_build_b960e4a0.plan.md` | `gap_registry.toml` + `CHARTER.md` + `DESIGN_NORTH_STAR.md` + individual spec docs |
 
 Do not maintain parallel sources of truth. New gaps are tracked only in `gap_registry.toml`.
 

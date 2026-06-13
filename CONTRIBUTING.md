@@ -1,4 +1,4 @@
-# Contributing to AresOS
+# Contributing to Clan OS
 
 ## Epoch 0 process
 
@@ -7,10 +7,10 @@
 3. Unanimous 3/3 domain sign-offs in `epoch_signoffs/epoch-0.toml`
 4. GPG-signed gate commit per `SECURITY.md`
 
-## Phase commits
+## Scope commits
 
-- One commit per implementation phase: `feat(phase-NNN): ...`
-- Phase owner only commits their phase (`phase_checklist_schema.toml`)
+- One commit per implementation scope: `feat(scope-NNN): ...`
+- Scope owner only commits their scope (`scope_checklist_schema.toml`)
 
 ## Cross-references
 

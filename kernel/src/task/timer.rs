@@ -203,7 +203,7 @@ pub async fn log_scheduler_groundwork() {
     }
 }
 
-/// Phase 5: Periodically monitor preemptive scheduling fairness.
+/// Periodically monitor preemptive scheduling fairness (async executor path).
 pub async fn log_preemption_fairness() {
     loop {
         sleep(Duration::from_secs(2)).await;
@@ -222,7 +222,7 @@ pub async fn log_preemption_fairness() {
         };
 
         crate::serial_println!(
-            "Phase5-Fairness: T1={}, T2={}, T3={}, T4={}, score={:.3}",
+            "ClanOS-Preemption: name=fairness T1={}, T2={}, T3={}, T4={}, score={:.3}",
             kernel_tasks[0],
             kernel_tasks[1],
             kernel_tasks[2],

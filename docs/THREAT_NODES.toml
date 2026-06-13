@@ -57,7 +57,7 @@ status = "closed"
 tier = "A"
 goals = ["denial_of_service"]
 surfaces = ["cap_table"]
-closing_commit = "service_loader CAP_QUOTA_STUB + phase121 smoke"
+closing_commit = "service_loader CAP_QUOTA_STUB + scope121 smoke"
 depends_on = []
 summary = "Cap table quota exhaustion as DoS"
 

@@ -1,4 +1,4 @@
-//! Process-level performance metrics and observability for Phase 5.
+//! Process-level performance metrics and observability.
 //!
 //! Tracks per-process scheduler events, CPU time, and fairness metrics
 //! for real-time performance analysis.

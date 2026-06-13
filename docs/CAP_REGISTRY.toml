@@ -72,4 +72,4 @@ namespace = "compat"
 object_kind = "FsNode"
 operations = ["create", "close"]
 semantic_relation = "disjoint"
-notes = "Phase 115 compat only — not parallel handle type"
+notes = "Scope 115 compat only — not parallel handle type"

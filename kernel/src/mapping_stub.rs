@@ -1,4 +1,4 @@
-//! Phase 13 deterministic mapping stubs for executable load plans.
+//! deterministic mapping stubs for executable load plans.
 
 use alloc::{string::String, vec::Vec};
 use lazy_static::lazy_static;
@@ -315,7 +315,7 @@ mod tests {
         let image = crate::exec_image::parse_elf64_image(
             "hello",
             "/bin/hello.elf",
-            crate::storage::phase11_sample_elf_image().as_bytes(),
+            crate::storage::sample_elf_fixture_image().as_bytes(),
             crate::task::program_loader::ProgramTrust::User,
             crate::security::Credentials::shell_user().user,
         )

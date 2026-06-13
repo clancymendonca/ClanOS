@@ -57,7 +57,7 @@ def doc_paths_from_fix(fix: str) -> list[str]:
 
 
 def emit_gaps(gaps: list[dict]) -> str:
-    header = '''# AresOS gap registry — canonical lifecycle tracking
+    header = '''# Clan OS gap registry — canonical lifecycle tracking
 # Updated by scripts/mark_epoch0_addressed.py
 
 [schema]

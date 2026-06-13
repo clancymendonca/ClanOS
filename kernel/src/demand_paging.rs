@@ -1,4 +1,4 @@
-//! Demand-zero page faults for user stack growth (Phase 38).
+//! Demand-zero page faults for user stack growth .
 
 use core::sync::atomic::{AtomicU64, Ordering};
 use x86_64::structures::idt::{InterruptStackFrame, PageFaultErrorCode};
@@ -128,11 +128,11 @@ pub fn try_map_file_page(cr3_phys: u64, fault_addr: u64) -> bool {
     handle_file_backed_fault(cr3_phys, fault_addr)
 }
 
-pub fn phase47_smoke(cr3_phys: u64) -> bool {
+pub fn smoke_file_demand_fault(cr3_phys: u64) -> bool {
     try_map_file_page(cr3_phys, FILE_DEMAND_BASE)
 }
 
-pub fn phase38_smoke(cr3_phys: u64) -> bool {
+pub fn smoke_demand_zero(cr3_phys: u64) -> bool {
     let before = DEMAND_MAPPED.load(Ordering::Relaxed);
     if crate::user_paging::map_demand_zero_page(cr3_phys, USER_GROW_BASE).is_ok() {
         DEMAND_MAPPED.fetch_add(1, Ordering::Relaxed);

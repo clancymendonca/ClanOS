@@ -1,6 +1,6 @@
-# Scheduler Design (Phase 5)
+# Scheduler Design (Scope 5)
 
-AresOS Phase 5 uses a preemptive, round-robin context scheduler for kernel tasks.
+Clan OS Scope 5 uses a preemptive, round-robin context scheduler for kernel tasks.
 
 ## Core Policy
 
@@ -37,7 +37,7 @@ A score close to `1.0` indicates balanced scheduling.
 
 ## Observability
 
-Phase 5 observability components:
+Scope 5 observability components:
 
 - Global counters:
   - process creations / terminations
@@ -63,7 +63,7 @@ Main public APIs in `task::scheduler`:
 - `preempt_if_requested()`
 - `preempt_if_irq_pending()`
 - `spawn_context_task(name, entry)`
-- `spawn_kernel_tasks_phase5()`
+- `spawn_preemption_lab_tasks()`
 - `stats()` and `context_stats()`
 - `get_task_metrics(id)` and `get_all_task_metrics()`
 - `scheduler_lock_contention()`
@@ -95,12 +95,12 @@ Current enforced budgets in matrix mode:
 
 - fairness score `<= 1.10`
 - max estimated preemption latency `<= 300ms` (matrix default)
-- phase-6 runtime smoke line must report all true flags
+- scope-6 runtime smoke line must report all true flags
 
-## Scheduler CR3 (Phase 31)
+## Scheduler CR3 (Scope 31)
 
 Preemptive context switch applies the next runnable process user CR3 via `apply_scheduler_cr3_for_next`. Process records store `cr3_phys` when hardware page tables are built.
 
-## SMP (Phase 49)
+## SMP (Scope 49)
 
 `smp::init()` records CPU and parked AP counts and provides TLB flush hooks. Scheduling still runs on the bootstrap processor only. See [SMP.md](SMP.md).

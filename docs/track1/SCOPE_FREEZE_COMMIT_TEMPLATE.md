@@ -22,7 +22,7 @@ Resolved open questions:
 
   1. Batch 5 inventory: 31 [[docs]] entries (see config/track1_scope_freeze.toml).
      RA moved to Batch 2 per prereq_graph PROOF_COVERAGE → RIGHTS_ALGEBRA edge.
-     Excluded: phase-*.md, ROADMAP_*.md, RELEASE_SCORECARD_*.md, epoch graduation docs,
+     Excluded: scope-*.md, ROADMAP_*.md, RELEASE_SCORECARD_*.md, epoch graduation docs,
      PLAN_SUPERSESSION.md (archived/superseded), docs/architecture/SECURITY_MODEL.md (already canonical).
 
   2. THREAT_NODES.toml (TN): canonical location is docs/THREAT_NODES.toml at M400 — NOT config/.
@@ -77,7 +77,7 @@ Batch 5 (blocks on Batch 4; 31 entries — prereq_graph.toml order):
     WSR  WIRE_SCHEMA_REGISTRY    → docs/specs/
     IVN  IPC_VERSION_NEGOTIATION → docs/specs/
     ANS  ABI_NATIVE_SYSCALL      → docs/specs/
-    AAR  ABI_ARES_RT             → docs/specs/
+    AAR  ABI_CLAN_RT             → docs/specs/
     ACP  ABI_COMPOSITOR_IPC      → docs/specs/
     PCH  PROTOCOL_CHANGELOG       → docs/specs/
 
@@ -109,7 +109,7 @@ Semantic diff baseline:
 
 Exclusions (charter-approved deferrals):
   - No workspace restructure (servers/ extraction)
-  - No ares-rt no_std fix (tracked: ares-rt-001)
+  - No clan-rt no_std fix (tracked: clan-rt-001)
   - No new docs added to canonical layers beyond [[docs]] manifest
   - No physical THREAT_NODES.toml or CAP_REGISTRY.toml move to config/
   - docs/architecture/SECURITY_MODEL.md already canonical — reference update only at gate

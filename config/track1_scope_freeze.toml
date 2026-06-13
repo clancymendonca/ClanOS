@@ -21,11 +21,11 @@ resolution_required_before_gate = true
 
 [exclusions]
 workspace_restructure = "deferred — no servers/ extraction during this epoch"
-ares_rt_no_std = "deferred — tracked in DECISION_LOG ares-rt-001; architecture_state.toml has_no_std_enforcement=false"
+clan_rt_no_std = "deferred — tracked in DECISION_LOG clan-rt-001; architecture_state.toml has_no_std_enforcement=false"
 new_architecture_docs = "any doc not in [[docs]] list requires charter approval to add"
 subdirectory_policy = "track1_creates_specs_process_proofs — specs→docs/specs/, process→docs/process/, proofs→docs/proofs/, architecture→docs/architecture/; defers second migration"
 threat_nodes_physical_move = "deferred — docs/THREAT_NODES.toml remains canonical at flat path; config/README.md mapping only"
-phase_checklists = "docs/phase-*.md — working documents, not migrated"
+scope_checklists = "docs/scope-*-checklist.md — working documents, not migrated"
 roadmaps = "docs/ROADMAP_*.md — working documents, not migrated"
 release_scorecards = "docs/RELEASE_SCORECARD_*.md — milestone artifacts, not migrated"
 plan_supersession = "docs/PLAN_SUPERSESSION.md — archived; superseded-by gap_registry.toml; no migration"
@@ -287,8 +287,8 @@ domain_reviewer = "kernel_abi"
 
 [[docs]]
 id = "AAR"
-flat_src = "docs/ABI_ARES_RT.md"
-canonical_dst = "docs/specs/ABI_ARES_RT.md"
+flat_src = "docs/ABI_CLAN_RT.md"
+canonical_dst = "docs/specs/ABI_CLAN_RT.md"
 batch = 5
 blocking = ["ANS", "ET", "PC", "KS"]
 status = "gated"

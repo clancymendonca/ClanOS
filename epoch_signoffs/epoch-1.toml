@@ -5,7 +5,7 @@ epoch = 1
 gate_commit = "044d4ef"
 gpg_signed = false
 solo_maintainer = true
-mv_team_justification = "Solo maintainer; phases 121–130 delivered with platform brokers and interim IPC per STATUS.md."
+mv_team_justification = "Solo maintainer; scopes 121–130 delivered with platform brokers and interim IPC per STATUS.md."
 
 [[signoffs]]
 reviewer_id = "clancy"
@@ -18,7 +18,7 @@ multi_domain_roles = ["kernel", "evidence", "process"]
 [[signoffs]]
 reviewer_id = "clancy"
 domain = "evidence"
-scope = "phase121_service_loader_check, phase130_platform_check, interim IPC smoke"
+scope = "scope121_service_loader_check, scope130_platform_check, interim IPC smoke"
 timestamp = "2026-06-11T14:00:00Z"
 epoch = 1
 multi_domain_roles = ["kernel", "evidence", "process"]

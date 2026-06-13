@@ -1,4 +1,4 @@
-# AresOS Process and Governance Docs
+# Clan OS Process and Governance Docs
 
 Canonical process/policy docs migrated from flat `docs/` during Track 1.
 

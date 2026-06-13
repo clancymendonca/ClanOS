@@ -7,14 +7,14 @@ denominator = 3
 [[scenarios]]
 id = "compat-path-probe"
 description = "Compat process path probe allowed; native blocked"
-kernel_smoke = "phase117_namespace_smoke"
+kernel_smoke = "smoke_namespace_smoke"
 
 [[scenarios]]
 id = "compat-socket-tcp"
 description = "TCP compat socket counter smoke"
-kernel_smoke = "phase402_compat_socket_smoke"
+kernel_smoke = "smoke_compat_socket"
 
 [[scenarios]]
 id = "native-cap-transfer"
 description = "Native cap transfer move consumes sender slot"
-kernel_smoke = "phase112_cap_lifecycle_smoke"
+kernel_smoke = "smoke_cap_lifecycle_smoke"

@@ -1,6 +1,6 @@
 //! VGA mode 13h linear framebuffer (320×200, 256 colors @ 0xA0000).
 //!
-//! Phases 351–355: pixel path, double buffer, expanded font.
+//! Pixel path, double buffer, and expanded font.
 
 use core::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use lazy_static::lazy_static;
@@ -373,21 +373,21 @@ pub fn draw_desktop_shell() {
     render_desktop_frame();
 }
 
-pub fn phase351_framebuffer_smoke() -> bool {
+pub fn smoke_framebuffer_smoke() -> bool {
     init_mode_13h() && mode_active() && {
         draw_desktop_shell();
         flush_count() >= 1
     }
 }
 
-pub fn phase353_double_buffer_smoke() -> bool {
+pub fn smoke_double_buffer() -> bool {
     init_mode_13h() && {
         render_desktop_frame();
         flush_count() >= 1
     }
 }
 
-pub fn phase355_font_smoke() -> bool {
+pub fn smoke_font() -> bool {
     init_mode_13h() && {
         back_buffer_mut(|buf| {
             draw_text_buf(buf, 10, 30, "AREOS DESKTOP", COLOR_TEXT);

@@ -1,6 +1,6 @@
 # Mapping Stubs
 
-Phase 13 turns Phase 12 load plans into deterministic frame-backed mapping stubs. These records model the frames and actions an executable image would need, while still avoiding page-table mutation, CR3 switching, Ring 3 entry, or jumps to ELF code.
+Scope 13 turns Scope 12 load plans into deterministic frame-backed mapping stubs. These records model the frames and actions an executable image would need, while still avoiding page-table mutation, CR3 switching, Ring 3 entry, or jumps to ELF code.
 
 ## What A Mapping Stub Contains
 
@@ -22,7 +22,7 @@ Frame tokens are deterministic accounting handles. They are not physical frames 
 
 ```mermaid
 flowchart TD
-Manifest["ares-exec-v1 Manifest"] --> Prepare[PrepareProgramImage]
+Manifest["clan-exec-v1 Manifest"] --> Prepare[PrepareProgramImage]
 Prepare --> LoadPlan[LoadPlan]
 LoadPlan --> MappingStub[MappingStub]
 MappingStub --> Registry[MappingRegistry]
@@ -54,4 +54,4 @@ See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 
 ## Safety Boundary
 
-Mapping stubs are still accounting records. They do not write executable memory, install user page tables, switch CR3, enter Ring 3, or run ELF entry points. `run hello` remains blocked with unsupported execution until a future phase implements real user-mode execution.
+Mapping stubs are still accounting records. They do not write executable memory, install user page tables, switch CR3, enter Ring 3, or run ELF entry points. `run hello` remains blocked with unsupported execution until a future scope implements real user-mode execution.

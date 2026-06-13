@@ -1,4 +1,4 @@
-//! Desktop shell service (phase 354) — taskbar + launcher strip.
+//! Desktop shell service (scope 354) — taskbar + launcher strip.
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -59,7 +59,7 @@ pub fn frame_count() -> u64 {
     SHELL_FRAMES.load(Ordering::Relaxed)
 }
 
-pub fn phase354_shell_smoke() -> bool {
+pub fn smoke_desktop_shell() -> bool {
     bootstrap_windows();
     let before = frame_count();
     let mut back = [0u8; framebuffer::BUFFER_LEN];
@@ -67,10 +67,10 @@ pub fn phase354_shell_smoke() -> bool {
     window_manager::window_count() >= 2 && frame_count() > before
 }
 
-pub fn phase375_desktop_smoke() -> bool {
-    crate::mouse::phase352_mouse_smoke()
-        && crate::framebuffer::phase353_double_buffer_smoke()
-        && phase354_shell_smoke()
-        && window_manager::phase356_wm_smoke()
-        && crate::compositor::phase351_compositor_desktop_smoke()
+pub fn smoke_desktop_integration() -> bool {
+    crate::mouse::smoke_mouse()
+        && crate::framebuffer::smoke_double_buffer()
+        && smoke_desktop_shell()
+        && window_manager::smoke_wm_smoke()
+        && crate::compositor::smoke_compositor_desktop()
 }

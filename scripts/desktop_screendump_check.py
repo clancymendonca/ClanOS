@@ -18,9 +18,9 @@ SERIAL_LOG = REPO / "target" / "desktop_boot_serial.log"
 BOOT_ATTEMPTS = 3
 
 READY_MARKERS = (
-    "AresOS shell ready",
-    "AresOS-SystemGate: ok=true",
-    "AresOS-Gate: name=desktop_preview ok=true",
+    "Clan OS shell ready",
+    "ClanOS-SystemGate: ok=true",
+    "ClanOS-Gate: name=desktop_preview ok=true",
 )
 
 

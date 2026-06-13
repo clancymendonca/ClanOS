@@ -1,4 +1,4 @@
-//! `ares-native-v1` manifest validation (phases 128–129, G4).
+//! `ares-native-v1` manifest validation (scopes 128–129, G4).
 
 use crate::kernel_object::Rights;
 
@@ -56,7 +56,7 @@ pub const DEMO_MANIFEST: NativeManifestV1 = NativeManifestV1 {
     }],
 };
 
-pub fn phase128_g4_smoke() -> bool {
+pub fn smoke_g4_smoke() -> bool {
     let ok = load_native_manifest(&DEMO_MANIFEST, Rights::read_write());
     let bad = !load_native_manifest(
         &NativeManifestV1 {
@@ -71,7 +71,7 @@ pub fn phase128_g4_smoke() -> bool {
     ok && bad && manifest_load_count() > 0 && manifest_rejection_count() > 0
 }
 
-pub fn phase129_scoped_grants_smoke() -> bool {
+pub fn smoke_scoped_grants() -> bool {
     let manifest = NativeManifestV1 {
         name: "scoped",
         grants: &[

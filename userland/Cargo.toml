@@ -1,16 +1,18 @@
 [package]
-name = "ares-rt"
+name = "clan-rt"
 version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
-description = "AresOS userspace runtime (epoch 2)"
+description = "Clan OS userspace runtime (epoch 2)"
 
 [lib]
-name = "ares_rt"
+name = "clan_rt"
 path = "src/lib.rs"
 
 [features]
 host-std = []
+ring3 = []
+ring3-heap = ["ring3"]
 
 [[bin]]
 name = "demo-hello"

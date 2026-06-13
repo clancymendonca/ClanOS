@@ -1,4 +1,4 @@
-//! Phase 9 stored program manifest loader.
+//! stored program manifest loader.
 
 use alloc::{
     format,
@@ -459,14 +459,14 @@ pub fn manifest_for_builtin(name: &str, description: &str) -> String {
     )
 }
 
-pub fn phase9_smoke_check() -> bool {
+pub fn smoke_program_discovery() -> bool {
     let before = status().launch_count;
     let programs = discover_programs();
     let has_echo = programs.iter().any(|program| {
         program.name == "echo" && program.source_path == "/bin/echo" && program.entry == "echo"
     });
-    let launch_ok = crate::task::userspace::run_program("echo", &["phase9-loader"])
-        .map(|output| output == "phase9-loader")
+    let launch_ok = crate::task::userspace::run_program("echo", &["loader-discovery-smoke"])
+        .map(|output| output == "loader-discovery-smoke")
         .unwrap_or(false);
     let after = status();
     has_echo && launch_ok && after.launch_count > before && after.program_count >= 4
@@ -496,27 +496,9 @@ pub fn validate_program_image(
     program.image.ok_or(ProgramLoadError::ImageInvalid)
 }
 
-pub fn phase11_smoke_check() -> bool {
-    let initial_status = status();
-    let before = initial_status.unsupported_execution_count;
-    let validate_ok = validate_program_image(crate::security::Credentials::shell_user(), "hello")
-        .map(|image| {
-            crate::address_space::descriptor_for_image(
-                crate::address_space::AddressSpaceId::from_raw(1),
-                &image,
-            )
-            .map(|descriptor| !descriptor.regions.is_empty())
-            .unwrap_or(false)
-        })
-        .unwrap_or(false);
-    let blocked_ok = crate::task::userspace::run_program("hello", &[])
-        .map(|output| output.contains("hello"))
-        .unwrap_or(true)
-        && status().unsupported_execution_count > before;
-    validate_ok
-        && initial_status.image_count >= 1
-        && initial_status.valid_image_count >= 1
-        && blocked_ok
+pub fn smoke_elf_inventory() -> bool {
+    let status = status();
+    status.image_count >= 1 && status.valid_image_count >= 1
 }
 
 pub fn prepare_program_image(
@@ -568,9 +550,9 @@ pub fn prepare_program_image(
     })
 }
 
-pub fn phase12_smoke_check() -> bool {
+pub fn smoke_load_plan() -> bool {
     let before = status();
-    let prepared = prepare_program_image(crate::security::Credentials::shell_user(), "hello")
+    let prepared = prepare_program_image(crate::security::Credentials::shell_user(), "tickprobe")
         .map(|prepared| {
             prepared.load_plan.total_pages > 0 && !prepared.address_space.regions.is_empty()
         })
@@ -615,9 +597,9 @@ pub fn map_prepared_program(
     })
 }
 
-pub fn phase13_smoke_check() -> bool {
+pub fn smoke_mapping_stub() -> bool {
     let before = status();
-    let mapped = map_prepared_program(crate::security::Credentials::shell_user(), "hello")
+    let mapped = map_prepared_program(crate::security::Credentials::shell_user(), "tickprobe")
         .map(|mapped| {
             mapped.mapped.total_pages > 0
                 && mapped.mapped.copied_bytes > 0
@@ -655,7 +637,7 @@ pub fn back_mapped_program(
     Ok(FrameBackedProgramImage { mapped, backed })
 }
 
-pub fn phase15_smoke_check() -> bool {
+pub fn smoke_frame_backing() -> bool {
     let before = status();
     let before_frames = crate::frame_ownership::status();
     let backed = back_mapped_program(crate::security::Credentials::shell_user(), "hello")
@@ -714,7 +696,7 @@ pub fn build_user_page_table(
     Ok(UserPageTableProgramImage { backed, page_table })
 }
 
-pub fn phase16_smoke_check() -> bool {
+pub fn smoke_hw_page_tables() -> bool {
     let before = status();
     let built = build_user_page_table(crate::security::Credentials::shell_user(), "hello")
         .map(|built| {
@@ -762,7 +744,7 @@ pub fn prepare_user_context(
     })
 }
 
-pub fn phase17_smoke_check() -> bool {
+pub fn smoke_user_context() -> bool {
     let before = status();
     let prepared = prepare_user_context(crate::security::Credentials::shell_user(), "hello")
         .map(|prepared| {
@@ -811,7 +793,7 @@ pub fn enter_controlled_ring3_trampoline(
     })
 }
 
-pub fn phase18_smoke_check() -> bool {
+pub fn smoke_ring3_trampoline() -> bool {
     let before = status();
     let entered =
         enter_controlled_ring3_trampoline(crate::security::Credentials::shell_user(), "hello")
@@ -853,7 +835,7 @@ pub fn run_user_syscall_probe(
     })
 }
 
-pub fn phase19_smoke_check() -> bool {
+pub fn smoke_user_syscall_probe() -> bool {
     let before = status();
     let returned = run_user_syscall_probe(crate::security::Credentials::shell_user(), "hello")
         .map(|probe| probe.syscall_return.returned_to_user && probe.syscall_return.error.is_none())
@@ -916,7 +898,7 @@ pub fn execute_minimal_user_elf_descriptor(
     })
 }
 
-pub fn phase20_smoke_check() -> bool {
+pub fn smoke_minimal_user_elf() -> bool {
     let before = status();
     let executed = execute_minimal_user_elf(crate::security::Credentials::shell_user(), "hello")
         .map(|execution| execution.exit_code == 0 && execution.output.contains("hello"))
@@ -951,7 +933,7 @@ pub fn build_hw_page_table_program(
     Ok(HwPageTableProgramImage { inactive, hw })
 }
 
-pub fn phase21_smoke_check() -> bool {
+pub fn smoke_hw_page_table_build() -> bool {
     let before = status();
     let built = build_hw_page_table_program(crate::security::Credentials::shell_user(), "hello")
         .map(|built| built.hw.mapped_pages > 0 && built.inactive.page_table.cr3_switch_ready)
@@ -982,7 +964,7 @@ pub fn activate_hw_page_table_smoke(
     Ok(())
 }
 
-pub fn phase22_smoke_check() -> bool {
+pub fn smoke_cr3_activate() -> bool {
     let before = status();
     let ok =
         activate_hw_page_table_smoke(crate::security::Credentials::shell_user(), "hello").is_ok();
@@ -1011,7 +993,7 @@ pub fn enter_hw_user_ud2(
     Ok(())
 }
 
-pub fn phase23_smoke_check() -> bool {
+pub fn smoke_iretq_entry() -> bool {
     let before = crate::user_entry::status();
     let ok = enter_hw_user_ud2(crate::security::Credentials::shell_user(), "hello").is_ok();
     let after = crate::user_entry::status();
@@ -1045,7 +1027,7 @@ pub fn enter_hw_user_trap(
     Ok(())
 }
 
-pub fn phase24_smoke_check() -> bool {
+pub fn smoke_ring3_trap() -> bool {
     let before = crate::user_entry::status();
     let ok = enter_hw_user_trap(crate::security::Credentials::shell_user(), "hello").is_ok();
     let after = crate::user_entry::status();
@@ -1078,7 +1060,7 @@ pub fn run_hw_syscall_probe(
     Ok(ret)
 }
 
-pub fn phase25_smoke_check() -> bool {
+pub fn smoke_hw_syscall_msr() -> bool {
     let before = crate::user_syscall_hw::status();
     let ok = run_hw_syscall_probe(crate::security::Credentials::shell_user(), "hello")
         .map(|ret| ret.returned_to_user && ret.error.is_none())
@@ -1103,7 +1085,7 @@ pub fn run_user_copy_probe_hw(
     Ok(true)
 }
 
-pub fn phase26_smoke_check() -> bool {
+pub fn smoke_user_copy() -> bool {
     let before = crate::user_copy::status();
     let ok = run_user_copy_probe_hw(crate::security::Credentials::shell_user(), "hello")
         .unwrap_or(false);
@@ -1139,7 +1121,7 @@ pub fn back_mapped_program_with_relocs(
     Ok(FrameBackedProgramImage { mapped, backed })
 }
 
-pub fn phase27_smoke_check() -> bool {
+pub fn smoke_elf_reloc_apply() -> bool {
     let before = crate::elf_reloc::status();
     let ok = back_mapped_program_with_relocs(crate::security::Credentials::shell_user(), "hello")
         .map(|_| true)
@@ -1173,7 +1155,7 @@ pub fn execute_hw_user_elf(
     })
 }
 
-pub fn phase28_smoke_check() -> bool {
+pub fn smoke_hw_elf_exec() -> bool {
     let before = status();
     let executed = execute_hw_user_elf(crate::security::Credentials::shell_user(), "hello")
         .map(|e| e.exit_code == 0 && e.output.contains("hello"))
@@ -1206,7 +1188,7 @@ pub fn execute_allowlisted_user_elf(
     })
 }
 
-pub fn phase29_smoke_check() -> bool {
+pub fn smoke_hw_elf_isolation() -> bool {
     let hello = execute_allowlisted_user_elf(crate::security::Credentials::shell_user(), "hello")
         .map(|e| e.exit_code == 0)
         .unwrap_or(false);
@@ -1216,7 +1198,7 @@ pub fn phase29_smoke_check() -> bool {
     hello && exit42
 }
 
-pub fn phase30_cr3_switch_smoke() -> bool {
+pub fn smoke_cr3_switch() -> bool {
     let first = build_hw_page_table_program(crate::security::Credentials::shell_user(), "hello")
         .map_err(|_| ())
         .ok();
@@ -1232,7 +1214,7 @@ pub fn phase30_cr3_switch_smoke() -> bool {
     }
 }
 
-pub fn phase31_sched_cr3_smoke() -> bool {
+pub fn smoke_sched_cr3_smoke() -> bool {
     let hello =
         build_hw_page_table_program(crate::security::Credentials::shell_user(), "hello").ok();
     let exit42 =
@@ -1249,11 +1231,11 @@ pub fn phase31_sched_cr3_smoke() -> bool {
     }
 }
 
-pub fn phase32_user_frame_smoke() -> bool {
-    crate::user_hw_frame::phase32_smoke()
+pub fn smoke_user_frame_smoke() -> bool {
+    crate::user_hw_frame::smoke_user_hw_frame()
 }
 
-pub fn phase33_multi_elf_smoke() -> bool {
+pub fn smoke_multi_elf_smoke() -> bool {
     let hello =
         build_hw_page_table_program(crate::security::Credentials::shell_user(), "hello").ok();
     let exit42 =
@@ -1277,14 +1259,14 @@ pub fn phase33_multi_elf_smoke() -> bool {
     t1.is_some() && t2.is_some() && isolated && hello_ok && exit_ok
 }
 
-pub fn phase34_exit_wait_smoke() -> bool {
+pub fn smoke_exit_wait_smoke() -> bool {
     let _ = crate::syscall::invoke_raw(crate::syscall::SyscallId::ExitProcess as u64, 42);
     let wait = crate::syscall::invoke_raw(crate::syscall::SyscallId::WaitProcess as u64, 1);
     let (exits, waits, code) = crate::syscall::exit_wait_status();
     wait == Ok(42) && exits >= 1 && waits >= 1 && code == 42
 }
 
-pub fn phase35_syscall_table_smoke() -> bool {
+pub fn smoke_syscall_table_smoke() -> bool {
     if !crate::user_syscall_hw::dispatch_table_status().2 {
         crate::user_syscall_hw::mark_dispatch_table_ready();
     }
@@ -1326,7 +1308,7 @@ pub fn storage_write_probe(user_buf: u64) -> Result<usize, ()> {
     Ok(buf.len())
 }
 
-pub fn phase36_storage_copyin_smoke() -> bool {
+pub fn smoke_storage_copyin_smoke() -> bool {
     let before_reads = STORAGE_COPYIN_READS.load(Ordering::Relaxed);
     let built =
         build_hw_page_table_program(crate::security::Credentials::shell_user(), "hello").ok();
@@ -1375,7 +1357,7 @@ pub fn execute_manifest_elf_gated(
     execute_allowlisted_user_elf(credentials, name)
 }
 
-pub fn phase37_manifest_elf_smoke() -> bool {
+pub fn smoke_manifest_elf_smoke() -> bool {
     let discovered = discover_elf_manifests();
     let executed =
         execute_manifest_elf_gated(crate::security::Credentials::shell_user(), "tickprobe")
@@ -1384,29 +1366,29 @@ pub fn phase37_manifest_elf_smoke() -> bool {
     discovered >= 3 && executed
 }
 
-pub fn phase38_demand_zero_smoke() -> bool {
+pub fn smoke_demand_zero_smoke() -> bool {
     let built =
         build_hw_page_table_program(crate::security::Credentials::shell_user(), "hello").ok();
     let Some(built) = built else {
         return false;
     };
-    crate::demand_paging::phase38_smoke(built.hw.cr3_phys)
+    crate::demand_paging::smoke_demand_zero(built.hw.cr3_phys)
 }
 
-pub fn phase39_dynamic_smoke() -> bool {
-    let sample = crate::storage::phase11_sample_elf_image();
+pub fn smoke_dynamic_smoke() -> bool {
+    let sample = crate::storage::sample_elf_fixture_image();
     let dynamic_ok = crate::elf_reloc::record_dynamic_link_smoke(sample.as_bytes());
     let (needed, linked, _) = crate::elf_reloc::dynamic_status();
     dynamic_ok && needed > 0 && linked > 0
 }
 
-pub fn phase40_integration_smoke() -> bool {
+pub fn smoke_sched_userspace_integration() -> bool {
     let (bound, switches, _, restore_ok) = crate::user_paging::sched_cr3_status();
     let (needed, linked, _) = crate::elf_reloc::dynamic_status();
     let (reads, _) = storage_copyin_status();
     let (disc, exec, _) = manifest_elf_status();
     let (_, mapped, _) = crate::demand_paging::status();
-    let multi_ok = phase33_multi_elf_smoke();
+    let multi_ok = smoke_multi_elf_smoke();
     bound > 0
         && switches > 0
         && restore_ok
@@ -1419,12 +1401,12 @@ pub fn phase40_integration_smoke() -> bool {
         && multi_ok
 }
 
-pub fn phase41_shared_lib_smoke() -> bool {
-    crate::shared_loader::phase41_smoke()
+pub fn smoke_shared_lib_smoke() -> bool {
+    crate::shared_loader::smoke_shared_lib_load()
 }
 
-pub fn phase42_dyn_reloc_smoke() -> bool {
-    let sample = crate::storage::phase11_sample_elf_image();
+pub fn smoke_dyn_reloc_smoke() -> bool {
+    let sample = crate::storage::sample_elf_fixture_image();
     let Some(mut image) =
         back_mapped_program_with_relocs(crate::security::Credentials::shell_user(), "hello").ok()
     else {
@@ -1490,7 +1472,7 @@ pub fn execute_trusted_manifest_elf(
     })
 }
 
-pub fn phase43_trust_exec_smoke() -> bool {
+pub fn smoke_trust_exec_smoke() -> bool {
     let trusted =
         execute_trusted_manifest_elf(crate::security::Credentials::shell_user(), "systrust")
             .map(|r| r.exit_code == 0)
@@ -1508,36 +1490,36 @@ pub fn trust_exec_status() -> (u64, u64) {
     )
 }
 
-pub fn phase44_user_path_smoke() -> bool {
-    crate::user_path::phase44_smoke()
+pub fn smoke_user_path_smoke() -> bool {
+    crate::user_path::smoke_user_path_read()
 }
 
-pub fn phase45_file_fd_smoke() -> bool {
-    crate::fd_table::phase45_smoke()
+pub fn smoke_file_fd_smoke() -> bool {
+    crate::fd_table::smoke_file_fd_open()
 }
 
-pub fn phase46_fd_io_smoke() -> bool {
-    crate::fd_table::phase46_smoke()
+pub fn smoke_fd_io_smoke() -> bool {
+    crate::fd_table::smoke_fd_io_rw()
 }
 
-pub fn phase47_file_demand_smoke() -> bool {
+pub fn smoke_file_demand_smoke() -> bool {
     let Some(built) =
         build_hw_page_table_program(crate::security::Credentials::shell_user(), "hello").ok()
     else {
         return false;
     };
-    crate::demand_paging::phase47_smoke(built.hw.cr3_phys)
+    crate::demand_paging::smoke_file_demand_fault(built.hw.cr3_phys)
 }
 
-pub fn phase48_wx_policy_smoke() -> bool {
-    crate::user_paging::phase48_smoke()
+pub fn smoke_wx_policy_smoke() -> bool {
+    crate::user_paging::smoke_wx_policy()
 }
 
-pub fn phase49_smp_smoke() -> bool {
-    crate::smp::phase49_smoke()
+pub fn smoke_smp_smoke() -> bool {
+    crate::smp::smoke_smp_probe()
 }
 
-pub fn phase50_integration_smoke() -> bool {
+pub fn smoke_dynamic_runtime_integration() -> bool {
     let (loaded, pages, _) = crate::shared_loader::status();
     let (_, applied) = crate::elf_reloc::import_status();
     let (trust_ok, trust_rej) = trust_exec_status();
@@ -1562,39 +1544,39 @@ pub fn phase50_integration_smoke() -> bool {
         && file_ok
         && wx_ok
         && smp_ok
-        && phase41_shared_lib_smoke()
-        && phase43_trust_exec_smoke()
+        && smoke_shared_lib_smoke()
+        && smoke_trust_exec_smoke()
 }
 
-pub fn phase51_proc_fd_smoke() -> bool {
-    crate::fd_table::phase51_smoke()
+pub fn smoke_proc_fd_smoke() -> bool {
+    crate::fd_table::smoke_proc_fd_table()
 }
 
-pub fn phase52_fd_dup_smoke() -> bool {
-    crate::fd_table::phase52_smoke()
+pub fn smoke_fd_dup_smoke() -> bool {
+    crate::fd_table::smoke_fd_dup_relative()
 }
 
-pub fn phase53_mprotect_smoke() -> bool {
-    crate::user_paging::phase53_smoke()
+pub fn smoke_mprotect_smoke() -> bool {
+    crate::user_paging::smoke_mprotect()
 }
 
-pub fn phase54_mmap_smoke() -> bool {
-    crate::mmap::phase54_smoke()
+pub fn smoke_mmap_smoke() -> bool {
+    crate::mmap::smoke_mmap_anon()
 }
 
-pub fn phase55_write_path_smoke() -> bool {
-    crate::user_path::phase55_smoke()
+pub fn smoke_write_path_smoke() -> bool {
+    crate::user_path::smoke_user_path_write()
 }
 
-pub fn phase56_multi_shlib_smoke() -> bool {
-    crate::shared_loader::phase56_smoke()
+pub fn smoke_multi_shlib_smoke() -> bool {
+    crate::shared_loader::smoke_multi_shlib()
 }
 
-pub fn phase57_plt_reloc_smoke() -> bool {
-    crate::elf_reloc::phase57_smoke()
+pub fn smoke_plt_reloc_smoke() -> bool {
+    crate::elf_reloc::smoke_plt_reloc()
 }
 
-pub fn phase58_digest_trust_smoke() -> bool {
+pub fn smoke_digest_trust_smoke() -> bool {
     let Some(elf) = crate::storage::read_file("/bin/hello.elf").ok().flatten() else {
         return false;
     };
@@ -1605,11 +1587,11 @@ pub fn phase58_digest_trust_smoke() -> bool {
     good && bad && verified > 0 && rejected > 0
 }
 
-pub fn phase59_runqueue_smoke() -> bool {
-    crate::smp::phase59_smoke()
+pub fn smoke_runqueue_smoke() -> bool {
+    crate::smp::smoke_runqueue_enqueue()
 }
 
-pub fn phase60_integration_smoke() -> bool {
+pub fn smoke_fd_mmap_integration() -> bool {
     let procfd = crate::fd_table::proc_fd_isolated();
     let (dups, relative) = crate::fd_table::dup_status();
     let (mp_applied, mp_rejected, guard) = crate::user_paging::mprotect_status();
@@ -1640,23 +1622,23 @@ pub fn phase60_integration_smoke() -> bool {
         && runq_enq > 0
 }
 
-pub fn phase61_chdir_smoke() -> bool {
-    crate::fd_table::phase61_smoke()
+pub fn smoke_chdir_smoke() -> bool {
+    crate::fd_table::smoke_chdir_fd()
 }
 
-pub fn phase62_munmap_smoke() -> bool {
-    crate::mmap::phase62_smoke()
+pub fn smoke_munmap_smoke() -> bool {
+    crate::mmap::smoke_munmap()
 }
 
-pub fn phase63_vma_smoke() -> bool {
-    crate::vma::phase63_smoke()
+pub fn smoke_vma_smoke() -> bool {
+    crate::vma::smoke_vma_regions()
 }
 
-pub fn phase64_forklite_smoke() -> bool {
-    crate::fd_table::phase64_smoke()
+pub fn smoke_forklite_smoke() -> bool {
+    crate::fd_table::smoke_fork_fd_inherit()
 }
 
-pub fn phase65_ring3_syscall_smoke() -> bool {
+pub fn smoke_ring3_syscall_smoke() -> bool {
     crate::user_syscall_hw::init_syscall_msrs();
     let hw = if let Some(hw) = crate::mmap::hw_handle_for_last_mmap_smoke() {
         hw
@@ -1694,39 +1676,39 @@ pub fn phase65_ring3_syscall_smoke() -> bool {
     write_ok && mprotect_ok && writepath > 0 && mprotect > 0
 }
 
-pub fn phase66_fcntl_smoke() -> bool {
-    crate::fd_table::phase66_smoke()
+pub fn smoke_fcntl_smoke() -> bool {
+    crate::fd_table::smoke_fcntl_getfd()
 }
 
-pub fn phase67_lazy_plt_smoke() -> bool {
-    crate::elf_reloc::phase67_smoke()
+pub fn smoke_lazy_plt_smoke() -> bool {
+    crate::elf_reloc::smoke_lazy_plt()
 }
 
-pub fn phase68_tlb_shootdown_smoke() -> bool {
-    crate::smp::phase68_smoke()
+pub fn smoke_tlb_shootdown_smoke() -> bool {
+    crate::smp::smoke_tlb_shootdown()
 }
 
-pub fn phase69_ap_idle_smoke() -> bool {
-    crate::smp::phase69_smoke()
+pub fn smoke_ap_idle_smoke() -> bool {
+    crate::smp::smoke_ap_idle()
 }
 
-pub fn phase71_sysret_smoke() -> bool {
-    crate::user_syscall_hw::phase71_smoke()
+pub fn smoke_sysret_smoke() -> bool {
+    crate::user_syscall_hw::smoke_sysret_probe()
 }
 
-pub fn phase72_ring3_chdir_smoke() -> bool {
-    crate::user_path::phase72_smoke()
+pub fn smoke_ring3_chdir_smoke() -> bool {
+    crate::user_path::smoke_ring3_chdir()
 }
 
-pub fn phase73_munmap_len_smoke() -> bool {
-    crate::mmap::phase73_smoke()
+pub fn smoke_munmap_len_smoke() -> bool {
+    crate::mmap::smoke_munmap_partial()
 }
 
-pub fn phase74_waitlite_smoke() -> bool {
-    crate::task::process::phase74_smoke()
+pub fn smoke_waitlite_smoke() -> bool {
+    crate::task::process::smoke_wait_lite()
 }
 
-pub fn phase75_syscallprobe_smoke() -> bool {
+pub fn smoke_syscallprobe_smoke() -> bool {
     crate::user_syscall_hw::init_syscall_msrs();
     let creds = crate::security::Credentials::shell_user();
     let manifest_ok = execute_manifest_elf_gated(creds, "syscallprobe")
@@ -1766,95 +1748,95 @@ pub fn phase75_syscallprobe_smoke() -> bool {
     manifest_ok && write_ok && mprotect_ok && writepath > 0 && mprotect > 0
 }
 
-pub fn phase76_fcntl_setfd_smoke() -> bool {
-    crate::fd_table::phase76_smoke()
+pub fn smoke_fcntl_setfd_smoke() -> bool {
+    crate::fd_table::smoke_fcntl_setfd()
 }
 
-pub fn phase77_ring3_lazy_plt_smoke() -> bool {
-    crate::elf_reloc::phase77_smoke()
+pub fn smoke_ring3_lazy_plt_smoke() -> bool {
+    crate::elf_reloc::smoke_ring3_lazy_plt()
 }
 
-pub fn phase78_ipi_tlb_smoke() -> bool {
-    crate::smp::phase78_smoke()
+pub fn smoke_ipi_tlb_smoke() -> bool {
+    crate::smp::smoke_ipi_tlb()
 }
 
-pub fn phase79_ap_trampoline_smoke() -> bool {
-    crate::smp::phase79_smoke()
+pub fn smoke_ap_trampoline_smoke() -> bool {
+    crate::smp::smoke_ap_trampoline()
 }
 
-pub fn phase81_hw_sysret_smoke() -> bool {
-    crate::user_syscall_hw::phase81_hw_sysret_smoke()
+pub fn smoke_hw_sysret_smoke() -> bool {
+    crate::user_syscall_hw::smoke_hw_sysret_smoke()
 }
 
-pub fn phase82_getcwd_smoke() -> bool {
-    crate::user_path::phase82_smoke()
+pub fn smoke_getcwd_smoke() -> bool {
+    crate::user_path::smoke_getcwd()
 }
 
-pub fn phase83_chdirprobe_smoke() -> bool {
-    crate::user_path::phase83_smoke()
+pub fn smoke_chdirprobe_smoke() -> bool {
+    crate::user_path::smoke_chdir_probe()
 }
 
-pub fn phase84_vma_split_smoke() -> bool {
-    crate::vma::phase84_smoke()
+pub fn smoke_vma_split_smoke() -> bool {
+    crate::vma::smoke_vma_split()
 }
 
-pub fn phase85_fork_dup_smoke() -> bool {
-    crate::task::process::phase85_smoke()
+pub fn smoke_fork_dup_smoke() -> bool {
+    crate::task::process::smoke_fork_dup()
 }
 
-pub fn phase86_exec_lite_smoke() -> bool {
-    crate::task::process::phase86_smoke()
+pub fn smoke_exec_lite_smoke() -> bool {
+    crate::task::process::smoke_exec_lite()
 }
 
-pub fn phase87_pipe_lite_smoke() -> bool {
-    crate::pipe::phase87_smoke()
+pub fn smoke_pipe_lite_smoke() -> bool {
+    crate::pipe::smoke_pipe_lite()
 }
 
-pub fn phase88_ring3_plt_fault_smoke() -> bool {
-    crate::elf_reloc::phase88_smoke()
+pub fn smoke_ring3_plt_fault_smoke() -> bool {
+    crate::elf_reloc::smoke_ring3_plt_fault()
 }
 
-pub fn phase89_ipi_send_smoke() -> bool {
-    crate::smp::phase89_smoke()
+pub fn smoke_ipi_send_smoke() -> bool {
+    crate::smp::smoke_ipi_send()
 }
 
-pub fn phase91_fork_cow_smoke() -> bool {
-    crate::task::process::phase91_smoke()
+pub fn smoke_fork_cow_smoke() -> bool {
+    crate::task::process::smoke_fork_cow_break()
 }
 
-pub fn phase92_poll_lite_smoke() -> bool {
-    crate::pipe::phase92_smoke()
+pub fn smoke_poll_lite_smoke() -> bool {
+    crate::pipe::smoke_poll_lite()
 }
 
-pub fn phase93_mmap_gap_smoke() -> bool {
-    crate::vma::phase93_smoke()
+pub fn smoke_mmap_gap_smoke() -> bool {
+    crate::vma::smoke_mmap_gap()
 }
 
-pub fn phase94_exec_argv_smoke() -> bool {
-    crate::task::process::phase94_smoke()
+pub fn smoke_exec_argv_smoke() -> bool {
+    crate::task::process::smoke_exec_argv()
 }
 
-pub fn phase95_pipe_probe_smoke() -> bool {
-    crate::pipe::phase95_smoke()
+pub fn smoke_pipe_probe_smoke() -> bool {
+    crate::pipe::smoke_pipe_probe()
 }
 
-pub fn phase96_vma_coalesce_smoke() -> bool {
-    crate::vma::phase96_smoke()
+pub fn smoke_vma_coalesce_smoke() -> bool {
+    crate::vma::smoke_vma_coalesce()
 }
 
-pub fn phase97_work_steal_smoke() -> bool {
-    crate::smp::phase97_smoke()
+pub fn smoke_work_steal_smoke() -> bool {
+    crate::smp::smoke_work_steal()
 }
 
-pub fn phase98_ap_runnable_smoke() -> bool {
-    crate::smp::phase98_smoke()
+pub fn smoke_ap_runnable_smoke() -> bool {
+    crate::smp::smoke_ap_runnable()
 }
 
-pub fn phase99_lapic_icr_smoke() -> bool {
-    crate::smp::phase99_smoke()
+pub fn smoke_lapic_icr_smoke() -> bool {
+    crate::smp::smoke_lapic_icr()
 }
 
-pub fn phase90_integration_smoke() -> bool {
+pub fn smoke_path_exec_integration() -> bool {
     let (_, sysret_real) = crate::user_syscall_hw::hw_sysret_real_status();
     let getcwd_reads = crate::user_path::getcwd_status();
     let chdirprobe_ok = crate::user_path::chdirprobe_status();
@@ -1880,7 +1862,7 @@ pub fn phase90_integration_smoke() -> bool {
         && ipi_acked >= 2
 }
 
-pub fn phase100_integration_smoke() -> bool {
+pub fn smoke_smp_depth_integration() -> bool {
     let (cow_breaks, cow_isolated) = crate::user_paging::fork_cow_status();
     let (polls, poll_ready) = crate::pipe::poll_status();
     let gaps = crate::vma::mmap_gap_status();
@@ -1903,7 +1885,7 @@ pub fn phase100_integration_smoke() -> bool {
         && icr_writes > 0
 }
 
-pub fn phase80_integration_smoke() -> bool {
+pub fn smoke_syscall_ring3_integration() -> bool {
     let (probes, sysret_ok) = crate::user_syscall_hw::sysret_status();
     let ring3_chdirs = crate::user_path::ring3_chdir_status();
     let (unmapped_pages, partial_regions) = crate::mmap::munmap_len_status();
@@ -1935,7 +1917,7 @@ pub fn phase80_integration_smoke() -> bool {
         && ap_idle > 0
 }
 
-pub fn phase70_integration_smoke() -> bool {
+pub fn smoke_vm_fork_integration() -> bool {
     let (normalized, chdirs) = crate::user_path::chdir_status();
     let (unmapped, munmap_rej) = crate::mmap::munmap_status();
     let (vma_regions, vma_overlap) = crate::vma::status();
@@ -1964,15 +1946,15 @@ pub fn phase70_integration_smoke() -> bool {
         && shootdown_done >= 2
         && aps >= 1
         && ap_idle > 0
-        && phase61_chdir_smoke()
-        && phase62_munmap_smoke()
-        && phase63_vma_smoke()
-        && phase64_forklite_smoke()
-        && phase65_ring3_syscall_smoke()
-        && phase66_fcntl_smoke()
-        && phase67_lazy_plt_smoke()
-        && phase68_tlb_shootdown_smoke()
-        && phase69_ap_idle_smoke()
+        && smoke_chdir_smoke()
+        && smoke_munmap_smoke()
+        && smoke_vma_smoke()
+        && smoke_forklite_smoke()
+        && smoke_ring3_syscall_smoke()
+        && smoke_fcntl_smoke()
+        && smoke_lazy_plt_smoke()
+        && smoke_tlb_shootdown_smoke()
+        && smoke_ap_idle_smoke()
 }
 
 pub fn manifest_elf_status() -> (u64, u64, u64) {

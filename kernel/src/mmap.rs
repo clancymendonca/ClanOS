@@ -1,4 +1,4 @@
-//! mmap bring-up: anonymous and read-only file mappings (Phase 54+).
+//! mmap bring-up: anonymous and read-only file mappings .
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -183,7 +183,7 @@ pub fn munmap_syscall(addr: u64, len: u64) -> Result<(), ()> {
     munmap_range(cr3, addr, len)
 }
 
-pub fn phase73_smoke() -> bool {
+pub fn smoke_munmap_partial() -> bool {
     let cr3 = {
         let cached = LAST_MMAP_CR3.load(Ordering::Relaxed);
         if cached != 0 {
@@ -212,7 +212,7 @@ pub fn phase73_smoke() -> bool {
     partial && reject && pages >= 1 && partial_regions > 0
 }
 
-pub fn phase54_smoke() -> bool {
+pub fn smoke_mmap_anon() -> bool {
     let Some(built) = crate::task::program_loader::build_hw_page_table_program(
         crate::security::Credentials::shell_user(),
         "hello",
@@ -229,7 +229,7 @@ pub fn phase54_smoke() -> bool {
     anon && file && rejected && a > 0 && f > 0
 }
 
-fn phase62_smoke_fresh(cr3: u64) -> bool {
+fn smoke_smoke_fresh(cr3: u64) -> bool {
     let (before_u, before_r) = munmap_status();
     let base = mmap_anonymous(cr3, 2, 0).ok();
     let file_base = crate::demand_paging::FILE_DEMAND_BASE;
@@ -244,7 +244,7 @@ fn phase62_smoke_fresh(cr3: u64) -> bool {
     unmap_anon && unmap_file && reject_image && after_u >= before_u + 2 && after_r > before_r
 }
 
-pub fn phase62_smoke() -> bool {
+pub fn smoke_munmap() -> bool {
     let cr3 = LAST_MMAP_CR3.load(Ordering::Relaxed);
     if cr3 != 0 && crate::user_paging::translate_hw_page(cr3, MMAP_ANON_BASE).is_some() {
         let file_base = crate::demand_paging::FILE_DEMAND_BASE;
@@ -271,5 +271,5 @@ pub fn phase62_smoke() -> bool {
         return false;
     };
     LAST_MMAP_CR3.store(built.hw.cr3_phys, Ordering::Relaxed);
-    phase62_smoke_fresh(built.hw.cr3_phys)
+    smoke_smoke_fresh(built.hw.cr3_phys)
 }

@@ -1,4 +1,4 @@
-# Launch AresOS with visible VGA desktop + serial shell.
+# Launch Clan OS with visible VGA desktop + serial shell.
 $ErrorActionPreference = "Stop"
 $env:Path = "C:\Program Files\qemu;" + $env:Path
 $Root = Split-Path -Parent $PSScriptRoot

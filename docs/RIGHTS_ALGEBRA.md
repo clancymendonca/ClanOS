@@ -7,7 +7,7 @@ semantics_version: 1.1.0
 
 > **Canonical:** [`docs/architecture/RIGHTS_ALGEBRA.md`](architecture/RIGHTS_ALGEBRA.md). This flat copy retained until migration squash reconciles any differences.
 
-**Gate G2** — phases **112–113** cap lifecycle implementation blocked until this document is signed off at phase 110.
+**Gate G2** — scopes **112–113** cap lifecycle implementation blocked until this document is signed off at scope 110.
 
 **Epoch 0:** ratified as grounding doc for brokers epoch 1+. Composition laws below require Kani + proptest before epoch 1 brokers.
 
@@ -75,7 +75,7 @@ Must remain coherent under: service death, broker restart, app update, user perm
 
 ## Minimization (A10)
 
-Prefer deriving IPC or storage rules from this algebra rather than parallel subsystem-only “permission” docs. New laws after phase 110 require minimization review in [AXIOMS.md](AXIOMS.md).
+Prefer deriving IPC or storage rules from this algebra rather than parallel subsystem-only “permission” docs. New laws after scope 110 require minimization review in [AXIOMS.md](AXIOMS.md).
 
 ---
 

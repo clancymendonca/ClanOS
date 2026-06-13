@@ -12,7 +12,7 @@ status: authoritative
 semantics_version: 1.0.0
 ```
 
-Required before phase **145**.
+Required before scope **145**.
 
 ---
 

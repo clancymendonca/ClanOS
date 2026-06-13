@@ -7,7 +7,7 @@ epoch: 0
 authored_by: architecture
 ```
 
-Non-negotiable design principles for AresOS. Deviations require charter amendment and ADR.
+Non-negotiable design principles for Clan OS. Deviations require charter amendment and ADR.
 
 ---
 
@@ -58,9 +58,9 @@ Rationale: seL4-class isolation, Linux-class driver crash containment, tractable
 
 ## Filesystem
 
-- **AresFS** native: CoW B-trees, crash consistency without journaling.
+- **ClanFS** native: CoW B-trees, crash consistency without journaling.
 - Path-scoped FsNode capabilities — no ambient traversal.
-- POSIX compat as untrusted translation layer above AresFS.
+- POSIX compat as untrusted translation layer above ClanFS.
 
 ---
 

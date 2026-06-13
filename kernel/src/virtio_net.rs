@@ -82,7 +82,7 @@ pub fn net_device_count() -> usize {
         .count()
 }
 
-pub fn phase401_virtio_net_smoke() -> bool {
+pub fn smoke_virtio_net() -> bool {
     init();
     net_device_count() >= 1 && rx_packets() > 0
 }

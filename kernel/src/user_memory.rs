@@ -1,4 +1,4 @@
-//! Phase 16 inactive user page-table descriptors.
+//! inactive user page-table descriptors.
 
 use alloc::vec::Vec;
 

@@ -1,6 +1,6 @@
 # Semantic Observability (Outline)
 
-**Documentation outline only** in phases 101–110. Implementation targeted phases **181–190** ([ROADMAP_POST100.md](ROADMAP_POST100.md)).
+**Documentation outline only** in scopes 101–110. Implementation targeted scopes **181–190** ([ROADMAP_POST100.md](ROADMAP_POST100.md)).
 
 Without observability, debugging authority at scale becomes impractical.
 
@@ -24,7 +24,7 @@ See: [AXIOMS.md](AXIOMS.md), [SEMANTIC_SPECS.md](SEMANTIC_SPECS.md) shared IDs, 
 | Capability | Description |
 |------------|-------------|
 | **Semantic tracing** | Kernel/broker events tagged with law + case ID |
-| **Law-linked diagnostics** | User-visible errors cite `ares-semantics-v*` clause |
+| **Law-linked diagnostics** | User-visible errors cite `clan-semantics-v*` clause |
 | **Capability lineage graph** | ObjectId, generation, parent cap |
 | **Temporal reconstruction** | Checkpoint-ordered revoke/cancel/restart log per process |
 
@@ -41,7 +41,7 @@ See: [AXIOMS.md](AXIOMS.md), [SEMANTIC_SPECS.md](SEMANTIC_SPECS.md) shared IDs, 
 ## Non-goals (initial ship)
 
 - Full distributed trace across machines (federation deferred)
-- GUI lineage visualizer (SDK phase 161–170 may prototype)
+- GUI lineage visualizer (SDK scope 161–170 may prototype)
 
 ---
 
@@ -49,6 +49,6 @@ See: [AXIOMS.md](AXIOMS.md), [SEMANTIC_SPECS.md](SEMANTIC_SPECS.md) shared IDs, 
 
 Stable before heavy observability investment:
 
-- G1–G5 signed (phase 110)
+- G1–G5 signed (scope 110)
 - Immutable identity + generation ([KERNEL_OBJECT_MODEL.md](KERNEL_OBJECT_MODEL.md))
-- Executable semantic tests for R-* / E-* (phases 112+, 134+)
+- Executable semantic tests for R-* / E-* (scopes 112+, 134+)

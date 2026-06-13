@@ -1,6 +1,6 @@
-# Constitutional Axioms (AresOS Post-100)
+# Constitutional Axioms (Clan OS Post-100)
 
-AresOS phases 1–100 built kernel mechanics. Post-100 work defines **constitutional law** for semantic integrity: authority, IPC, temporal visibility, and native identity.
+Clan OS scopes 1–100 built kernel mechanics. Post-100 work defines **constitutional law** for semantic integrity: authority, IPC, temporal visibility, and native identity.
 
 Axioms are the highest normative layer. They change only by explicit **charter revision** (rare). All documents in [INDEX.md](INDEX.md) § Post-100 must remain consistent with these axioms.
 
@@ -31,12 +31,12 @@ Together: **controlled semantic evolution**. Without A7, implementation erodes a
 | **A6** | **Revocation visibility** is always documentable ([TEMPORAL_SEMANTICS.md](TEMPORAL_SEMANTICS.md)) | Prevents temporal ambiguity |
 | **A7** | Semantic laws override implementation convenience | Anti-entropy (see above) |
 | **A8** | [Architecture-preservation spec cases](SEMANTIC_SPECS.md) are authoritative for behavior claims | Invariant preservation |
-| **A9** | **Semantic law versioning** is explicit (`ares-semantics-v*` in [ABI_STABILITY.md](ABI_STABILITY.md)) | Semantics are platform ABI |
+| **A9** | **Semantic law versioning** is explicit (`clan-semantics-v*` in [ABI_STABILITY.md](ABI_STABILITY.md)) | Semantics are platform ABI |
 | **A10** | Semantic minimization — every new law must pass review (below) | Occam’s Razor for OS semantics |
 
 ---
 
-## A10 — minimization review (required for new laws after phase 110)
+## A10 — minimization review (required for new laws after scope 110)
 
 | Question | Must answer |
 |----------|-------------|
@@ -45,21 +45,21 @@ Together: **controlled semantic evolution**. Without A7, implementation erodes a
 | Is it the **smallest** statement that carries the guarantee? | No → rewrite smaller |
 | Should this be a [spec case ID](SEMANTIC_SPECS.md) instead of prose? | Prefer spec ID |
 
-Phase 110 performs a **minimization audit** (law count per hierarchy layer).
+Scope 110 performs a **minimization audit** (law count per hierarchy layer).
 
 ---
 
-## Governance gates (implementation blocked until phase 110 sign-off)
+## Governance gates (implementation blocked until scope 110 sign-off)
 
 | Gate | Blocks | Requires |
 |------|--------|----------|
-| G1 | Phase 115+ new handle semantics | [KERNEL_OBJECT_MODEL.md](KERNEL_OBJECT_MODEL.md) |
-| G2 | Phase 112–113 cap lifecycle code | [RIGHTS_ALGEBRA.md](RIGHTS_ALGEBRA.md) |
-| G3 | Phase 134+ native endpoint code | [ABI_IPC.md](ABI_IPC.md) |
-| G4 | Phase 128+ native-only enforcement | [NATIVE_MODEL.md](NATIVE_MODEL.md) |
-| G5 | Phase 111+ authority/IPC contradicting specs | [SEMANTIC_SPECS.md](SEMANTIC_SPECS.md), [TEMPORAL_SEMANTICS.md](TEMPORAL_SEMANTICS.md) |
+| G1 | Scope 115+ new handle semantics | [KERNEL_OBJECT_MODEL.md](KERNEL_OBJECT_MODEL.md) |
+| G2 | Scope 112–113 cap lifecycle code | [RIGHTS_ALGEBRA.md](RIGHTS_ALGEBRA.md) |
+| G3 | Scope 134+ native endpoint code | [ABI_IPC.md](ABI_IPC.md) |
+| G4 | Scope 128+ native-only enforcement | [NATIVE_MODEL.md](NATIVE_MODEL.md) |
+| G5 | Scope 111+ authority/IPC contradicting specs | [SEMANTIC_SPECS.md](SEMANTIC_SPECS.md), [TEMPORAL_SEMANTICS.md](TEMPORAL_SEMANTICS.md) |
 
-Phases **111+** must not ship kernel behavior that violates ratified axioms or signed gates.
+Scopes **111+** must not ship kernel behavior that violates ratified axioms or signed gates.
 
 ---
 
@@ -68,8 +68,8 @@ Phases **111+** must not ship kernel behavior that violates ratified axioms or s
 To amend an axiom:
 
 1. Document conflict with existing laws and spec cases
-2. Propose `ares-semantics-v*` bump if guarantees change
+2. Propose `clan-semantics-v*` bump if guarantees change
 3. Update [SEMANTIC_SPECS.md](SEMANTIC_SPECS.md) and run minimization audit
-4. Record decision in [ROADMAP_POST100.md](ROADMAP_POST100.md) phase 110+ notes
+4. Record decision in [ROADMAP_POST100.md](ROADMAP_POST100.md) scope 110+ notes
 
 Default: **reject** charter changes that weaken A1, A2, A5, A7, or A10 without extraordinary rationale.

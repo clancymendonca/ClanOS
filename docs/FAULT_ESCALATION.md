@@ -78,7 +78,7 @@ Tier-3 halt/reboot: deliver terminal to active IPC callers before halt (max time
 
 | State | Milestone 150 |
 |-------|---------------|
-| **Suspend** (phase 147) | Frozen-in-memory; no persistent checkpoint |
+| **Suspend** (scope 147) | Frozen-in-memory; no persistent checkpoint |
 | **Checkpoint/restore** | Out of scope until post-150 |
 
 ### Suspend/resume policy

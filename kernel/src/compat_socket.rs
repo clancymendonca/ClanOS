@@ -31,7 +31,7 @@ pub fn compat_socket_calls() -> (u64, u64, u64) {
     )
 }
 
-pub fn phase402_compat_socket_smoke() -> bool {
+pub fn smoke_compat_socket() -> bool {
     let tcp = tcp_connect_stub("127.0.0.1", 80).is_ok();
     let udp = udp_send_stub(53, b"ping").is_ok();
     let sel = select_multi_fd_stub(&[1, 2]) > 0;

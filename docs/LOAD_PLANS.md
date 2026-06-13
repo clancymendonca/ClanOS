@@ -1,6 +1,6 @@
 # Executable Load Plans
 
-Phase 12 turns validated executable images into deterministic load plans. It models how an ELF image would be placed in memory, but still does not allocate real user frames, switch page tables, enter Ring 3, or jump to stored code.
+Scope 12 turns validated executable images into deterministic load plans. It models how an ELF image would be placed in memory, but still does not allocate real user frames, switch page tables, enter Ring 3, or jump to stored code.
 
 ## Load Plan Contents
 
@@ -27,22 +27,22 @@ Address-space descriptors now include reservation metadata:
 - read-only pages
 - mapping state
 
-The mapping state remains `Planned` in Phase 12. Phase 13 can convert a prepared plan into `MappedStub`, which is still accounting-only; no active page table is mutated by shell or loader paths.
+The mapping state remains `Planned` in Scope 12. Scope 13 can convert a prepared plan into `MappedStub`, which is still accounting-only; no active page table is mutated by shell or loader paths.
 
 ## Loader Prepare Flow
 
 ```mermaid
 flowchart TD
-Manifest["ares-exec-v1 Manifest"] --> ValidateImage[ValidateImage]
+Manifest["clan-exec-v1 Manifest"] --> ValidateImage[ValidateImage]
 ValidateImage --> LoadPlanner[LoadPlanner]
 LoadPlanner --> ReservationAccounting[ReservationAccounting]
 ReservationAccounting --> ProcessMetadata[ProcessMetadata]
 ProcessMetadata --> ShellStatus[ShellStatus]
 ```
 
-The loader exposes `prepare_program_image(credentials, name)` for image programs. `run hello` still returns unsupported execution, preserving the Phase 11 safety boundary.
+The loader exposes `prepare_program_image(credentials, name)` for image programs. `run hello` still returns unsupported execution, preserving the Scope 11 safety boundary.
 
-Phase 13 adds `map_prepared_program(credentials, name)`, which takes the same validated plan and creates deterministic frame-token mapping records. It records copy and zero-fill byte counts, but does not write image bytes into executable memory.
+Scope 13 adds `map_prepared_program(credentials, name)`, which takes the same validated plan and creates deterministic frame-token mapping records. It records copy and zero-fill byte counts, but does not write image bytes into executable memory.
 
 ## Shell And Smoke
 
@@ -60,7 +60,7 @@ Boot emits:
 See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
-Phase 13 additionally emits:
+Scope 13 additionally emits:
 
 ```text
 See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.

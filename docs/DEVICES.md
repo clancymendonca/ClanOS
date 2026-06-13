@@ -1,6 +1,6 @@
-# Device Design (Phase 8)
+# Device Design (Scope 8)
 
-AresOS Phase 8 introduces a small device layer and block-device manager. The goal is to prove driver registration, discovery, block backend selection, and filesystem mounting through a managed device path before implementing full AHCI, NVMe, or virtio-blk drivers.
+Clan OS Scope 8 introduces a small device layer and block-device manager. The goal is to prove driver registration, discovery, block backend selection, and filesystem mounting through a managed device path before implementing full AHCI, NVMe, or virtio-blk drivers.
 
 ## Layers
 
@@ -40,11 +40,11 @@ The block manager in `kernel/src/block.rs` tracks block backends independently f
 - readonly flag
 - driver-backed flag
 
-Phase 8 ships with `qemu-sim-block0`, a simulated QEMU-style driver-backed block backend. It uses the same sector read/write path as a future hardware driver, while keeping validation deterministic.
+Scope 8 ships with `qemu-sim-block0`, a simulated QEMU-style driver-backed block backend. It uses the same sector read/write path as a future hardware driver, while keeping validation deterministic.
 
 ## Storage Integration
 
-`kernel/src/storage.rs` now mounts `SimpleFs` through `ManagedBlockDevice`, which delegates sector I/O to the active block backend. The Phase 7 `MemoryBlockDevice` remains available for focused filesystem tests.
+`kernel/src/storage.rs` now mounts `SimpleFs` through `ManagedBlockDevice`, which delegates sector I/O to the active block backend. The Scope 7 `MemoryBlockDevice` remains available for focused filesystem tests.
 
 The kernel emits:
 
@@ -63,7 +63,7 @@ See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ## Validation
 
 ```bash
-python scripts/gate/legacy.py --phase 8 --timeout 180
+python scripts/gate/boot.py --gate shell_storage --timeout 180
 python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --boot-wait 90 --smoke-timeout 180
 ```
 

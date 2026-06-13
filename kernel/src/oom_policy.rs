@@ -1,4 +1,4 @@
-//! Full OOM policy (phase 147) — suspend frozen-in-memory; mem budget enforcement.
+//! Full OOM policy (scope 147) — suspend frozen-in-memory; mem budget enforcement.
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -65,7 +65,7 @@ pub fn enforce_mem_budget(requested: u64) -> bool {
     true
 }
 
-pub fn phase147_oom_smoke() -> bool {
+pub fn smoke_oom_policy() -> bool {
     let Some(pid) = crate::kernel_object::ensure_smoke_process() else {
         return false;
     };
@@ -86,5 +86,5 @@ pub fn phase147_oom_smoke() -> bool {
 }
 
 pub fn epoch7_oom_graduated() -> bool {
-    phase147_oom_smoke()
+    smoke_oom_policy()
 }

@@ -13,7 +13,7 @@ Pathologies, OOM, cap exhaustion — cross-ref `FAULT_ESCALATION.md`, `ERROR_TAX
 
 | Id | Mode | Tier | Doc |
 |----|------|------|-----|
-| FM-oom-stub | MEM_BUDGET_STUB saturation | 1 | phase 121 |
+| FM-oom-stub | MEM_BUDGET_STUB saturation | 1 | scope 121 |
 | FM-cap-quota | Cap quota exceeded | remediable structural | ERROR_TAXONOMY |
 | FM-audit-flush | Audit flush timeout on suspend | 3 | FAULT_ESCALATION |
 | FM-handler-exhaust | Fault handler MEM_BUDGET exhausted | 3 | FAULT_ESCALATION |

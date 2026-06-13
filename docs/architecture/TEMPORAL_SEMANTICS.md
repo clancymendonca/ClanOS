@@ -33,7 +33,7 @@ See: [AXIOMS.md](AXIOMS.md), [RIGHTS_ALGEBRA.md](RIGHTS_ALGEBRA.md), [ABI_IPC.md
 | Async memory | Message buffer visible after ownership transfer |
 | Service restart | Peer observes generation bump before new mail accepted |
 
-Phase 1–100 compat paths document **current** behavior in [ABI_SYSCALL.md](ABI_SYSCALL.md); native paths tighten visibility at implementation phases 111+.
+Scope 1–100 compat paths document **current** behavior in [ABI_SYSCALL.md](ABI_SYSCALL.md); native paths tighten visibility at implementation scopes 111+.
 
 ---
 
@@ -45,7 +45,7 @@ Phase 1–100 compat paths document **current** behavior in [ABI_SYSCALL.md](ABI
 - **Lazy revoke:** fails at or before next checkpoint (T-01)
 - **Generation bump:** caps with `generation < current` fail at checkpoint (R-03)
 
-Exact syscall list for native checkpoints is reserved in `ares-semantics-v1` (implementation phase 112+).
+Exact syscall list for native checkpoints is reserved in `clan-semantics-v1` (implementation scope 112+).
 
 ---
 
@@ -85,7 +85,7 @@ Until full memory-model documentation ships, native cap operations assume:
 - Cap table mutations serialize per-process or use documented atomics
 - No observer sees **amplified** rights after another CPU’s delegate (T-03)
 
-Strengthen happens-before story when native cap syscalls land (phase 112+).
+Strengthen happens-before story when native cap syscalls land (scope 112+).
 
 ---
 

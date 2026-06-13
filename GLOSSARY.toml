@@ -26,4 +26,4 @@ definition = "Kernel code paths whose compromise breaks security goals"
 [[terms]]
 id = "compat-internal"
 term = "compat-internal bridge"
-definition = "Interim IPC path 122-133; CI counter must reach zero at phase 134"
+definition = "Interim IPC path 122-133; CI counter must reach zero at scope 134"

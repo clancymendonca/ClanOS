@@ -1,4 +1,4 @@
-//! Per-process virtual memory area registry (Phase 63).
+//! Per-process virtual memory area registry .
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -197,7 +197,7 @@ pub fn coalesce_adjacent(pid: ProcessId) -> u64 {
     merged
 }
 
-pub fn phase63_smoke() -> bool {
+pub fn smoke_vma_regions() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let creds = crate::security::Credentials::shell_user();
     let Some(pid) = process::create_kernel_process_as("vma-smoke", tick, creds) else {
@@ -231,7 +231,7 @@ pub fn phase63_smoke() -> bool {
     ok_first && ok_second && overlap && regions >= 2 && rejected > 0
 }
 
-pub fn phase84_smoke() -> bool {
+pub fn smoke_vma_split() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let creds = crate::security::Credentials::shell_user();
     let Some(pid) = process::create_kernel_process_as("vma-split", tick, creds) else {
@@ -264,7 +264,7 @@ pub fn phase84_smoke() -> bool {
     registered && mapped && unmapped && head_ok && splits > 0
 }
 
-pub fn phase93_smoke() -> bool {
+pub fn smoke_mmap_gap() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let creds = crate::security::Credentials::shell_user();
     let Some(pid) = process::create_kernel_process_as("mmap-gap", tick, creds) else {
@@ -301,7 +301,7 @@ pub fn phase93_smoke() -> bool {
     gap_used && mapped && translated && mmap_gap_status() > 0
 }
 
-pub fn phase96_smoke() -> bool {
+pub fn smoke_vma_coalesce() -> bool {
     let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
     let creds = crate::security::Credentials::shell_user();
     let Some(pid) = process::create_kernel_process_as("vma-coalesce", tick, creds) else {

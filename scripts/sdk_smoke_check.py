@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 REQUIRED = [
     ROOT / "userland" / "Cargo.toml",
     ROOT / "userland" / "src" / "lib.rs",
-    ROOT / "docs" / "ABI_ARES_RT.md",
+    ROOT / "docs" / "ABI_CLAN_RT.md",
     ROOT / "scripts" / "install_userland.py",
 ]
 

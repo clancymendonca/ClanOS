@@ -12,7 +12,7 @@ status: authoritative
 semantics_version: 1.0.0
 ```
 
-Policy for `unsafe` Rust, `extern "C"` FFI, and TCB-adjacent code in the AresOS kernel.
+Policy for `unsafe` Rust, `extern "C"` FFI, and TCB-adjacent code in the Clan OS kernel.
 
 ---
 

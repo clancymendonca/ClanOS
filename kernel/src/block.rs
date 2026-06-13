@@ -1,4 +1,4 @@
-//! Phase 8 block-device manager.
+//! block-device manager.
 
 use alloc::{string::String, vec, vec::Vec};
 use lazy_static::lazy_static;

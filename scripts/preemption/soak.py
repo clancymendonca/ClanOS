@@ -15,7 +15,7 @@ if str(_SCRIPTS) not in sys.path:
 
 from preemption.telemetry import collect_samples  # noqa: E402
 
-FAIRNESS_RE = re.compile(r"Phase5-Fairness:\s+(.*)")
+FAIRNESS_RE = re.compile(r"ClanOS-Preemption: name=fairness\s+(.*)")
 KV_RE = re.compile(r"(T[1-4]|score)=([0-9]+(?:\.[0-9]+)?)")
 
 

@@ -1,4 +1,4 @@
-# AresOS Design North Star
+# Clan OS Design North Star
 
 ```yaml
 status: superseded-by: docs/architecture/DESIGN_NORTH_STAR.md
@@ -7,7 +7,7 @@ semantics_version: 1.0.0
 
 > **Canonical:** [`docs/architecture/DESIGN_NORTH_STAR.md`](architecture/DESIGN_NORTH_STAR.md). This flat copy retains epoch scorecard rows until migration squash reconciles content.
 
-Falsifiable targets for phases 121–150. See [`CHARTER.md`](../CHARTER.md), [`THREAT_MODEL.md`](THREAT_MODEL.md).
+Falsifiable targets for scopes 121–150. See [`CHARTER.md`](../CHARTER.md), [`THREAT_MODEL.md`](THREAT_MODEL.md).
 
 ---
 
@@ -15,16 +15,16 @@ Falsifiable targets for phases 121–150. See [`CHARTER.md`](../CHARTER.md), [`T
 
 | Row | Claim | Falsifier |
 |-----|-------|-----------|
-| Capability security | No ambient authority in native path | Compat-internal counter > 0 at phase 134 gate |
+| Capability security | No ambient authority in native path | Compat-internal counter > 0 at scope 134 gate |
 | Evidence pyramid | Every closed critical threat node has tier A/B/C proof | `threat_node_proof_coverage_ratio` < 1.0 |
 | Compat sunset | Fixed corpus % native-only E2E | COMPAT_SUNSET metric regression without review |
 | Reproducible build | Dual-build hash match | BUILD_INTEGRITY CI failure |
 | Public security process | Disclosure + key compromise playbooks | Missing before M150 release |
 | Windows comparison | Named rows or explicit non-commitment | See § Comparative position |
-| **M200** scheduling | `SCHEDULING_UNIFIED` S-* cases executable; semantic lint on ABI bumps | AresOS-Gate: name=scheduling ok=true smoke false |
-| **M250** hardware/SDK | QEMU→HW procedure + signed images; native SDK path | AresOS-Gate: name=hardware ok=true smoke false |
-| **M300** federation | Distributed endpoint protocol + observability tooling | AresOS-Gate: name=federation ok=true smoke false |
-| **M350** release 1.0 | Zero open threats; never-stabilize graduated; dual-build + compat threshold | AresOS-Gate: name=release ok=true smoke false |
+| **M200** scheduling | `SCHEDULING_UNIFIED` S-* cases executable; semantic lint on ABI bumps | ClanOS-Gate: name=scheduling ok=true smoke false |
+| **M250** hardware/SDK | QEMU→HW procedure + signed images; native SDK path | ClanOS-Gate: name=hardware ok=true smoke false |
+| **M300** federation | Distributed endpoint protocol + observability tooling | ClanOS-Gate: name=federation ok=true smoke false |
+| **M350** release 1.0 | Zero open threats; never-stabilize graduated; dual-build + compat threshold | ClanOS-Gate: name=release ok=true smoke false |
 
 ---
 
@@ -32,7 +32,7 @@ Falsifiable targets for phases 121–150. See [`CHARTER.md`](../CHARTER.md), [`T
 
 **Linux:** capability-native IPC and generation-based revocation as structural differentiators.
 
-**seL4:** formal proof depth; AresOS targets tiered evidence (proptest + Kani + selective Verus) with Rust implementation velocity.
+**seL4:** formal proof depth; Clan OS targets tiered evidence (proptest + Kani + selective Verus) with Rust implementation velocity.
 
 **Hyper-V / VM isolation:** not primary QEMU-era target; note in ARCHITECTURE_TARGETS.
 

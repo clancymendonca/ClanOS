@@ -1,4 +1,4 @@
-//! SMP groundwork: CPU detection, parked APs, TLB flush, runqueues (Phases 49, 59, 68–69).
+//! SMP groundwork: CPU detection, parked APs, TLB flush, runqueues.
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -176,14 +176,14 @@ fn start_ap_idle_accounting() {
     ap_idle_trampoline();
 }
 
-pub fn phase49_smoke() -> bool {
+pub fn smoke_smp_probe() -> bool {
     init();
     flush_tlb_on_unmap();
     let (cpus, _aps, flush_ok) = status();
     cpus >= 1 && flush_ok > 0
 }
 
-pub fn phase59_smoke() -> bool {
+pub fn smoke_runqueue_enqueue() -> bool {
     init();
     scheduler_account_preempt();
     let (cpus, enqueued, _) = (
@@ -194,7 +194,7 @@ pub fn phase59_smoke() -> bool {
     cpus >= 2 && enqueued > 0
 }
 
-pub fn phase68_smoke() -> bool {
+pub fn smoke_tlb_shootdown() -> bool {
     init();
     request_tlb_shootdown();
     let (cpus, _, _) = status();
@@ -202,13 +202,13 @@ pub fn phase68_smoke() -> bool {
     cpus >= 2 && requested >= 2 && completed >= 2
 }
 
-pub fn phase69_smoke() -> bool {
+pub fn smoke_ap_idle() -> bool {
     init();
     let (aps, idle_ticks) = ap_idle_status();
     aps >= 1 && idle_ticks > 0
 }
 
-pub fn phase78_smoke() -> bool {
+pub fn smoke_ipi_tlb() -> bool {
     init();
     request_tlb_shootdown();
     let (cpus, _, _) = status();
@@ -216,14 +216,14 @@ pub fn phase78_smoke() -> bool {
     cpus >= 2 && ipis >= 1 && acked >= 2
 }
 
-pub fn phase89_smoke() -> bool {
+pub fn smoke_ipi_send() -> bool {
     init();
     request_tlb_shootdown();
     let (sent, acked) = ipi_send_status();
     sent >= 1 && acked >= 2
 }
 
-pub fn phase79_smoke() -> bool {
+pub fn smoke_ap_trampoline() -> bool {
     init();
     ap_idle_trampoline();
     let (aps, idle_ticks) = ap_idle_status();
@@ -231,7 +231,7 @@ pub fn phase79_smoke() -> bool {
     aps >= 1 && idle_ticks > 0 && entered > 0
 }
 
-pub fn phase97_smoke() -> bool {
+pub fn smoke_work_steal() -> bool {
     init();
     enqueue_on_cpu(0);
     enqueue_on_cpu(1);
@@ -240,7 +240,7 @@ pub fn phase97_smoke() -> bool {
     stole && work_steal_status() > 0
 }
 
-pub fn phase98_smoke() -> bool {
+pub fn smoke_ap_runnable() -> bool {
     init();
     enqueue_ap_runnable();
     ap_runnable_status() > 0
@@ -248,14 +248,14 @@ pub fn phase98_smoke() -> bool {
 
 static AP_SCHEDULER_TICKS: AtomicU64 = AtomicU64::new(0);
 
-/// Phase 426 — AP scheduler services runnable enqueue (production SMP path).
+/// AP scheduler services runnable enqueue (production SMP path).
 pub fn ap_scheduler_service_tick() {
     if APS_STARTED.load(Ordering::Relaxed) > 0 {
         AP_SCHEDULER_TICKS.fetch_add(1, Ordering::Relaxed);
     }
 }
 
-pub fn phase426_ap_scheduler_smoke() -> bool {
+pub fn smoke_ap_scheduler() -> bool {
     init();
     ap_scheduler_service_tick();
     enqueue_ap_runnable();
@@ -266,7 +266,7 @@ pub fn lapic_icr_send_stub() {
     write_lapic_icr_low(0x0004_4000);
 }
 
-pub fn phase99_smoke() -> bool {
+pub fn smoke_lapic_icr() -> bool {
     init();
     request_tlb_shootdown();
     lapic_icr_send_stub();

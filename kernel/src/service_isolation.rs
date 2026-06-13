@@ -1,4 +1,4 @@
-//! Service crash isolation (phase 127) — FAULT_ESCALATION tier 2 restart path.
+//! Service crash isolation (scope 127) — FAULT_ESCALATION tier 2 restart path.
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -32,7 +32,7 @@ pub fn restart_service_tier2(pid: ProcessId, service_cap_slot: u32) -> bool {
     true
 }
 
-pub fn phase127_service_isolation_smoke() -> bool {
+pub fn smoke_service_isolation() -> bool {
     let Some(pid) = crate::kernel_object::ensure_smoke_process() else {
         return false;
     };

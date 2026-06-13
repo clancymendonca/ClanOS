@@ -1,4 +1,4 @@
-//! Native IPC endpoints (phase 134+) — ABI_IPC.md per-sender FIFO.
+//! Native IPC endpoints (scope 134+) — ABI_IPC.md per-sender FIFO.
 
 use alloc::collections::BTreeMap;
 use alloc::collections::VecDeque;
@@ -90,7 +90,7 @@ pub fn recv(endpoint: EndpointId) -> Result<EndpointMessage, EndpointError> {
     Ok(msg)
 }
 
-/// Phase 134: retire interim bridge; native endpoints become sole broker IPC path.
+/// : retire interim bridge; native endpoints become sole broker IPC path.
 pub fn activate_native_endpoints() -> bool {
     if ipc_interim_bridge::ipc_bridge_compat_internal_count() > 0
         && !ipc_interim_bridge::is_retired()
@@ -124,7 +124,7 @@ pub fn p134_ordering_corpus() -> bool {
     true
 }
 
-pub fn phase134_endpoint_smoke() -> bool {
+pub fn smoke_ipc_endpoint() -> bool {
     let retired = activate_native_endpoints();
     let counter_zero = ipc_interim_bridge::ipc_bridge_compat_internal_count() == 0;
     let ordering = p134_ordering_corpus();

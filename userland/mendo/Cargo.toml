@@ -1,0 +1,12 @@
+[package]
+name = "mendo"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Mendo — scripting language for Clan OS (ring-3 ELF)"
+
+[[bin]]
+name = "mendo"
+path = "src/main.rs"
+
+[dependencies]

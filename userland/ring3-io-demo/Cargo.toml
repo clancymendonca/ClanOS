@@ -1,0 +1,12 @@
+[package]
+name = "ring3-io-demo"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Clan OS clan-rt ring-3 open/read/write/close demo"
+
+[[bin]]
+name = "ring3-io-demo"
+path = "src/main.rs"
+
+[dependencies]

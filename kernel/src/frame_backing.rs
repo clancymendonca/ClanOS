@@ -1,4 +1,4 @@
-//! Phase 15 frame-backed executable image records.
+//! frame-backed executable image records.
 
 use alloc::{string::String, vec::Vec};
 

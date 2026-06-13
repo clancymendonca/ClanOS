@@ -29,7 +29,7 @@ IMPL: dict[int, str] = {
     21: "kernel/src/audit_wire.rs",
     23: "kernel/src/ipc_endpoints.rs",
     24: "loom_harness_registry.toml",
-    27: "benchmarks/phase-120-baseline.json",
+    27: "benchmarks/scope-120-baseline.json",
     29: "docs/ARCHITECTURE_TARGETS.md",
     36: "docs/WIRE_SCHEMA_REGISTRY.md",
     38: "docs/COMPAT_ISOLATION.md",
@@ -55,14 +55,14 @@ IMPL: dict[int, str] = {
 }
 
 EPOCH_SMOKE: dict[int, str] = {
-    121: "scripts/gate/boot.py --phase 121",
-    130: "scripts/gate/boot.py --phase 130",
-    134: "scripts/gate/boot.py --phase 134",
-    140: "scripts/gate/boot.py --phase 140",
-    201: "scripts/gate/boot.py --phase 201",
-    404: "scripts/gate/boot.py --phase 404",
-    149: "scripts/gate/boot.py --phase 149",
-    150: "scripts/gate/boot.py --phase 150",
+    121: "scripts/gate/boot.py --gate service_loader",
+    130: "scripts/gate/boot.py --gate platform_brokers",
+    134: "scripts/gate/boot.py --gate build_endpoints",
+    140: "scripts/gate/boot.py --gate build_endpoints",
+    201: "scripts/gate/boot.py --gate virtio_blk",
+    404: "scripts/gate/boot.py --gate network_compat",
+    149: "scripts/gate/boot.py --gate scheduler_epoch",
+    150: "scripts/gate/boot.py --gate boundary",
 }
 
 

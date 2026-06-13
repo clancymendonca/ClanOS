@@ -1,5 +1,5 @@
-//! Compositor IPC stub (phase 145) — ABI_COMPOSITOR_IPC minimum contract.
-//! Phase 351: pixel frame submission via VGA mode 13h framebuffer.
+//! Compositor IPC stub (scope 145) — ABI_COMPOSITOR_IPC minimum contract.
+//! : pixel frame submission via VGA mode 13h framebuffer.
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -31,7 +31,7 @@ pub fn pixel_frame_count() -> u64 {
     PIXEL_FRAMES.load(Ordering::Relaxed)
 }
 
-pub fn phase145_compositor_smoke() -> bool {
+pub fn smoke_compositor() -> bool {
     let ok_known = submit_frame(CompositorCaps {
         a11y_version: 1,
         flags: 0x01,
@@ -47,6 +47,6 @@ pub fn phase145_compositor_smoke() -> bool {
         && crate::framebuffer::mode_active()
 }
 
-pub fn phase351_compositor_desktop_smoke() -> bool {
-    phase145_compositor_smoke() && crate::framebuffer::mode_active()
+pub fn smoke_compositor_desktop() -> bool {
+    smoke_compositor() && crate::framebuffer::mode_active()
 }

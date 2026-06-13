@@ -1,6 +1,6 @@
 # Native Model (Post-100)
 
-AresOS after phase 100 is a **formally governed post-Unix capability system** — semantic constitutionalism, not “Linux but smaller.”
+Clan OS after scope 100 is a **formally governed post-Unix capability system** — semantic constitutionalism, not “Linux but smaller.”
 
 **Central truth:** preserving **semantic coherence across decades** is harder than building the kernel.
 
@@ -14,7 +14,7 @@ See: [AXIOMS.md](AXIOMS.md), [ROADMAP_POST100.md](ROADMAP_POST100.md), [KERNEL_O
 |--------|----------------|
 | Authority | No ambient authority; explicit transfer; amplification exceptional (A1) |
 | Identity | Immutable object identity + generation invalidation |
-| IPC | Endpoints; semantics are platform ABI (`ares-semantics-v*`) |
+| IPC | Endpoints; semantics are platform ABI (`clan-semantics-v*`) |
 | Runtime | Async-native OS contract; language-neutral [ABI_RUNTIME.md](ABI_RUNTIME.md) |
 | Scheduling | Service-centric; actor-like mailboxes (compat remains process-centric) |
 | Governance | Axioms, G1–G5, spec cases, jurisdiction, lint |
@@ -26,7 +26,7 @@ See: [AXIOMS.md](AXIOMS.md), [ROADMAP_POST100.md](ROADMAP_POST100.md), [KERNEL_O
 
 | Contract | Document |
 |----------|----------|
-| Native binary / load | `ares-native-v1` (future `ares-bin`; ELF = compat) |
+| Native binary / load | `clan-native-v1` (future `clan-bin`; ELF = compat) |
 | Native runtime ABI | [ABI_RUNTIME.md](ABI_RUNTIME.md) |
 | Native manifest | Permissions, caps requested, service declarations |
 | Native service model | Restartable platform services ([SEMANTIC_JURISDICTION.md](SEMANTIC_JURISDICTION.md)) |
@@ -77,7 +77,7 @@ Paths are **broker-mediated**, **compat-only**, or **developer-facing labels** (
 
 ---
 
-## Four system layers (phase 150 review)
+## Four system layers (scope 150 review)
 
 | Layer | Trust | Contains |
 |-------|-------|----------|
@@ -90,7 +90,7 @@ Paths are **broker-mediated**, **compat-only**, or **developer-facing labels** (
 
 ## Philosophy before implementation
 
-Phases **111+** are blocked until phase **110** signs off gates G1–G5 ([AXIOMS.md](AXIOMS.md)).
+Scopes **111+** are blocked until scope **110** signs off gates G1–G5 ([AXIOMS.md](AXIOMS.md)).
 
 Capabilities are the **system language** (resource, authority, IPC, scheduling) — not permission flags.
 
@@ -106,4 +106,4 @@ Capabilities are the **system language** (resource, authority, IPC, scheduling) 
 | Service | Broker / daemon instance |
 | Update | Atomic system revision / rollback epoch |
 
-Federation (multi-device trust, sync) is deferred beyond phase 150 — see [ROADMAP_POST100.md](ROADMAP_POST100.md) § Beyond 150.
+Federation (multi-device trust, sync) is deferred beyond scope 150 — see [ROADMAP_POST100.md](ROADMAP_POST100.md) § Beyond 150.

@@ -1,4 +1,4 @@
-"""Collect Phase 5 serial telemetry lines after kernel boot."""
+"""Collect preemption serial telemetry lines after kernel boot."""
 
 from __future__ import annotations
 
@@ -17,7 +17,12 @@ _SCRIPTS = Path(__file__).resolve().parents[1]
 if str(_SCRIPTS) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS))
 
-from smoke_qemu import KERNEL_CMD, cleanup_qemu_processes  # noqa: E402
+from smoke_qemu import (  # noqa: E402
+    KERNEL_CMD,
+    cleanup_qemu_processes,
+    ensure_preemption_kernel_built,
+    ensure_qemu_on_path,
+)
 
 T = TypeVar("T")
 
@@ -50,6 +55,8 @@ def collect_samples(
 ) -> tuple[list[T], list[str]]:
     """Wait up to `boot_wait` seconds for the first sample, then collect for `duration` seconds."""
     cleanup_qemu_processes()
+    ensure_qemu_on_path()
+    ensure_preemption_kernel_built()
     process = subprocess.Popen(
         KERNEL_CMD,
         env=os.environ.copy(),

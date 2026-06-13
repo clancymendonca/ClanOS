@@ -28,7 +28,7 @@ Reviewed at **every epoch gate** in commit body + validation matrix.
 
 | Mechanism | Tracks |
 |-----------|--------|
-| `ipc-bridge-compat-internal` | IPC bridge call sites (phases 122–133) → **zero by phase 134** |
+| `ipc-bridge-compat-internal` | IPC bridge call sites (scopes 122–133) → **zero by scope 134** |
 | COMPAT_SUNSET metric | Compat socket ABI, ELF path, FD substrate (epoch 4+) |
 
 ---

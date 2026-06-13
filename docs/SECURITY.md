@@ -1,6 +1,6 @@
 # Security Model
 
-Phase 10 adds policy groundwork, not hardware-enforced isolation. The kernel now has static credentials, file permissions, executable trust metadata, and process ownership checks that future ELF loading and address-space isolation can build on.
+Scope 10 adds policy groundwork, not hardware-enforced isolation. The kernel now has static credentials, file permissions, executable trust metadata, and process ownership checks that future ELF loading and address-space isolation can build on.
 
 ## Identity
 
@@ -11,7 +11,7 @@ The security module defines four roles:
 - `User`: default shell identity.
 - `Guest`: read-biased low-trust identity for validation and future sessions.
 
-The default shell starts as `UserId(100)` with role `User`. `su admin`, `su user`, and `su guest` are static role switches for validation only; there is no password or multi-session login layer in this phase.
+The default shell starts as `UserId(100)` with role `User`. `su admin`, `su user`, and `su guest` are static role switches for validation only; there is no password or multi-session login layer in this scope.
 
 ## File Policy
 
@@ -31,7 +31,7 @@ Shell and syscall read/write/delete paths use checked storage APIs. Legacy unche
 
 ## Program Trust
 
-`ares-exec-v1` manifests now accept:
+`clan-exec-v1` manifests now accept:
 
 - `requires=execute`
 - `trust=system` or `trust=user`
@@ -39,7 +39,7 @@ Shell and syscall read/write/delete paths use checked storage APIs. Legacy unche
 
 The loader rejects unsupported trust or requirement values without panicking. Before dispatching a stored built-in alias, the loader checks execute permission on the manifest file and records denied launches separately from normal failed launches.
 
-Phase 11 extends this policy to executable image manifests. `kind=elf64-image` records require execute permission on both the manifest and referenced image file before validation. The image can be parsed and described, but execution is blocked until a future phase adds executable mappings and privilege separation.
+Scope 11 extends this policy to executable image manifests. `kind=elf64-image` records require execute permission on both the manifest and referenced image file before validation. The image can be parsed and described, but execution is blocked until a future scope adds executable mappings and privilege separation.
 
 ## Process Ownership
 
@@ -66,15 +66,15 @@ See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 
 ## Limits
 
-Phase 10 intentionally does not provide CPU privilege separation, page-table isolation, real executable memory protections, cryptographic program signatures, groups, ACLs, or capabilities. Those are deferred until the kernel has raw ELF loading and per-process address spaces.
+Scope 10 intentionally does not provide CPU privilege separation, page-table isolation, real executable memory protections, cryptographic program signatures, groups, ACLs, or capabilities. Those are deferred until the kernel has raw ELF loading and per-process address spaces.
 
-Phase 11 adds descriptor-only address spaces and ELF64 validation, but still does not switch page tables or run arbitrary stored code.
+Scope 11 adds descriptor-only address spaces and ELF64 validation, but still does not switch page tables or run arbitrary stored code.
 
-Phase 12 adds load-plan and reservation accounting for validated images. It still does not allocate executable user frames, mutate process page tables, switch CR3, enter Ring 3, or jump to stored ELF entry points.
+Scope 12 adds load-plan and reservation accounting for validated images. It still does not allocate executable user frames, mutate process page tables, switch CR3, enter Ring 3, or jump to stored ELF entry points.
 
-Phase 13 adds deterministic mapping stubs for prepared images. These stubs record owner credentials, frame tokens, mapped pages, copy bytes, and zero-fill bytes, but they remain policy and accounting records rather than hardware-enforced user mappings.
+Scope 13 adds deterministic mapping stubs for prepared images. These stubs record owner credentials, frame tokens, mapped pages, copy bytes, and zero-fill bytes, but they remain policy and accounting records rather than hardware-enforced user mappings.
 
-## Trust-Gated Execution (Phase 43)
+## Trust-Gated Execution (Scope 43)
 
 Hardware ELF launch still requires an allowlisted program name (`hello`, `exit42`, `tickprobe`) for `trust=user` manifests. Programs with `trust=system` may run through `execute_trusted_manifest_elf` without appearing on the name allowlist.
 
@@ -89,10 +89,10 @@ See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 Validation:
 
 ```bash
-python scripts/gate/legacy.py --phase 43 --timeout 180
+python scripts/gate/boot.py --gate dynamic_runtime --timeout 180
 ```
 
-## Manifest Digest (Phase 58)
+## Manifest Digest (Scope 58)
 
 Manifests may include `digest=sha256:<hex>` over the referenced ELF bytes. `execute_trusted_manifest_elf` verifies the digest before running `trust=system` programs. This is integrity checking only, not a public-key signature chain.
 

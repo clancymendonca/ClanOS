@@ -1,4 +1,4 @@
-//! Compat-only path broker (phase 115, G1): resolves paths to FDs without new handle types.
+//! Compat-only path broker (scope 115, G1): resolves paths to FDs without new handle types.
 
 use crate::task::process::ProcessId;
 
@@ -14,7 +14,7 @@ pub fn resolve_open_compat(pid: ProcessId, path: &str) -> Result<u32, ()> {
     crate::fd_table::open_file_for_process_inner(pid, path)
 }
 
-pub fn phase115_path_broker_smoke() -> bool {
+pub fn smoke_path_broker_smoke() -> bool {
     let Some(pid) = crate::kernel_object::ensure_smoke_process() else {
         return false;
     };

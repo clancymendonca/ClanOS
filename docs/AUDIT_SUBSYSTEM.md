@@ -31,7 +31,7 @@ Threat node: `T-audit-tamper`.
 
 ## Epoch 0 positions
 
-- Bootstrap unaudited window scoped explicitly at phase 121 implementation
+- Bootstrap unaudited window scoped explicitly at scope 121 implementation
 - Forensic admissibility assumptions in `DESIGN_NORTH_STAR.md`
 - Covert channel via audit throughput: deferred node `T-audit-covert-channel`
 

@@ -1,6 +1,6 @@
 # Minimal User ELF MVP
 
-Phase 20 enables the seeded `/bin/hello` ELF path to complete through the guarded user execution pipeline. It is intentionally narrow: only the known hello image is accepted, and it returns deterministic kernel-recorded output and exit status.
+Scope 20 enables the seeded `/bin/hello` ELF path to complete through the guarded user execution pipeline. It is intentionally narrow: only the known hello image is accepted, and it returns deterministic kernel-recorded output and exit status.
 
 ## Execution Flow
 
@@ -37,12 +37,12 @@ See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 
 ## Safety Boundary
 
-Phase 20 is a minimal MVP for the seeded hello image.
+Scope 20 is a minimal MVP for the seeded hello image.
 
-Later phases extend the same pipeline:
+Later scopes extend the same pipeline:
 
-- Phases 28–29 — hardware hello and allowlisted `hello` / `exit42`
-- Phase 37 — manifest-discovered ELF images including `tickprobe`
-- Phase 43 — `trust=system` execution without name allowlist (see [SECURITY.md](SECURITY.md))
+- Scopes 28–29 — hardware hello and allowlisted `hello` / `exit42`
+- Scope 37 — manifest-discovered ELF images including `tickprobe`
+- Scope 43 — `trust=system` execution without name allowlist (see [SECURITY.md](SECURITY.md))
 
 Arbitrary unsigned user ELFs, full dynamic linking, and production isolation remain deferred. See [SHARED_LIBRARIES.md](SHARED_LIBRARIES.md) and [USER_PAGE_TABLES.md](USER_PAGE_TABLES.md).

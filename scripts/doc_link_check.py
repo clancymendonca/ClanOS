@@ -44,7 +44,7 @@ AUTHORITATIVE_DOCS = [
     "docs/COMPAT_SUNSET.md",
     "docs/IPC_VERSION_NEGOTIATION.md",
     "docs/ABI_NATIVE_SYSCALL.md",
-    "docs/ABI_ARES_RT.md",
+    "docs/ABI_CLAN_RT.md",
     "docs/VIRTIO_SAFETY.md",
     "docs/ABI_COMPOSITOR_IPC.md",
     "docs/ARCHITECTURE_TARGETS.md",

@@ -1,1 +1,1 @@
-"""Preemption soak/latency validation (phase 5)."""
+"""Preemption soak/latency validation (scope 5)."""
