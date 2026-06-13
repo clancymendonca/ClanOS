@@ -1,3 +1,5 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 7 Checklist (Persistent Storage Bring-Up)
 
 **Date**: 2026-05-13  
@@ -29,19 +31,21 @@
 
 ## 4. Validation
 
-- [x] Boot-time `Phase7-Storage` smoke line
-- [x] `scripts/phase7-storage-check` for QEMU-backed validation
-- [x] `scripts/validation_matrix.py` includes `phase7-storage-check`
+- [x] Covered by boot gate `shell_storage` (`AresOS-BootGate: name=shell_storage ok=true`)
+- [x] `scripts/gate/boot.py --phase 7` for QEMU-backed validation
+- [x] `scripts/validation_matrix.py` includes `boot-gate-check`
 - [x] Integration tests cover remount persistence and syscall file lifecycle
 
-## Validation Commands
+## Validation
 
 ```bash
 cargo check -p kernel
-cargo test -p kernel --features preemption --test preemption_integration
-python scripts/phase7_storage_check.py --timeout 180
-python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --boot-wait 90 --smoke-timeout 180
+python scripts/gate/boot.py --phase 7 --timeout 180
+python scripts/validation_matrix.py --smoke-timeout 180
 ```
+
+See [VALIDATION_GATES.md](VALIDATION_GATES.md).
+
 
 ## Known Limits
 

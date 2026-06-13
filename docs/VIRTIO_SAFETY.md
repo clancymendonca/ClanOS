@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/architecture/VIRTIO_SAFETY.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/architecture/VIRTIO_SAFETY.md`](architecture/VIRTIO_SAFETY.md). This flat copy retained until migration squash reconciles any differences.
+
 # Virtio Safety
 
 ```yaml

@@ -39,7 +39,7 @@ The shell exposes:
 Boot emits:
 
 ```text
-Phase17-UserContext: contexts=..., rejected=..., user_code=..., user_data=..., entry_ok=true, ring3_entered=false
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Safety Boundary

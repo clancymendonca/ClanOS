@@ -9,7 +9,7 @@ Phases 38 and 47 add user `#PF` handling: anonymous demand-zero growth and file-
 Boot smoke:
 
 ```text
-Phase38-DemandZero: faults=..., mapped=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Phase 47 — File-Backed
@@ -19,7 +19,7 @@ On fault, the handler can satisfy a mapping by reading a page from the simple fi
 Boot smoke:
 
 ```text
-Phase47-FileDemand: faults=..., file_pages=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## W^X Interaction
@@ -29,8 +29,8 @@ Phase 48 rejects user mappings that combine writable and executable flags. Deman
 ## Validation
 
 ```bash
-python scripts/phase38_demand_zero_check.py --timeout 180
-python scripts/phase47_file_demand_check.py --timeout 180
+python scripts/gate/legacy.py --phase 38 --timeout 180
+python scripts/gate/legacy.py --phase 47 --timeout 180
 ```
 
 ## Deferred

@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/architecture/DRIVER_MODEL.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/architecture/DRIVER_MODEL.md`](architecture/DRIVER_MODEL.md). This flat copy retained until migration squash reconciles any differences.
+
 # Driver Model
 
 ```yaml

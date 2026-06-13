@@ -1,3 +1,5 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 4 Completion Checklist (Processes / Async Executor)
 
 Date: 2026-03-17
@@ -56,3 +58,13 @@ Full preemptive scheduling with process isolation is a Phase 5 / 6 target.
   flags exist for future IRQ-exit preemption work; disabled by default.
 - Starvation in wrapper mode has been mitigated; full verification under
   sustained load is a Phase 5 item.
+
+## Validation
+
+```bash
+cargo check -p kernel
+python scripts/gate/boot.py --gate boot --timeout 360
+python scripts/validation_matrix.py --smoke-timeout 180
+```
+
+See [VALIDATION_GATES.md](VALIDATION_GATES.md).

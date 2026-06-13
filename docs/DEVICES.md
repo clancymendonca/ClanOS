@@ -49,7 +49,7 @@ Phase 8 ships with `qemu-sim-block0`, a simulated QEMU-style driver-backed block
 The kernel emits:
 
 ```text
-Phase8-Devices: total=..., pci=..., block=..., block_devices=..., driver_backed=..., storage_backend=..., storage_ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Shell Commands
@@ -63,7 +63,7 @@ Phase8-Devices: total=..., pci=..., block=..., block_devices=..., driver_backed=
 ## Validation
 
 ```bash
-python scripts/phase8_device_check.py --timeout 180
+python scripts/gate/legacy.py --phase 8 --timeout 180
 python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --boot-wait 90 --smoke-timeout 180
 ```
 

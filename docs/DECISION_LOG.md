@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/process/DECISION_LOG.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/process/DECISION_LOG.md`](process/DECISION_LOG.md). This flat copy retained until migration squash reconciles any differences.
+
 # Architecture Decision Log
 
 ```yaml

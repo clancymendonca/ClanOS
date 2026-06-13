@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/architecture/TEMPORAL_SEMANTICS.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/architecture/TEMPORAL_SEMANTICS.md`](architecture/TEMPORAL_SEMANTICS.md). This flat copy retained until migration squash reconciles any differences.
+
 # Temporal Semantics
 
 ```yaml

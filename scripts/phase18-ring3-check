@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-python3 "$(dirname "$0")/phase18_ring3_check.py" "$@"

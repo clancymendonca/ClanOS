@@ -1,3 +1,5 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 114 Checklist: Storage Grant Object
 
 ## Layer
@@ -20,8 +22,8 @@ implementation (deliverables landed)
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration` (phase120_cap_compat_smoke_works)
 - [x] `python scripts/semantic_lint.py`
-- [x] `python scripts/phase120_cap_integration_check.py --timeout 300`
-- [x] `Phase120-CapCompat` boot smoke (phases 111-120 integration)
+- [x] `python scripts/gate/boot.py --phase 114 --timeout 180
+- [x] Covered by unified boot/system gate (see VALIDATION_GATES.md)
 
 
 ## Deferred

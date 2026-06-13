@@ -1,4 +1,4 @@
-# Never-stabilize list graduated at M350 (epoch 14).
+# Never-stabilize list graduated at M350 (epoch 14) and M500 (epoch 20).
 
 [graduation]
 milestone = 350
@@ -16,3 +16,20 @@ replacement = "ipc_endpoints native path"
 [[graduated_items]]
 name = "health_timeseries.json"
 replacement = "1.0 contract in RELEASE_SCORECARD_M350.md"
+
+[graduation_m500]
+milestone = 500
+semver = "1.0.0"
+timestamp = "2026-06-12T00:00:00Z"
+
+[[graduated_items]]
+name = "CAP_QUOTA_STUB"
+replacement = "service_loader cap quota enforcement"
+
+[[graduated_items]]
+name = "compat-internal channels"
+replacement = "native endpoint path only (bridge count 0)"
+
+[[graduated_items]]
+name = "ares-rt host std dependency"
+replacement = "ares-rt #![no_std] lib + host cargo check"

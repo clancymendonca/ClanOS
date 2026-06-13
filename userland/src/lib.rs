@@ -1,6 +1,7 @@
 //! ares-rt — userspace runtime stubs (epoch 2).
-//! See docs/ABI_ARES_RT.md.
+//! See docs/specs/ABI_ARES_RT.md.
 
+#![no_std]
 #![forbid(unsafe_code)]
 
 /// Compat syscall write (host demo uses stdio).

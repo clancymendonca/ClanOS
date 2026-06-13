@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/architecture/PROOF_COVERAGE.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/architecture/PROOF_COVERAGE.md`](architecture/PROOF_COVERAGE.md). This flat copy retained until migration squash reconciles any differences.
+
 # Proof Coverage
 
 ```yaml

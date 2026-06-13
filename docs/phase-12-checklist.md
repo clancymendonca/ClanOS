@@ -1,3 +1,5 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 12 Checklist
 
 Status: Complete
@@ -10,7 +12,7 @@ Status: Complete
 - [x] Add loader `prepare_program_image` path and load-plan counters.
 - [x] Add process load metadata for prepared image records.
 - [x] Add `bin prepare`, richer `bin info`, and load-plan summary commands.
-- [x] Add load-plan syscalls and `Phase12-LoadPlan` boot smoke output.
+- [x] Covered by boot gate `loader_security` (`AresOS-BootGate: name=loader_security ok=true`)
 - [x] Add Phase 12 QEMU validation and validation matrix coverage.
 
 Exit gate:
@@ -19,3 +21,13 @@ Exit gate:
 - [x] Load planning does not mutate active page tables.
 - [x] ELF execution remains blocked with a clear unsupported-execution result.
 - [x] Existing built-in aliases continue to launch.
+
+## Validation
+
+```bash
+cargo check -p kernel
+python scripts/gate/boot.py --phase 12 --timeout 180
+python scripts/validation_matrix.py --smoke-timeout 180
+```
+
+See [VALIDATION_GATES.md](VALIDATION_GATES.md).

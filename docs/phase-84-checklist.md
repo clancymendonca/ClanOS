@@ -1,14 +1,16 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 84 Checklist: VMA In-Region Split
 
 ## Scope
 
 - [x] Middle `munmap` of multi-page anon mapping splits VMA registry (`VMA_SPLITS`).
-- [x] `phase84_smoke` and `Phase84-VmaSplit` boot output.
+- [x] Covered by boot gate `path_exec` (`AresOS-BootGate: name=path_exec ok=true`)
 
 ## Validation
 
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/phase84_vma_split_check.py --timeout 180`
+- [x] `python scripts/gate/boot.py --phase 84 --timeout 180
 
 ## Deferred
 

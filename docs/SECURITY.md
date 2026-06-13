@@ -61,7 +61,7 @@ The shell exposes:
 Syscalls expose current user, current role, denied access count, and denied execute count. Boot emits:
 
 ```text
-Phase10-Security: user=100, role=user, policy_ok=true, denied_ok=true, denied_access=..., denied_execute=...
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Limits
@@ -78,18 +78,18 @@ Phase 13 adds deterministic mapping stubs for prepared images. These stubs recor
 
 Hardware ELF launch still requires an allowlisted program name (`hello`, `exit42`, `tickprobe`) for `trust=user` manifests. Programs with `trust=system` may run through `execute_trusted_manifest_elf` without appearing on the name allowlist.
 
-The seed manifest `/bin/systrust` references `/bin/tickprobe.elf` with `trust=system` and is used by `Phase43-TrustExec` smoke tests.
+The seed manifest `/bin/systrust` references `/bin/tickprobe.elf` with `trust=system` and is used by `See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 
 Boot smoke:
 
 ```text
-Phase43-TrustExec: trusted=..., allowlist_bypass=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 Validation:
 
 ```bash
-python scripts/phase43_trust_exec_check.py --timeout 180
+python scripts/gate/legacy.py --phase 43 --timeout 180
 ```
 
 ## Manifest Digest (Phase 58)
@@ -99,7 +99,7 @@ Manifests may include `digest=sha256:<hex>` over the referenced ELF bytes. `exec
 Boot smoke:
 
 ```text
-Phase58-DigestTrust: verified=..., rejected=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 Deferred: cryptographic signatures, capability tokens, and per-user trust policies beyond static manifest fields.

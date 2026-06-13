@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/proofs/LIVENESS_PROPERTIES.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/proofs/LIVENESS_PROPERTIES.md`](proofs/LIVENESS_PROPERTIES.md). This flat copy retained until migration squash reconciles any differences.
+
 # Liveness Properties
 
 ```yaml

@@ -32,7 +32,7 @@ run hello
 Boot emits:
 
 ```text
-Phase20-UserElf: executions=..., exits=..., rejected=..., hello_ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Safety Boundary

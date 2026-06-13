@@ -119,10 +119,10 @@ Top-level architectural decisions resolved at project inception. Phase- and epoc
 
 ### ares-rt-001 — ares-rt `no_std` enforcement pending
 
-**Status:** open  
-**Context:** Workspace `cargo check` fails on the host target because `ares-rt` (`userland/`) does not declare `#![no_std]`. The crate is built for `x86_64-unknown-none` in the OS context; `cargo check -p kernel` passes. This is documentation and build-matrix debt, not a kernel soundness issue.  
-**Reopen trigger:** `architecture_state.toml` → `has_no_std_enforcement = false` (CI-readable; must flip to `true` only after enforcement lands).  
-**Resolution:** Dedicated phase commit adding `#![no_std]` to `ares-rt`, host/workspace `cargo check` matrix update, and full in-scope Kani re-run. **Out of scope** during the doc migration epoch — do not fix opportunistically.
+**Status:** resolved (phase 401)
+**Context:** Workspace `cargo check` fails on the host target because `ares-rt` (`userland/`) does not declare `#![no_std]`. The crate is built for `x86_64-unknown-none` in the OS context; `cargo check -p kernel` passes. This is documentation and build-matrix debt, not a kernel soundness issue.
+**Reopen trigger:** `architecture_state.toml` → `has_no_std_enforcement = false` (CI-readable; must flip to `true` only after enforcement lands).
+**Resolution:** `#![no_std]` added to `ares-rt` lib; `scripts/gate/ares_rt.py` in validation matrix; `has_no_std_enforcement = true`.
 
 ---
 

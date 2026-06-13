@@ -1,3 +1,5 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 24 Checklist: Hardware User Trap Return
 
 ## Scope
@@ -5,13 +7,13 @@
 - [x] Wire IDT vector `0x80` for cooperative user return.
 - [x] Enter Ring 3 through `int 0x80` stub path.
 - [x] Add blocked `UserHwTrapped` process metadata.
-- [x] Emit `Phase24-UserTrap` boot smoke output.
+- [x] Covered by boot gate `hw_paging` (`AresOS-BootGate: name=hw_paging ok=true`)
 
 ## Validation
 
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/phase24_user_trap_check.py --timeout 180`
+- [x] `python scripts/gate/boot.py --phase 24 --timeout 180
 
 ## Deferred
 

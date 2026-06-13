@@ -1,15 +1,17 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 89 Checklist: LAPIC IPI Send Stub
 
 ## Scope
 
 - [x] `LAPIC_IPI_SEND` counter on `request_tlb_shootdown`.
-- [x] `phase89_smoke` and `Phase89-IpiSend` boot output.
+- [x] Covered by boot gate `path_exec` (`AresOS-BootGate: name=path_exec ok=true`)
 - [x] `docs/SMP.md` updated.
 
 ## Validation
 
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/phase89_ipi_send_check.py --timeout 180`
+- [x] `python scripts/gate/boot.py --phase 89 --timeout 180
 
 ## Deferred
 

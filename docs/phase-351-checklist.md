@@ -1,3 +1,5 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 351 Checklist: VGA Framebuffer Desktop Shell
 
 ## Layer
@@ -18,7 +20,7 @@ implemented
 ## Validation
 
 - [x] `cargo check -p kernel`
-- [x] `phase351_desktop_check.py`
+- [x] `python scripts/gate/system.py --gate desktop_preview --timeout 180`
 
 ## Completed
 

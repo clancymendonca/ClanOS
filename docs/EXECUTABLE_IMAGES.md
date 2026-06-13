@@ -69,8 +69,8 @@ The shell exposes:
 Boot emits:
 
 ```text
-Phase11-Images: images=..., valid=..., rejected=..., exec_blocked_ok=true
-Phase12-LoadPlan: prepared=..., rejected=..., pages=..., exec_blocked_ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Deferred Work

@@ -15,9 +15,9 @@ VALIDATION_BLOCK = """## Validation
 PHASE_110_VALIDATION = """## Validation
 
 - [x] `python scripts/semantic_lint.py`
-- [x] `python scripts/phase110_constitutional_check.py --timeout 300`
+- [x] `python scripts/gate/legacy.py --phase 110 --timeout 300`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration` (phase110_constitutional_smoke_works)
-- [x] `Phase110-Constitutional` boot smoke
+- [x] `python scripts/gate/boot.py --gate constitutional --timeout 300`
 """
 
 for n in range(101, 110):

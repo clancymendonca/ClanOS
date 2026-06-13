@@ -1,9 +1,11 @@
 # Scheduler Model
 
 ```yaml
-status: authoritative
+status: superseded-by: docs/architecture/SCHEDULER_MODEL.md
 semantics_version: 1.1.0
 ```
+
+> **Canonical:** [`docs/architecture/SCHEDULER_MODEL.md`](architecture/SCHEDULER_MODEL.md). This flat copy retained until migration squash reconciles any differences.
 
 Minimum spec before epoch 1 brokers. Full fairness policy deferred to epoch 5 planning commit.
 

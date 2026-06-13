@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/architecture/FORMAL_MODEL.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/architecture/FORMAL_MODEL.md`](architecture/FORMAL_MODEL.md). This flat copy retained until migration squash reconciles any differences.
+
 # Formal Model (Tier D)
 
 ```yaml

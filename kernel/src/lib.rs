@@ -6,6 +6,7 @@
 
 #![no_std]
 #![no_main]
+#![deny(warnings)]
 #![feature(abi_x86_interrupt)]
 #![feature(alloc_error_handler)]
 #![feature(custom_test_frameworks)]
@@ -18,6 +19,8 @@ pub mod address_space;
 pub mod allocator;
 pub mod audit_wire;
 pub mod block;
+#[allow(unused_variables)]
+pub mod boot_gate;
 pub mod build_integrity;
 pub mod checkpoint;
 pub mod clipboard_broker;
@@ -57,10 +60,8 @@ pub mod oom_policy;
 pub mod path_broker;
 pub mod performance;
 pub mod permission_broker;
-pub mod phase_catalog;
 pub mod pipe;
-pub mod post150;
-pub mod post351;
+pub mod system_gate;
 pub mod ring3_trampoline;
 pub mod security;
 pub mod semantic_observability;

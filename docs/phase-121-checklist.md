@@ -1,3 +1,5 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 121 Checklist: Service Loader Contract
 
 ```yaml
@@ -50,7 +52,7 @@ complete (5294623)
 ## Validation
 
 - [x] `cargo check -p kernel`
-- [x] Phase 121 smoke script (`scripts/phase121_service_loader_check.py`)
+- [x] Phase 121 smoke script (`scripts/gate/boot.py --phase 121`)
 - [x] OOM stub returns `ERR_MEM_BUDGET` / E-00 `E00_SATURATED` / quota `ERR_CAP_QUOTA`
 
 ## Deferred

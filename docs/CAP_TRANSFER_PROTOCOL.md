@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/specs/CAP_TRANSFER_PROTOCOL.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/specs/CAP_TRANSFER_PROTOCOL.md`](specs/CAP_TRANSFER_PROTOCOL.md). This flat copy retained until migration squash reconciles any differences.
+
 # Capability Transfer Protocol
 
 ```yaml

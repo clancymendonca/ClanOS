@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/process/COMPAT_SUNSET.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/process/COMPAT_SUNSET.md`](process/COMPAT_SUNSET.md). This flat copy retained until migration squash reconciles any differences.
+
 # Compat Sunset Policy
 
 ```yaml

@@ -57,13 +57,13 @@ The shell exposes:
 Boot emits:
 
 ```text
-Phase12-LoadPlan: prepared=..., rejected=..., pages=..., exec_blocked_ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 Phase 13 additionally emits:
 
 ```text
-Phase13-MappingStub: mapped=..., rejected=..., pages=..., copied=..., zeroed=..., exec_blocked_ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Deferred Work

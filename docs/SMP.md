@@ -13,7 +13,7 @@ Phase 49 adds multiprocessor detection and hooks for future TLB management witho
 Boot smoke:
 
 ```text
-Phase49-Smp: cpus=..., aps=..., parked=..., tlb_hooks=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 Phase 31 binds CR3 on preemptive context switch on the bootstrap processor only. Phase 49 does not migrate runnable tasks to APs.
@@ -21,7 +21,7 @@ Phase 31 binds CR3 on preemptive context switch on the bootstrap processor only.
 ## Validation
 
 ```bash
-python scripts/phase49_smp_check.py --timeout 180
+python scripts/gate/legacy.py --phase 49 --timeout 180
 ```
 
 ## Runqueue Skeleton (Phase 59)
@@ -31,7 +31,7 @@ Phase 59 increments per-CPU enqueue counters when the BSP scheduler preempts. Ap
 Boot smoke:
 
 ```text
-Phase59-Runqueues: cpus=..., enqueued=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## TLB Shootdown Accounting (Phase 68)
@@ -41,7 +41,7 @@ Phase59-Runqueues: cpus=..., enqueued=..., ok=true
 Boot smoke:
 
 ```text
-Phase68-TlbShootdown: cpus=..., shootdowns=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## AP Idle Accounting (Phase 69)
@@ -51,7 +51,7 @@ When more than one CPU is reported, `smp::init()` increments `ap_idle_ticks` to 
 Boot smoke:
 
 ```text
-Phase69-ApIdle: aps=..., idle_ticks=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## IPI TLB Shootdown Stub (Phase 78)
@@ -61,7 +61,7 @@ Phase69-ApIdle: aps=..., idle_ticks=..., ok=true
 Boot smoke:
 
 ```text
-Phase78-IpiTlb: cpus=..., ipis=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## AP Idle Trampoline (Phase 79)
@@ -71,7 +71,7 @@ Phase78-IpiTlb: cpus=..., ipis=..., ok=true
 Boot smoke:
 
 ```text
-Phase79-ApTrampoline: aps=..., idle_ticks=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## LAPIC IPI Send Stub (Phase 89)
@@ -81,7 +81,7 @@ Phase79-ApTrampoline: aps=..., idle_ticks=..., ok=true
 Boot smoke:
 
 ```text
-Phase89-IpiSend: sent=..., acked=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Work-Stealing Stub (Phase 97)
@@ -91,7 +91,7 @@ When the BSP runqueue is empty (`CPU0_READY == 0`) but CPU1 has work, `try_work_
 Boot smoke:
 
 ```text
-Phase97-WorkSteal: steals=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## AP Runnable Enqueue Stub (Phase 98)
@@ -101,7 +101,7 @@ Phase97-WorkSteal: steals=..., ok=true
 Boot smoke:
 
 ```text
-Phase98-ApRunnable: enqueued=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## LAPIC ICR Write Stub (Phase 99)
@@ -111,7 +111,7 @@ Phase98-ApRunnable: enqueued=..., ok=true
 Boot smoke:
 
 ```text
-Phase99-LapicIcr: writes=..., sent=..., ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Deferred

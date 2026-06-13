@@ -36,7 +36,7 @@ The shell exposes:
 Boot emits:
 
 ```text
-Phase18-Ring3: entries=..., traps=..., rejected=..., trap_vector=128, survived=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Safety Boundary

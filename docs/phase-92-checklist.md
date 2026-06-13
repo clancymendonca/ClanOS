@@ -1,14 +1,16 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 92 Checklist: `PollLite` Syscall
 
 ## Scope
 
 - [x] `Poll = 82`: single-fd readiness (read = 1) on pipe fds.
-- [x] `POLL_CALLS` / `POLL_READY` counters; `Phase92-PollLite` boot output.
+- [x] Covered by boot gate `smp_depth` (`AresOS-BootGate: name=smp_depth ok=true`)
 
 ## Validation
 
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/phase92_poll_lite_check.py --timeout 180`
+- [x] `python scripts/gate/boot.py --phase 92 --timeout 180
 
 ## Deferred
 

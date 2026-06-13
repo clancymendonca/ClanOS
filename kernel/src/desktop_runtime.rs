@@ -8,6 +8,14 @@ pub fn boot_desktop() {
     if crate::framebuffer::init_mode_13h() {
         crate::desktop_shell::bootstrap_windows();
         crate::framebuffer::render_desktop_frame();
+        let (misc, seq4, gc6, crtc1) = crate::framebuffer::mode13h_register_readback();
+        crate::serial_println!(
+            "Desktop: vga readback misc={:#04x} seq4={:#04x} gc6={:#04x} crtc1={:#04x}",
+            misc,
+            seq4,
+            gc6,
+            crtc1
+        );
     }
 }
 

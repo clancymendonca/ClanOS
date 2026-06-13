@@ -80,11 +80,8 @@
     "threat_nodes_open": 11,
     "ipc_bridge_compat_internal": 0,
     "boot_smokes": [
-      "Phase201-VirtioBlk",
-      "Phase140-IPC",
-      "Phase404-Network",
-      "Phase149-Epoch5",
-      "Phase150-Milestone"
+      "AresOS-BootGate: ok=true",
+      "AresOS-SystemGate: ok=true"
     ],
     "notes": "Four-layer boundary review; QEMU config v1; plan superseded by gap_registry + CHARTER."
   },

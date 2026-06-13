@@ -192,23 +192,18 @@ def emit_status(matrix: dict) -> str:
     lines = [
         "# AresOS Project Status",
         "",
-        "## Snapshot (post-150 roadmap through phase 350)",
+        "## Snapshot (fully operational OS)",
         "",
-        "- **Phases 111-130:** platform brokers + interim IPC (epoch 1, commit `044d4ef`)",
-        "- **Phase 201:** virtio-blk hybrid stub (epoch 2)",
-        "- **Phases 131-140:** build integrity, native endpoints, audit wire, IPC integration (epoch 3)",
-        "- **Phase 404:** virtio-net, compat sockets, functional network broker (epoch 4)",
-        "- **Phase 149:** service scheduler, SMP readiness, compositor, OOM policy (epoch 5)",
-        "- **Phase 150:** four-layer boundary review (epoch 6)",
-        "- **Phases 151-350:** [`ROADMAP_151_350.md`](docs/ROADMAP_151_350.md); `COMPLETED_PHASE=350`; epochs 7-14 graduated",
-        "- **Userland:** `ares-rt` host-target demo + `install_userland.py`",
-        "- **Epoch 0 evidence tier:** `proof-rights` proptest + Kani harnesses; `kani_gate.py` in covenant CI",
-        f"- gap_registry: {gaps_open} open, {gaps_addressed} addressed, {gaps_wontfix} wontfix (350 total)",
+        "- **Boot gate:** `kernel/src/boot_gate.rs` (`BOOT_GATE_VERSION = 1.0.0`)",
+        "- **System gate:** `kernel/src/system_gate.rs` (`SYSTEM_GATE_VERSION = 1.0.0`)",
+        "- **Desktop:** VGA 320×200, compositor, PS/2 mouse, window manager, taskbar",
+        "- **Userland:** `/bin/demo-hello`, `/bin/ares-info` (`ares-rt` `#![no_std]`)",
+        "- **Network:** virtio-net loopback + external route simulation",
+        f"- gap_registry: {gaps_open} open, {gaps_addressed} addressed ({gaps_addressed + gaps_open + gaps_wontfix} total)",
         f"- threat nodes open: {threats_open}",
         f"- kani_harness_count: {kani_count}",
-        "- phase_checklists: 200 implemented (151-350)",
-        "- release_scorecard: [`RELEASE_SCORECARD_M350.md`](docs/RELEASE_SCORECARD_M350.md)",
-        "- ipc_bridge_compat_internal: 0 (retired phase 134)",
+        "- validation: [`VALIDATION_GATES.md`](docs/VALIDATION_GATES.md)",
+        "- release_scorecard: [`RELEASE_SCORECARD_M500.md`](docs/RELEASE_SCORECARD_M500.md)",
         "",
         "## Threat coverage by goal",
         "",
@@ -217,32 +212,19 @@ def emit_status(matrix: dict) -> str:
         total = sum(matrix["total"].get(g, {}).values())
         closed = sum(matrix["closed"].get(g, {}).values())
         lines.append(f"- `{g}`: {closed}/{total} closed")
-    lines.append("")
-    lines.append("## Integration milestones")
-    lines.append("")
-    lines.append("| Milestone | Serial line | Script |")
-    lines.append("|-----------|-------------|--------|")
-    lines.append("| Epoch 7 | `Phase175-Epoch7` | `phase175_epoch7_check.py` |")
-    lines.append("| M200 | `Phase200-Milestone` | `phase200_milestone_check.py` |")
-    lines.append("| M250 | `Phase250-Milestone` | `phase250_milestone_check.py` |")
-    lines.append("| M300 | `Phase300-Milestone` | `phase300_milestone_check.py` |")
-    lines.append("| M350 | `Phase350-Milestone` | `phase350_milestone_check.py` |")
-    lines.append("")
-    lines.append("## Boot smokes (QEMU)")
-    lines.append("")
-    lines.append("Expected serial lines (all `ok=true`):")
-    lines.append("")
-    lines.append("- `Phase201-VirtioBlk`")
-    lines.append("- `Phase140-IPC` (`bridge=0`)")
-    lines.append("- `Phase404-Network`")
-    lines.append("- `Phase149-Epoch5`")
-    lines.append("- `Phase150-Milestone`")
-    lines.append("- `Phase175-Epoch7` through `Phase350-Milestone`")
-    lines.append("")
-    lines.append(
-        "Scripts: `phase201_virtio_blk_check.py`, `phase134_endpoint_check.py`, "
-        "`phase404_network_check.py`, `phase149_epoch5_check.py`, `phase150_milestone_check.py`, "
-        "`phase175_epoch7_check.py` … `phase350_milestone_check.py`"
+    lines.extend(
+        [
+            "",
+            "## Validation gates",
+            "",
+            "| Gate family | Final serial line | Host check |",
+            "|-------------|-------------------|------------|",
+            "| Boot | `AresOS-BootGate: ok=true` | `scripts/gate/boot_host.py` |",
+            "| System | `AresOS-SystemGate: ok=true` | `scripts/gate/system_host.py` |",
+            "",
+            "QEMU: `scripts/gate/boot.py --gate boot`, `scripts/gate/system.py --gate system`",
+            "",
+        ]
     )
     return "\n".join(lines)
 

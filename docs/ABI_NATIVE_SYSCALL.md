@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/specs/ABI_NATIVE_SYSCALL.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/specs/ABI_NATIVE_SYSCALL.md`](specs/ABI_NATIVE_SYSCALL.md). This flat copy retained until migration squash reconciles any differences.
+
 # Native Syscall ABI (G4)
 
 ```yaml

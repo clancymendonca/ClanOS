@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/architecture/KANI_SCOPE.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/architecture/KANI_SCOPE.md`](architecture/KANI_SCOPE.md). This flat copy retained until migration squash reconciles any differences.
+
 # Kani Scope
 
 ```yaml

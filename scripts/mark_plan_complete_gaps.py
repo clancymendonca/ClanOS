@@ -55,14 +55,14 @@ IMPL: dict[int, str] = {
 }
 
 EPOCH_SMOKE: dict[int, str] = {
-    121: "scripts/phase121_service_loader_check.py",
-    130: "scripts/phase130_platform_check.py",
-    134: "scripts/phase134_endpoint_check.py",
-    140: "scripts/phase134_endpoint_check.py",
-    201: "scripts/phase201_virtio_blk_check.py",
-    404: "scripts/phase404_network_check.py",
-    149: "scripts/phase149_epoch5_check.py",
-    150: "scripts/phase150_milestone_check.py",
+    121: "scripts/gate/boot.py --phase 121",
+    130: "scripts/gate/boot.py --phase 130",
+    134: "scripts/gate/boot.py --phase 134",
+    140: "scripts/gate/boot.py --phase 140",
+    201: "scripts/gate/boot.py --phase 201",
+    404: "scripts/gate/boot.py --phase 404",
+    149: "scripts/gate/boot.py --phase 149",
+    150: "scripts/gate/boot.py --phase 150",
 }
 
 

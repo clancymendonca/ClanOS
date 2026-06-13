@@ -1,3 +1,10 @@
+```yaml
+status: superseded-by: docs/specs/PROTOCOL_CHANGELOG.md
+semantics_version: 1.0.0
+```
+
+> **Canonical:** [`docs/specs/PROTOCOL_CHANGELOG.md`](specs/PROTOCOL_CHANGELOG.md). This flat copy retained until migration squash reconciles any differences.
+
 # Protocol Changelog
 
 ```yaml

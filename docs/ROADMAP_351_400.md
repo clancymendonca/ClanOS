@@ -49,7 +49,7 @@ Continues from [ROADMAP_151_350.md](ROADMAP_151_350.md) milestone 350. Goal: **f
 
 | Criterion | Falsifier |
 |-----------|-----------|
-| Desktop | Phase375-Milestone smoke false |
+| Desktop | AresOS-Gate: name=desktop ok=true smoke false |
 | Native apps | No ring-3 ELF runs from `/bin` manifest |
 | Network | Loopback ping smoke false |
-| Boot | Phase350-Milestone regression |
+| Boot | AresOS-Gate: name=release ok=true regression |

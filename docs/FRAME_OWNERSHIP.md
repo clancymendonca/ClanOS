@@ -36,7 +36,7 @@ Syscalls expose tracked, available, allocated, allocation, release, and failed-a
 Boot emits:
 
 ```text
-Phase14-Frames: initialized=..., tracked=..., available=..., allocated=..., allocations=..., releases=..., failures=..., smoke_ok=true
+See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 ## Safety Boundary

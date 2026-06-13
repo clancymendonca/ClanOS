@@ -1,3 +1,5 @@
+> **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy `PhaseN-*` boot serial lines are retired.
+
 # Phase 20 Checklist: Minimal ELF Execution MVP
 
 ## Scope
@@ -7,13 +9,13 @@
 - [x] Keep arbitrary ELF execution, dynamic linking, relocation, and demand paging out of scope.
 - [x] Add blocked `UserElfExited` process metadata.
 - [x] Expose ELF execution counters through shell and syscalls.
-- [x] Emit `Phase20-UserElf` boot smoke output.
+- [x] Covered by boot gate `userspace_bootstrap` (`AresOS-BootGate: name=userspace_bootstrap ok=true`)
 
 ## Validation
 
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/phase20_user_elf_check.py --timeout 180`
+- [x] `python scripts/gate/boot.py --phase 20 --timeout 180
 
 ## Deferred
 
