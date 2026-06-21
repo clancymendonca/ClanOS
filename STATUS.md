@@ -4,12 +4,13 @@
 
 **GitHub Actions is not currently substantiating pushes.** Run [27895509720](https://github.com/clancymendonca/ClanOS/actions/runs/27895509720) (tip `e4939f4`) failed before any job steps: account billing lock — workflow did not execute (`cargo fmt`, `validation_matrix.py`, QEMU). Re-run CI after billing is restored; do not treat a green local matrix as CI proof until then.
 
-**Last verified locally (2026-06-21):** tip `e4939f4` — per-commit clean rebuild + signed_elf QEMU 9/9; ADR-0003 PR1 host — `test_loader_signed_exec.py`, `test_loader_signing_sunset_check.py`, `test_signed_elf.py` green.
+**Last verified locally (2026-06-21):** ADR-0003 PR2 — `loader_signed_exec_integration` 12/12 in QEMU + host loader/signed-elf self-tests; gate `2.3.0`.
 
 ## Snapshot (Functional OS — scope 400, QEMU gate v2.2.0)
 
-- **Validation gate:** `kernel/src/validation_gate.rs` (`VALIDATION_GATE_VERSION = 2.2.0`)
-- **ADR-0002 signed ELF (epoch 450):** kernel verifier + in-QEMU negative gauntlet (`cargo test -p kernel --test signed_elf_integration` via `validation_matrix.py`; requires `qemu-system-x86_64` — compile-only is not substantiation)
+- **Validation gate:** `kernel/src/validation_gate.rs` (`VALIDATION_GATE_VERSION = 2.3.0`)
+- **ADR-0002 signed ELF (epoch 450):** kernel verifier + in-QEMU negative gauntlet (`signed_elf_integration`; 9 cases)
+- **ADR-0003 loader signed exec (epoch 460):** kernel `loader_signed_exec.rs` + `loader_signed_exec_integration` (11 cases); seed `/bin/*` migration pending (allowlist sunset scope 465)
 - **Gate audit:** [`docs/GATE_AUDIT.md`](docs/GATE_AUDIT.md) — per-gate substance classification
 - **Gap audit:** [`docs/GAP_AUDIT.md`](docs/GAP_AUDIT.md) — `addressed` ≠ Implemented (204 overclaimed baseline)
 - **Desktop:** VGA 320×200, double-buffered compositor, PS/2 mouse, window manager, taskbar shell
@@ -18,7 +19,7 @@
 - gap_registry: 0 open, 350 addressed — see [`docs/GAP_AUDIT.md`](docs/GAP_AUDIT.md) (58% overclaimed baseline; audit OK = baseline held, not fully substantiated)
 - threat nodes open: 0
 - release_scorecard: [`RELEASE_SCORECARD.md`](docs/RELEASE_SCORECARD.md)
-- **ADR-0003 loader signing (epoch 460):** PR1 host done — `loader_signed_exec_lib.py`, golden corpus, sunset check; PR2 = kernel hook (blocked)
+- **ADR-0003 loader signing (epoch 460):** PR1 host + PR2 kernel pinned corpus done; seed migration + allowlist sunset (465) next
 - Track 1 doc migration: **landed** (`8579e17`)
 - **Q3 sunset (locked):** `sunset_scope=465`, `implementation_scope=460`; CI fails if `current_scope>=465` with non-empty allowlist
 

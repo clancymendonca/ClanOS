@@ -206,6 +206,18 @@ def main() -> int:
             30,
         ),
         (
+            "loader-signed-exec-kernel-integration",
+            [
+                "cargo",
+                "test",
+                "-p",
+                "kernel",
+                "--test",
+                "loader_signed_exec_integration",
+            ],
+            300,
+        ),
+        (
             "signed-elf-kernel-integration",
             [
                 "cargo",

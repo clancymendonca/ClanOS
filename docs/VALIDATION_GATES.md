@@ -2,7 +2,7 @@
 
 ```yaml
 status: authoritative
-validation_gate_version: "2.2.0"
+validation_gate_version: "2.3.0"
 kernel_module: kernel/src/validation_gate.rs
 scripts_package: scripts/gate/
 ```
@@ -34,7 +34,7 @@ Deprecated wrappers (`boot.py`, `system.py`) forward to `run.py` with stderr war
 | Gate | Role | Serial line |
 |------|------|-------------|
 | `shell_storage` | CLANFS mount, seed corpus, shell dispatch | `ClanOS-Gate: name=shell_storage ok=true` |
-| `loader_security` | Program discovery, credentials, ELF inventory | `ClanOS-Gate: name=loader_security ok=true` |
+| `loader_security` | Program discovery, credentials, ELF inventory, pinned loader signed corpus | `ClanOS-Gate: name=loader_security ok=true` |
 | `memory_layout` | Frame ownership, backing, page tables | `ClanOS-Gate: name=memory_layout ok=true` |
 | `userspace_bootstrap` | User context, ring-3 entry, syscalls | `ClanOS-Gate: name=userspace_bootstrap ok=true` |
 | `hw_paging` | HW page tables, CR3, iretq, HW syscalls | `ClanOS-Gate: name=hw_paging ok=true` |
@@ -108,5 +108,9 @@ Per-scope checklists under `docs/scope-*-checklist.md` record **implementation s
 | `gate-signed-elf-host-check` | `scripts/gate/signed_elf.py` |
 | `gate-signed-elf-self-test` | `scripts/gate/test_signed_elf.py` |
 | `signed-elf-kernel-integration` | `cargo test -p kernel --test signed_elf_integration` in QEMU (**9 cases**). Run via `validation_matrix.py` (`ensure_qemu_on_path()`); bare `cargo test` fails if QEMU is not on PATH. Compile success alone is not a pass. |
+| `gate-loader-signed-exec-host-check` | `scripts/gate/loader_signed_exec.py` |
+| `gate-loader-signed-exec-self-test` | `scripts/gate/test_loader_signed_exec.py` |
+| `loader-signing-sunset-check` | `scripts/gate/loader_signing_sunset_check.py` |
+| `loader-signed-exec-kernel-integration` | `cargo test -p kernel --test loader_signed_exec_integration` in QEMU (**11 cases** incl. kind/entry tamper + ADR-0002 body distinctness). Matrix only — same QEMU PATH rule as signed-elf. |
 
 See also [`RELEASE_SCORECARD.md`](RELEASE_SCORECARD.md).

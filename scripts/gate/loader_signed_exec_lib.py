@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Loader exec manifest signing (ADR-0003) — host reference implementation.
 
+CLOSED SIGNED-FIELD SET: see config/loader_signed_exec/WIRE_FORMAT.txt § canonical signed body.
+New clan-exec-v1 fields default outside the signed set unless an ADR amendment extends it.
+
 DEV-ONLY SIGNING SEED — NOT A PRODUCTION SECRET
 ------------------------------------------------
 EPOCH460_LOADER_DEV_SEED_DOMAIN is public and deterministic. Anyone with this repo

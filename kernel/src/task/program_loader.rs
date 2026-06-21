@@ -15,7 +15,10 @@ pub enum ProgramKind {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ProgramTrust {
+    /// Digest-only `trust=system` (allowlist-governed during migration).
     System,
+    /// `trust=system-signed` — epoch-460 Ed25519 + digest (ADR-0003).
+    SystemSigned,
     User,
 }
 
@@ -277,6 +280,7 @@ pub fn parse_manifest(contents: &str) -> Result<ProgramManifest, ProgramLoadErro
             "requires" if value == "execute" => requires_execute = true,
             "requires" => return Err(ProgramLoadError::UnsupportedRequirement),
             "trust" if value == "system" => trust = ProgramTrust::System,
+            "trust" if value == "system-signed" => trust = ProgramTrust::SystemSigned,
             "trust" if value == "user" => trust = ProgramTrust::User,
             "trust" => return Err(ProgramLoadError::UnsupportedTrust),
             "owner" => owner = value.to_string(),
@@ -1345,7 +1349,10 @@ pub fn execute_manifest_elf_gated(
         MANIFEST_ELF_REJECTED.fetch_add(1, Ordering::Relaxed);
         return Err(ProgramLoadError::UnsupportedKind);
     }
-    if program.trust != ProgramTrust::System && !EXECUTION_ALLOWLIST.contains(&name) {
+    if program.trust != ProgramTrust::System
+        && program.trust != ProgramTrust::SystemSigned
+        && !EXECUTION_ALLOWLIST.contains(&name)
+    {
         MANIFEST_ELF_REJECTED.fetch_add(1, Ordering::Relaxed);
         return Err(ProgramLoadError::HwElfRejected);
     }
@@ -1433,27 +1440,47 @@ pub fn execute_trusted_manifest_elf(
         TRUST_EXEC_REJECTED.fetch_add(1, Ordering::Relaxed);
         return Err(ProgramLoadError::UnsupportedKind);
     }
-    if program.trust != ProgramTrust::System {
+    if program.trust == ProgramTrust::User {
         TRUST_EXEC_REJECTED.fetch_add(1, Ordering::Relaxed);
         return Err(ProgramLoadError::HwElfRejected);
     }
-    if let Some(manifest) = crate::storage::read_file(&program.source_path)
+    let manifest_text = crate::storage::read_file(&program.source_path)
         .ok()
-        .flatten()
-    {
-        if let Some(manifest_parsed) = parse_manifest(&manifest).ok() {
-            if let (Some(digest), Some(image_path)) = (
-                manifest_parsed.digest_hex.as_ref(),
-                program.image_path.as_ref(),
-            ) {
-                let elf = crate::storage::read_file(image_path).ok().flatten();
-                if let Some(elf) = elf {
-                    if !crate::image_digest::verify_digest_hex(elf.as_bytes(), digest) {
-                        TRUST_EXEC_REJECTED.fetch_add(1, Ordering::Relaxed);
-                        return Err(ProgramLoadError::HwElfRejected);
+        .flatten();
+    let elf_bytes = program
+        .image_path
+        .as_ref()
+        .and_then(|path| crate::storage::read_file(path).ok().flatten());
+    match program.trust {
+        ProgramTrust::SystemSigned => {
+            let Some(manifest) = manifest_text else {
+                TRUST_EXEC_REJECTED.fetch_add(1, Ordering::Relaxed);
+                return Err(ProgramLoadError::HwElfRejected);
+            };
+            let Some(elf) = elf_bytes else {
+                TRUST_EXEC_REJECTED.fetch_add(1, Ordering::Relaxed);
+                return Err(ProgramLoadError::HwElfRejected);
+            };
+            if crate::loader_signed_exec::verify_signed_exec(elf.as_bytes(), &manifest).is_err() {
+                TRUST_EXEC_REJECTED.fetch_add(1, Ordering::Relaxed);
+                return Err(ProgramLoadError::HwElfRejected);
+            }
+        }
+        ProgramTrust::System => {
+            if let (Some(manifest), Some(elf)) = (manifest_text, elf_bytes) {
+                if let Some(manifest_parsed) = parse_manifest(&manifest).ok() {
+                    if let Some(digest) = manifest_parsed.digest_hex.as_ref() {
+                        if !crate::image_digest::verify_digest_hex(elf.as_bytes(), digest) {
+                            TRUST_EXEC_REJECTED.fetch_add(1, Ordering::Relaxed);
+                            return Err(ProgramLoadError::HwElfRejected);
+                        }
                     }
                 }
             }
+        }
+        ProgramTrust::User => {
+            TRUST_EXEC_REJECTED.fetch_add(1, Ordering::Relaxed);
+            return Err(ProgramLoadError::HwElfRejected);
         }
     }
     TRUST_EXEC_OK.fetch_add(1, Ordering::Relaxed);
@@ -1470,6 +1497,10 @@ pub fn execute_trusted_manifest_elf(
         output: format!("{name}: trusted"),
         exit_code: 0,
     })
+}
+
+pub fn smoke_loader_signed_exec_corpus() -> bool {
+    crate::loader_signed_exec::verify_pinned_loader_corpus().is_ok()
 }
 
 pub fn smoke_trust_exec_smoke() -> bool {

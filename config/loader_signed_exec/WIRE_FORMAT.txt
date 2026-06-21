@@ -1,6 +1,10 @@
 clan-exec-v1 signed loader manifest — wire format (ADR-0003 Q5)
 ================================================================
 
+CLOSED SIGNED-FIELD SET: only lines in § canonical signed body below are Ed25519-signed.
+New clan-exec-v1 fields default outside the signed set; extending it requires ADR amendment,
+golden-byte regeneration, and kernel/host fixture updates (see loader_signed_exec_lib.py).
+
 Normative host reference: scripts/gate/loader_signed_exec_lib.py
 Golden signed bytes:       config/loader_signed_exec/canonical_body.utf8
 Gate corpus:               config/loader_signed_exec/

@@ -2,7 +2,7 @@
 
 ```yaml
 status: authoritative
-validation_gate_version: "2.2.0"
+validation_gate_version: "2.3.0"
 roadmap: docs/ROADMAP_401_500.md
 companion: docs/GATE_AUDIT.md
 ```
@@ -27,7 +27,8 @@ Legend matches [`GATE_AUDIT.md`](GATE_AUDIT.md): Real / Partial / Shallow / Hard
 |------------------------------------------------------|--------------|-------|
 | Functional OS regression | **Audited** | `functional_gate()` — see GATE_AUDIT.md |
 | Production SMP | **Gap** | `smoke_ap_scheduler` Real-ish counter; not multi-AP load/fairness |
-| Signed ELF | **Real (pinned corpus)** | Kernel `signed_elf.rs` Ed25519 verify vs epoch-450 anchor; **execution proof:** `signed-elf-kernel-integration` (9 QEMU test cases, negatives + golden octets). Host Python checks alone are insufficient. |
+| Signed ELF (gate corpus) | **Real (pinned corpus)** | Kernel `signed_elf.rs` Ed25519 verify vs epoch-450 anchor; **execution proof:** `signed-elf-kernel-integration` (9 QEMU cases). |
+| Loader signed exec (pinned corpus) | **Real (pinned corpus)** | Kernel `loader_signed_exec.rs` vs epoch-460 anchor; distinct canonical body from ADR-0002; **execution proof:** `loader-signed-exec-kernel-integration` (11 QEMU cases incl. kind/entry tamper). General `/bin/*` seed migration still pending (allowlist). |
 | External network | **Gap** | Loopback simulation; flag `false` until Real gate (fixed 2026-06-20) |
 | Release gate | **Partial** | Serial `ok=true` composes gaps above |
 
@@ -43,10 +44,11 @@ Legend matches [`GATE_AUDIT.md`](GATE_AUDIT.md): Real / Partial / Shallow / Hard
 
 These require **new gate design** against real backends, not wiring existing orphans:
 
-1. ~~**Signed ELF** — verify user manifests against system trust anchor / key material (not self-generated digest)~~ **Done (pinned gate corpus only)** — see ADR-0002; loader `/bin/*` still deferred
-2. **External network** — virtio (or NIC) TX/RX to non-loopback peer or test harness
-3. **Production SMP** — AP scheduler under load (fairness/latency thresholds; see preemption soak patterns)
-4. **CI gate** — kernel `ci_gate` invokes host `validation_matrix.py` subset or drops stub
+1. ~~**Signed ELF (gate corpus)** — ADR-0002~~ **Done**
+2. ~~**Loader signed exec (kernel verifier)** — ADR-0003 PR2 pinned corpus~~ **Done**; seed `/bin/*` migration + allowlist sunset (scope 465) **in progress**
+3. **External network** — virtio (or NIC) TX/RX to non-loopback peer or test harness
+4. **Production SMP** — AP scheduler under load (fairness/latency thresholds; see preemption soak patterns)
+5. **CI gate** — kernel `ci_gate` invokes host `validation_matrix.py` subset or drops stub
 
 See [`GATE_DESIGN_401_500.md`](GATE_DESIGN_401_500.md) for proposed serial semantics and ADR links. Priority implementation: [`architecture/ADR/ADR-0002-signed-elf-production-gate.md`](architecture/ADR/ADR-0002-signed-elf-production-gate.md).
 

@@ -49,7 +49,7 @@ def main() -> int:
 
     CORPUS.mkdir(parents=True, exist_ok=True)
     (CORPUS / lsel.PAYLOAD_NAME).write_bytes(payload)
-    (CORPUS / lsel.MANIFEST_NAME).write_text(manifest_text, encoding="utf-8")
+    (CORPUS / lsel.MANIFEST_NAME).write_text(manifest_text, encoding="utf-8", newline="\n")
     signed_fields = lsel.ExecManifest(
         name=manifest.name,
         kind=manifest.kind,

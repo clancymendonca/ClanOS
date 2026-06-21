@@ -177,6 +177,6 @@ Build order — separate PRs:
 1. ~~Lock Q1–Q5~~ **Done** (ADR revision + PR1 host)
 2. ~~Q5 wire format + golden bytes + `trust_anchor_epoch460_loader.toml`~~ **Done (PR1 host)**
 3. ~~Host sign/verify tooling + fixtures + `loader_signing_sunset_check.py`~~ **Done (PR1 host)**
-4. Kernel verifier hook in `program_loader` + negative QEMU gauntlet **(PR2 — next)**
+4. ~~Kernel verifier hook in `program_loader` + negative QEMU gauntlet~~ **Done (PR2)** — `loader_signed_exec.rs`, `loader_signed_exec_integration.rs`, `VALIDATION_GATE_VERSION` 2.3.0
 5. Seed corpus migration (shrink allowlist) + gate/version bump + threat node + audit update
 6. Scope **465**: allowlist empty, `loader_digest_only_grace = false`, sunset check green

@@ -78,6 +78,7 @@ pub mod service_scheduler;
 pub mod shared_loader;
 pub mod signal;
 pub mod signed_elf;
+pub mod loader_signed_exec;
 pub mod smp;
 pub mod storage;
 pub mod storage_broker;

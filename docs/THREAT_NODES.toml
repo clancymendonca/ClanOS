@@ -151,6 +151,17 @@ depends_on = ["T-supply-chain"]
 summary = "Forged or tampered signed ELF gate corpus accepted via manifest parser or Ed25519 verify gap"
 
 [[nodes]]
+id = "T-loader-signed-exec-forgery"
+epoch = 460
+status = "closed"
+tier = "A"
+goals = ["integrity_violation"]
+surfaces = ["program_loader"]
+closing_commit = "kernel loader_signed_exec.rs verifier + loader_signed_exec_integration negative fixtures"
+depends_on = ["T-signed-elf-forgery"]
+summary = "Forged clan-exec-v1 loader manifest (kind/entry tamper, bad sig) accepted on exec path"
+
+[[nodes]]
 id = "T-physical-access"
 epoch = 6
 status = "deferred"
