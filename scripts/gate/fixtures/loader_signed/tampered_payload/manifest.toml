@@ -1,0 +1,11 @@
+clan-exec-v1
+name=loader-gate-test
+kind=elf64-image
+entry=0x400000
+image=/bin/loader-gate-test.elf
+requires=execute
+digest=sha256:b1b9502ac193e4b6cce4cb6146975b86612635253dc003bd7f280fd29ad2f262
+trust=system-signed
+owner=admin
+description=ADR-0003 loader signing gate corpus
+sig=ed25519:1b7352b8053990f973479be56ca85f6a36dc83b5e7d9e49be3f1f45ab0ea53b719ee54f8367baf7fee8219f344b655a8fcebd456456ba27ff370eec819eaa60a

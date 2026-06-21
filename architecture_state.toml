@@ -9,3 +9,4 @@ has_external_network = false
 has_persisted_cap_state = false
 has_hypervisor_guest_target = false
 has_no_std_enforcement = true
+loader_digest_only_grace = true

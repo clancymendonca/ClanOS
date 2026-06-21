@@ -7,7 +7,7 @@ decision_date: 2026-06-21
 revision_date: 2026-06-21
 depends_on: ADR-0002
 blocks: program_loader signature path, loader_security gate reclassification
-q5_status: pending-golden-bytes
+q5_status: locked-pr1-host
 ```
 
 ## Context
@@ -49,7 +49,16 @@ Kernel embeds **both** public keys at build time (separate `include_bytes!` / co
 
 ---
 
-### Q3 — Transition: **Option D with enforced sunset (concrete triggers)**
+### Q3 — Transition: **Option D with enforced sunset (concrete triggers locked)**
+
+**Locked constants** (same weight as Q2 anchor separation — amendment required to change):
+
+| Constant | Value | Enforced by |
+|----------|-------|-------------|
+| `implementation_scope` | **460** | `config/loader_signing_policy.toml` |
+| `sunset_scope` | **465** | `config/loader_signing_policy.toml` |
+| `loader_digest_only_grace` | **`true` until allowlist empty** | `architecture_state.toml` — must be `false` before scope 465 close |
+| CI fail rule | **`current_scope >= 465` AND allowlist non-empty** | `scripts/gate/loader_signing_sunset_check.py` (hard exit 1) |
 
 Two trust classes — no silent "production ⇒ all `/bin/*` signed" claim:
 
@@ -90,17 +99,26 @@ Same discipline as `architecture_state_check.py` hard-denying `has_external_netw
 
 ---
 
-### Q5 — Canonical signed body for `clan-exec-v1`: **pending golden bytes**
+### Q5 — Canonical signed body for `clan-exec-v1`: **locked (PR1 golden bytes)**
 
-**Status:** not lockable from prose. Implementation PR1 for this epoch must add:
+**Status:** locked in [`config/loader_signed_exec/WIRE_FORMAT.txt`](../../../config/loader_signed_exec/WIRE_FORMAT.txt) and golden octets `canonical_body.utf8`.
 
-- `config/loader_signed_exec/WIRE_FORMAT.txt` (normative)
-- Golden signed octets + fixtures under `config/loader_signed_exec/` and `scripts/gate/fixtures/loader_signed/`
-- Open field questions to resolve in PR1 before kernel hook merges:
-  - Minimum signed fields: magic, `name`, `digest=sha256:` (recomputed from ELF), `trust=` value — **confirm** whether `kind`, `entry`, `image`, `owner` bind to signature or remain integrity-only metadata
-  - LF rules, `sig=` exclusion — mirror ADR-0002
+Signed fields (fixed order, LF-only body, `sig=` excluded):
 
-**Blocked:** kernel `program_loader` signature hook until Q5 golden bytes land.
+1. `clan-exec-v1`
+2. `name=`
+3. `kind=` (`builtin-alias` | `elf64-image`)
+4. `entry=`
+5. `image=` — **only** when `kind=elf64-image`
+6. `requires=execute`
+7. `digest=sha256:` — recomputed from ELF/`payload.bin` at verify
+8. `trust=system-signed`
+
+**Not signed:** `owner=`, `description=`, `sig=`
+
+**Rejected:** reusing ADR-0002 `clan-signed-manifest-v1` canonical body for loader manifests.
+
+Host reference: `scripts/gate/loader_signed_exec_lib.py` (must not import ADR-0002 canonicalization). Kernel hook remains blocked until QEMU gauntlet epoch (PR2).
 
 ---
 
@@ -152,13 +170,13 @@ Same discipline as `architecture_state_check.py` hard-denying `has_external_netw
 
 ---
 
-## Implementation epoch (Q5 unblocks kernel PR)
+## Implementation epoch
 
 Build order — separate PRs:
 
-1. ~~Lock Q1–Q4~~ **Done** (this revision)
-2. Q5 wire format + golden bytes + `trust_anchor_epoch460_loader.toml`
-3. Host sign/verify tooling + fixtures + `loader_signing_sunset_check.py`
-4. Kernel verifier hook in `program_loader` + negative QEMU gauntlet
+1. ~~Lock Q1–Q5~~ **Done** (ADR revision + PR1 host)
+2. ~~Q5 wire format + golden bytes + `trust_anchor_epoch460_loader.toml`~~ **Done (PR1 host)**
+3. ~~Host sign/verify tooling + fixtures + `loader_signing_sunset_check.py`~~ **Done (PR1 host)**
+4. Kernel verifier hook in `program_loader` + negative QEMU gauntlet **(PR2 — next)**
 5. Seed corpus migration (shrink allowlist) + gate/version bump + threat node + audit update
 6. Scope **465**: allowlist empty, `loader_digest_only_grace = false`, sunset check green

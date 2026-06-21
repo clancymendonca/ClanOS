@@ -1,0 +1,74 @@
+clan-exec-v1 signed loader manifest — wire format (ADR-0003 Q5)
+================================================================
+
+Normative host reference: scripts/gate/loader_signed_exec_lib.py
+Golden signed bytes:       config/loader_signed_exec/canonical_body.utf8
+Gate corpus:               config/loader_signed_exec/
+Fixtures:                  scripts/gate/fixtures/loader_signed/
+
+NOT ADR-0002: this format uses header clan-exec-v1 and a DIFFERENT canonical
+signed body from clan-signed-manifest-v1. Do not call signed_elf_lib canonical
+functions for loader exec manifests.
+
+Files per gate corpus directory
+-------------------------------
+  payload.bin     ELF octets; SHA256 digest input (raw bytes, no transform).
+  manifest.toml   clan-exec-v1 text manifest; see below.
+
+Manifest text (on disk)
+-----------------------
+  Encoding: UTF-8, no BOM.
+  Line endings: LF preferred; host parser strips trailing CR on read.
+  Blank lines and # comments (after header) are ignored by parser.
+  Required lines for trust=system-signed (order on disk may include unsigned metadata):
+    1. clan-exec-v1
+    2. name=<program-name>
+    3. kind=builtin-alias | kind=elf64-image
+    4. entry=<entry-point or alias target>
+    5. image=<path>          (required when kind=elf64-image)
+    6. requires=execute
+    7. digest=sha256:<64 lowercase hex>
+    8. trust=system-signed
+  Optional metadata (NOT in signed body): owner=, description=
+  Optional trailing line (NOT signed):
+    sig=ed25519:<128 lowercase hex chars>
+
+Canonical signed body (exact bytes Ed25519 verifies)
+----------------------------------------------------
+  UTF-8, LF only (\n), no CR, no BOM, no trailing blank line after trust= line.
+
+  Fixed line order (values from parsed manifest after digest recompute):
+
+    clan-exec-v1\n
+    name=<name>\n
+    kind=<kind>\n
+    entry=<entry>\n
+    [image=<image>\n]     ONLY when kind=elf64-image (required for that kind)
+    requires=execute\n
+    digest=sha256:<digest_hex>\n
+    trust=system-signed\n
+
+  Rules:
+  - trust= MUST be exactly system-signed for signed verification path.
+  - requires= MUST be exactly execute in signed body.
+  - digest_hex MUST equal SHA256(payload.bin) lowercase hex at verify time.
+  - owner= and description= are NEVER included in signed bytes.
+  - sig= line is NEVER included in signed byte sequence.
+
+Verification order (fail closed)
+--------------------------------
+  1. Parse manifest (reject bad header, trust, digest format, missing sig for system-signed).
+  2. digest_actual = SHA256(payload.bin) as lowercase hex.
+  3. Reject if digest_actual != manifest digest_hex.
+  4. Reconstruct canonical signed body from parsed signed fields + digest_actual.
+  5. Ed25519 verify(signature, canonical_body_bytes, epoch-460 loader anchor public key).
+
+Trust anchor
+------------
+  config/trust_anchor_epoch460_loader.toml
+
+Development signing seed (HOST ONLY — NOT SECRET)
+-----------------------------------------------
+  Private key derived from public domain string
+  "clanos-epoch460-loader-exec-signing-anchor-v1" (SHA256 → Ed25519 seed).
+  Separate from epoch-450 gate corpus seed. MUST NOT reuse epoch450_dev_private_key().

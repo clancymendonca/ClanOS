@@ -112,3 +112,18 @@ The production gate pinned corpus (`config/signed_elf_test_corpus/`) uses a **pu
 - This is separate from `clan-exec-v1` manifest digest checks (`digest=sha256:`) — see above; ADR-0002 adds a signature layer for the gate smoke only until loader integration lands.
 
 Wire format: [`config/signed_elf_test_corpus/WIRE_FORMAT.txt`](../config/signed_elf_test_corpus/WIRE_FORMAT.txt). Kernel verification must test against committed fixture bytes verbatim.
+
+## Epoch-460 loader exec signing (ADR-0003 PR1)
+
+Loader `/bin/*` signing uses a **separate** trust anchor and canonical signed body from ADR-0002:
+
+| Item | Path |
+|------|------|
+| Anchor (public key only) | `config/trust_anchor_epoch460_loader.toml` |
+| Wire format + golden bytes | `config/loader_signed_exec/WIRE_FORMAT.txt`, `canonical_body.utf8` |
+| Host library | `scripts/gate/loader_signed_exec_lib.py` |
+| Dev seed domain | `clanos-epoch460-loader-exec-signing-anchor-v1` (public, deterministic) |
+
+- Do **not** reuse `epoch450_dev_private_key()`, `signed_elf_lib.canonical_signed_body*`, or the epoch-450 anchor for loader exec manifests.
+- `trust=system-signed` requires `sig=ed25519:` verified against epoch-460 anchor; `trust=system` digest-only is allowlist-governed until scope **465** (`loader_signing_sunset_check.py`).
+- Kernel `program_loader` hook is **not** part of PR1 — host fixtures and negative gauntlet first.

@@ -186,6 +186,26 @@ def main() -> int:
             30,
         ),
         (
+            "gate-loader-signed-exec-host-check",
+            ["python", "scripts/gate/loader_signed_exec.py"],
+            30,
+        ),
+        (
+            "gate-loader-signed-exec-self-test",
+            ["python", "scripts/gate/test_loader_signed_exec.py"],
+            60,
+        ),
+        (
+            "loader-signing-sunset-check",
+            ["python", "scripts/gate/loader_signing_sunset_check.py"],
+            30,
+        ),
+        (
+            "loader-signing-sunset-self-test",
+            ["python", "scripts/gate/test_loader_signing_sunset_check.py"],
+            30,
+        ),
+        (
             "signed-elf-kernel-integration",
             [
                 "cargo",

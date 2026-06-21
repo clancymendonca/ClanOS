@@ -94,7 +94,7 @@ Records alternatives considered, rationale, and epoch. **Routine decisions** are
 
 ### ADR-0003-loader-signed-exec — Loader exec manifest signing (scope 460–465)
 
-**Status:** accepted (Q1–Q4 locked 2026-06-21; Q5 pending golden bytes)  
+**Status:** accepted (Q1–Q5 locked 2026-06-21; PR1 host landed; PR2 kernel blocked)  
 **Alternatives:** sidecar manifest (Q1-B); reuse epoch-450 anchor (Q2-A); hard cutover / forward-only grandfather (Q3-A/C); host-only verify  
 **Decision:** Extend **`clan-exec-v1`** with optional `sig=ed25519:` and a **distinct** canonical signed body from ADR-0002 `clan-signed-manifest-v1` (shared syntax, different bytes signed). Separate **`trust_anchor_epoch460_loader.toml`** — never epoch-450 gate seed. Trust classes: `trust=system` digest-only **only** on explicit `config/loader_digest_only_allowlist.toml`; `trust=system-signed` requires epoch-460 sig (kernel, fail closed). Sunset: **`sunset_scope = 465`** enforced by `scripts/gate/loader_signing_sunset_check.py` + `architecture_state.toml` `loader_digest_only_grace` — non-empty allowlist after scope 465 fails CI (same hard-deny shape as `has_external_network`).  
 **Rationale:** Closes ADR-0002 deferral without conflating gate-corpus proof with loader trust; public dev seed cannot become loader root; prevents digest-only exception class calcifying like gap-registry stubs.  

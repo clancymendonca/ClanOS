@@ -1,0 +1,9 @@
+[schema]
+version = "1.0.0"
+algorithm = "ed25519"
+purpose = "loader_exec_signing"
+
+[anchor]
+epoch = 460
+# Public key only — private signing material stays in host tooling (sign_loader_test_corpus.py seed).
+public_key_hex = "4b4f7ba3ccbbd8c32476f9b71514995b16abcc6ec51cdeab7169f11e13c492eb"

@@ -1,0 +1,9 @@
+[schema]
+version = "1.0.0"
+
+[policy]
+# Locked in ADR-0003 Q3 — amendment required to change.
+implementation_scope = 460
+sunset_scope = 465
+# Project scope index for sunset checks (bump as scopes advance).
+current_scope = 460

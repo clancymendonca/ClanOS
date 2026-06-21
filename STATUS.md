@@ -4,18 +4,7 @@
 
 **GitHub Actions is not currently substantiating pushes.** Run [27895509720](https://github.com/clancymendonca/ClanOS/actions/runs/27895509720) (tip `e4939f4`) failed before any job steps: account billing lock — workflow did not execute (`cargo fmt`, `validation_matrix.py`, QEMU). Re-run CI after billing is restored; do not treat a green local matrix as CI proof until then.
 
-**Last verified locally at `e4939f4` (2026-06-21):** per-commit `scripts/verify_commit_clean.py` on all four pushed SHAs; tip additionally host `test_signed_elf.py` and QEMU `signed_elf_integration` (9/9) with `qemu-system-x86_64` on PATH.
-
-## Working tree triage (~152 paths, not on `origin/main`)
-
-Doc-migration catch-up from unified-gate epoch — **no hidden gate/kernel engineering** in this pile (that shipped in `ed56489`…`e4939f4`).
-
-| Bucket | Paths | Action |
-|--------|-------|--------|
-| **Commit** (Track 1 batch) | ~141 — `docs/scope-*-checklist.md` (117), README, ROADMAP/INDEX, architecture redirects, RELEASE_SCORECARD_M*, generator scripts | Single `fixup(docs): Track 1 gate terminology migration` when doc epoch opens; aligns stale `boot.py` / `BootGate` refs with committed `validation_gate.rs` |
-| **Investigate before that commit** | 3 — `config/track1_scope_freeze.toml` (`clan_rt_no_std` → resolved), `DECISION_LOG.md` (M400 wording), scorecard superseded-by headers | Wording looks correct vs `origin/main` (`has_no_std_enforcement = true`, `RELEASE_SCORECARD.md` exists); confirm in batch commit message |
-| **Optional / local** | `.cursor/rules/clanos-principal-engineer.mdc`, `scripts/run_desktop.cmd` (untracked) | Agent guidance + desktop wrapper; commit with doc batch or leave local |
-| **Discard** | 0 | No superseded scratch or duplicate engineering found |
+**Last verified locally (2026-06-21):** tip `e4939f4` — per-commit clean rebuild + signed_elf QEMU 9/9; ADR-0003 PR1 host — `test_loader_signed_exec.py`, `test_loader_signing_sunset_check.py`, `test_signed_elf.py` green.
 
 ## Snapshot (Functional OS — scope 400, QEMU gate v2.2.0)
 
@@ -29,9 +18,9 @@ Doc-migration catch-up from unified-gate epoch — **no hidden gate/kernel engin
 - gap_registry: 0 open, 350 addressed — see [`docs/GAP_AUDIT.md`](docs/GAP_AUDIT.md) (58% overclaimed baseline; audit OK = baseline held, not fully substantiated)
 - threat nodes open: 0
 - release_scorecard: [`RELEASE_SCORECARD.md`](docs/RELEASE_SCORECARD.md)
-- Track 1 doc migration: **gated** — ~152 paths triaged above; batch commit pending (see `config/track1_scope_freeze.toml`)
-- **Next epoch:** loader signing for `/bin/*` — [`ADR-0003`](docs/architecture/ADR/ADR-0003-loader-signed-exec-manifests.md) Q1–Q4 locked; Q5 golden bytes block kernel PR; implementation scope 460, allowlist sunset scope 465
-- **Sequencing:** Track 1 doc batch (~141 paths) ready independent of CI billing; re-run Actions when billing restored — do not block doc migration on GitHub
+- **ADR-0003 loader signing (epoch 460):** PR1 host done — `loader_signed_exec_lib.py`, golden corpus, sunset check; PR2 = kernel hook (blocked)
+- Track 1 doc migration: **landed** (`8579e17`)
+- **Q3 sunset (locked):** `sunset_scope=465`, `implementation_scope=460`; CI fails if `current_scope>=465` with non-empty allowlist
 
 ## Validation gates
 

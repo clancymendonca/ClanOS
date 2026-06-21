@@ -1,0 +1,8 @@
+clan-exec-v1
+name=loader-gate-test
+kind=elf64-image
+entry=0x400000
+image=/bin/loader-gate-test.elf
+requires=execute
+digest=sha256:b1b9502ac193e4b6cce4cb6146975b86612635253dc003bd7f280fd29ad2f262
+trust=system-signed
