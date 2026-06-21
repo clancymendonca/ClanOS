@@ -11,13 +11,15 @@
 - **Validation gate:** `kernel/src/validation_gate.rs` (`VALIDATION_GATE_VERSION = 2.6.0`)
 - **ADR-0002 signed ELF (epoch 450):** kernel verifier + in-QEMU negative gauntlet (`signed_elf_integration`; 9 cases)
 - **ADR-0003 loader signed exec (epoch 460):** **closed (scope 465)** — 16/16 seeds `trust=system-signed`; `loader_digest_only_grace=false`; `/bin/hello` intentionally exempt (`trust=user`, see `GATE_AUDIT_401_500.md` § Scope honesty)
+- **ADR-0004 Bochs VBE RGB (scope 470):** **PR0 locked** — [`docs/architecture/ADR/ADR-0004-bochs-vbe-rgb-framebuffer.md`](docs/architecture/ADR/ADR-0004-bochs-vbe-rgb-framebuffer.md); `T-desktop-bga-mmio` **open** until PR1 negatives + QEMU smokes land
+- **ADR-0004 CI gap (one PR window):** `threat_node_lifecycle_check` / `release_scorecard_check` **expected red until PR1 merges** — deliberate doc-then-code exception, not a new normal. **Drift trigger:** if PR1 is not merged before scope **470** closes (or by **2026-07-05**, whichever comes first), treat open `T-desktop-bga-mmio` as process failure, not acceptable steady state
 - **Gate audit:** [`docs/GATE_AUDIT.md`](docs/GATE_AUDIT.md) — per-gate substance classification
 - **Gap audit:** [`docs/GAP_AUDIT.md`](docs/GAP_AUDIT.md) — `addressed` ≠ Implemented (204 overclaimed baseline)
 - **Desktop:** VGA 320×200, double-buffered compositor, PS/2 mouse, window manager, taskbar shell
 - **Userland:** `/bin/demo-hello`, `/bin/clan-info`, `/bin/mendo`, `/bin/ring3-io-demo`, `/bin/ring3-io-demo-ext2`, `/bin/hello-alloc` (Clan OS runtime: `clan-rt` with optional `ring3-heap` bump allocator)
 - **Network:** virtio-net loopback + external route simulation
 - gap_registry: 0 open, 350 addressed — see [`docs/GAP_AUDIT.md`](docs/GAP_AUDIT.md) (58% overclaimed baseline; audit OK = baseline held, not fully substantiated)
-- threat nodes open: 0
+- threat nodes open: 1 (`T-desktop-bga-mmio` — intentional PR0→PR1 gap; `threat_node_lifecycle_check` fails until PR1 closes)
 - release_scorecard: [`RELEASE_SCORECARD.md`](docs/RELEASE_SCORECARD.md)
 - **Q3 sunset (locked):** **closed** — `sunset_scope=465`, `loader_digest_only_grace=false`, allowlist empty
 

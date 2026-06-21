@@ -116,6 +116,14 @@ Records alternatives considered, rationale, and epoch. **Routine decisions** are
 **Rationale:** Seed migration scope was the 16 `trust=system` allowlist programs; `hello` serves ADR-0002 / HW bring-up with a different trust class. Promoting it requires ADR amendment + `execute_minimal_user_elf_descriptor` verify wiring.  
 **Consequences:** Gate audit honesty row; ADR Q4 exempt row unchanged until deliberate revisit.
 
+### ADR-0004-bochs-vbe-rgb — Bochs VBE 1024×768 RGB desktop (scope 470)
+
+**Status:** accepted (Q1–Q5 locked; PR0 doc **done**)  
+**Alternatives:** BIOS VBE calls; palette shim; virtio-gpu this epoch; static BSS / heap for video; sub-region screendump crop  
+**Decision:** **Bochs VBE (`bga`)** via I/O ports `0x1CE`/`0x1CF` at **1024×768×32 BGRx8888** under pinned QEMU `-vga std`. **Direct RGB rewrite** of ~50 call sites (no palette shim). **BGA primary** gate-substantiated; **mode 13h alive but gate-unsubstantiated** dev fallback (no mode-13h gate unless hardware ADR). **Buddy-allocated** back buffer; LFB **`map_bytes = min(computed_size, bar_size)`** fail closed. **Required** `memory_layout` video smoke + serial proof. **Full PPM** screendump at 1024×768. Dual-probe failure → serial diagnostic + desktop gates false. Threat node **`T-desktop-bga-mmio` open** until PR1 negatives + smokes pass in QEMU.  
+**Rationale:** True RGB without real-mode trampoline; small enough compositor surface for one-time migration; ADR-0002-style pinned scope and fail-closed bounds on hardware-reported sizes.  
+**Consequences:** [`docs/architecture/ADR/ADR-0004-bochs-vbe-rgb-framebuffer.md`](architecture/ADR/ADR-0004-bochs-vbe-rgb-framebuffer.md); `config/desktop_framebuffer.toml` in PR1; gate `2.7.0` in PR1; `threat_node_lifecycle_check` fails until PR1 closes node.
+
 ---
 
 ## Routine decisions

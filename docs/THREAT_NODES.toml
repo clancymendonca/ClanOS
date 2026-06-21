@@ -162,6 +162,17 @@ depends_on = ["T-signed-elf-forgery"]
 summary = "Forged clan-exec-v1 loader manifest (kind/entry tamper, bad sig) accepted on exec path"
 
 [[nodes]]
+id = "T-desktop-bga-mmio"
+epoch = 470
+status = "open"
+tier = "A"
+goals = ["integrity_violation", "denial_of_service"]
+surfaces = ["kernel_heap"]
+closing_commit = null
+depends_on = []
+summary = "Oversized BGA LFB MMIO map or unbounded back-buffer alloc — map_bytes must be min(computed_size, bar_size); fail closed on dual-probe init failure"
+
+[[nodes]]
 id = "T-physical-access"
 epoch = 6
 status = "deferred"
