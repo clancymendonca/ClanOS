@@ -733,6 +733,7 @@ fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), Stor
     let mendo_elf = signed_seed_elf_fixture("mendo");
     let ring3_elf = signed_seed_elf_fixture("ring3-io-demo");
     let hello_alloc_elf = signed_seed_elf_fixture("hello-alloc");
+    let sig_demo_elf = signed_seed_elf_fixture("sig-demo");
     for (path, contents) in [
         ("/README.txt", "Clan OS persistent storage"),
         (
@@ -806,8 +807,9 @@ fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), Stor
         ("/bin/ring3-io-demo.elf", ring3_elf.as_str()),
         (
             "/bin/hello-alloc",
-            "clan-exec-v1\nname=hello-alloc\nkind=elf64-image\nentry=0x400000\nimage=/bin/hello-alloc.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=Heap allocation demo",
+            include_str!("../../config/loader_signed_seed/hello-alloc.signed.manifest"),
         ),
+        ("/bin/hello-alloc.elf", hello_alloc_elf.as_str()),
         (
             "/bin/sig-demo",
             "clan-exec-v1\nname=sig-demo\nkind=elf64-image\nentry=0x400000\nimage=/bin/sig-demo.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=Signal demo stub",

@@ -1,0 +1,11 @@
+clan-exec-v1
+name=hello-alloc
+kind=elf64-image
+entry=0x400000
+image=/bin/hello-alloc.elf
+requires=execute
+digest=sha256:99cfface26040990ec464b4f9fb5790d44420c5cabd7cb4afc80973b01f9ce31
+trust=system-signed
+owner=admin
+description=Heap allocation demo
+sig=ed25519:ec7024dd93d3ee5da210355612d9a041a48094f428c795f1dc804f27886ab5cb33068822386b1a078ad45b1bce7b43c8716d7d596f0d1f052734d09d134c730c
