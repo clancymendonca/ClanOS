@@ -135,6 +135,46 @@ def main() -> int:
             ["python", "scripts/gate/signal_skeleton.py"],
             60,
         ),
+        (
+            "gate-honesty-check-part-a",
+            ["python", "scripts/gate/gate_honesty_check.py", "--part", "a"],
+            30,
+        ),
+        (
+            "gate-honesty-check-part-b",
+            ["python", "scripts/gate/gate_honesty_check.py", "--part", "b"],
+            30,
+        ),
+        (
+            "module-wiring-check",
+            ["python", "scripts/gate/module_wiring_check.py"],
+            30,
+        ),
+        (
+            "module-wiring-self-test",
+            ["python", "scripts/gate/test_module_wiring_check.py"],
+            30,
+        ),
+        (
+            "gate-honesty-self-test",
+            ["python", "scripts/gate/test_gate_honesty_check.py"],
+            30,
+        ),
+        (
+            "gap-registry-audit",
+            ["python", "scripts/gate/gap_registry_audit.py"],
+            60,
+        ),
+        (
+            "gap-registry-audit-self-test",
+            ["python", "scripts/gate/test_gap_registry_audit.py"],
+            30,
+        ),
+        (
+            "close-remaining-plan-gaps-self-test",
+            ["python", "scripts/gate/test_close_remaining_plan_gaps.py"],
+            30,
+        ),
         ("semantic-lint", ["python", "scripts/semantic_lint.py"], None),
         ("covenant-ci", ["python", "scripts/covenant_ci.py"], 120),
         ("loom-gate", ["python", "scripts/loom_gate.py"], None),

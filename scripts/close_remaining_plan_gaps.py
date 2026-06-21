@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
-"""Close remaining plan gaps when docs, scripts, or milestone stubs exist."""
+"""Close remaining plan gaps when docs or scripts exist on disk.
+
+Manual bootstrap only — do not run in CI. Superseded by gap_registry_audit.py for
+honesty checks. The milestone-150-stub fallback requires --allow-plan-stub (deprecated).
+"""
 
 from __future__ import annotations
 
+import argparse
 import re
 import sys
 from pathlib import Path
@@ -38,7 +43,6 @@ POST_150 = (
     "post-150",
     "post 150",
     "after 150",
-    "post 150",
     "deferred post-150",
     "1.0",
     "real hardware",
@@ -49,9 +53,24 @@ POST_150 = (
 
 
 def main() -> int:
-    path = ROOT / "gap_registry.toml"
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument(
+        "--registry",
+        type=Path,
+        default=ROOT / "gap_registry.toml",
+        help="gap_registry.toml path (default: repo root; tests use fixtures)",
+    )
+    ap.add_argument(
+        "--allow-plan-stub",
+        action="store_true",
+        help="Allow milestone-150-stub fallback (deprecated; inflates overclaimed count)",
+    )
+    args = ap.parse_args()
+
+    path = args.registry
     gaps = parse_gaps(path.read_text(encoding="utf-8"))
     marked = 0
+    stub_marked = 0
     for g in gaps:
         if g.get("status") != "open":
             continue
@@ -76,21 +95,35 @@ def main() -> int:
             g["implementing_doc"] = docs[0]
             marked += 1
             continue
+        matched = False
         for token, doc_path in DOC_ALIASES.items():
             if token.lower() in blob and (ROOT / doc_path).exists():
                 g["status"] = "addressed"
                 g["implementing_doc"] = doc_path
                 marked += 1
+                matched = True
                 break
-        else:
-            # Milestone 150 stub delivery per plan completion covenant
+        if matched:
+            continue
+        if args.allow_plan_stub:
+            print(
+                "close_remaining_plan_gaps: WARN marking gap "
+                f"{g.get('id')} addressed with milestone-150-stub (no evidence)",
+                file=sys.stderr,
+            )
             g["status"] = "addressed"
             g["implementing_doc"] = "milestone-150-stub"
             marked += 1
+            stub_marked += 1
+        # else: leave open — do not inflate addressed count without evidence
+
     path.write_text(emit_gaps(gaps), encoding="utf-8")
     open_count = sum(1 for g in gaps if g.get("status") == "open")
     wontfix = sum(1 for g in gaps if g.get("status") == "wontfix")
-    print(f"close_remaining_plan_gaps: marked {marked}; {open_count} open; {wontfix} wontfix")
+    print(
+        f"close_remaining_plan_gaps: marked {marked} "
+        f"(stubs={stub_marked}); {open_count} open; {wontfix} wontfix"
+    )
     return 0
 
 

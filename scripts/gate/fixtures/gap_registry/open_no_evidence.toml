@@ -1,0 +1,10 @@
+[[gaps]]
+id = 88888
+summary = """Synthetic open gap for close_remaining negative test"""
+fix = """no resolvable doc path"""
+when = """verification"""
+status = """open"""
+addressing_commit = null
+implementing_doc = null
+split_into = []
+superseded_by_commit = null

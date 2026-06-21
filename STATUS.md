@@ -4,10 +4,11 @@
 
 - **Validation gate:** `kernel/src/validation_gate.rs` (`VALIDATION_GATE_VERSION = 2.1.0`)
 - **Gate audit:** [`docs/GATE_AUDIT.md`](docs/GATE_AUDIT.md) — per-gate substance classification
+- **Gap audit:** [`docs/GAP_AUDIT.md`](docs/GAP_AUDIT.md) — `addressed` ≠ Implemented (204 overclaimed baseline)
 - **Desktop:** VGA 320×200, double-buffered compositor, PS/2 mouse, window manager, taskbar shell
 - **Userland:** `/bin/demo-hello`, `/bin/clan-info`, `/bin/mendo`, `/bin/ring3-io-demo`, `/bin/ring3-io-demo-ext2`, `/bin/hello-alloc` (Clan OS runtime: `clan-rt` with optional `ring3-heap` bump allocator)
 - **Network:** virtio-net loopback + external route simulation
-- gap_registry: 0 open, 350 addressed
+- gap_registry: 0 open, 350 addressed — see [`docs/GAP_AUDIT.md`](docs/GAP_AUDIT.md) (58% overclaimed baseline; audit OK = baseline held, not fully substantiated)
 - threat nodes open: 0
 - release_scorecard: [`RELEASE_SCORECARD.md`](docs/RELEASE_SCORECARD.md)
 - Track 1 doc migration: **gated** (see `config/track1_scope_freeze.toml`)

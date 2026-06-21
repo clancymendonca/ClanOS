@@ -189,21 +189,24 @@ def emit_status(matrix: dict) -> str:
     nodes = parse_toml_tables(read_text(ROOT / "docs" / "THREAT_NODES.toml"), "nodes")
     threats_open = sum(1 for n in nodes if n.get("status") == "open")
     kani_count = count_kani_harnesses()
+    gate_text = read_text(ROOT / "kernel" / "src" / "validation_gate.rs")
+    gate_ver = re.search(r'VALIDATION_GATE_VERSION: &str = "([^"]+)"', gate_text)
+    gate_version = gate_ver.group(1) if gate_ver else "unknown"
     lines = [
         "# Clan OS Project Status",
         "",
-        "## Snapshot (fully operational OS)",
+        f"## Snapshot (Functional OS — scope 400, QEMU gate v{gate_version})",
         "",
-        "- **Boot gate:** `kernel/src/boot_gate.rs` (`BOOT_GATE_VERSION = 1.0.0`)",
-        "- **System gate:** `kernel/src/system_gate.rs` (`SYSTEM_GATE_VERSION = 1.0.0`)",
+        f"- **Validation gate:** `kernel/src/validation_gate.rs` (`VALIDATION_GATE_VERSION = {gate_version}`)",
+        f"- **Gate audit:** [`docs/GATE_AUDIT.md`](docs/GATE_AUDIT.md) — per-gate substance classification",
         "- **Desktop:** VGA 320×200, compositor, PS/2 mouse, window manager, taskbar",
         "- **Userland:** `/bin/demo-hello`, `/bin/clan-info`, `/bin/mendo`, `/bin/ring3-io-demo` (Clan OS runtime: `clan-rt` `#![no_std]`)",
         "- **Network:** virtio-net loopback + external route simulation",
-        f"- gap_registry: {gaps_open} open, {gaps_addressed} addressed ({gaps_addressed + gaps_open + gaps_wontfix} total)",
+        f"- gap_registry: {gaps_open} open, {gaps_addressed} addressed — see [`docs/GAP_AUDIT.md`](docs/GAP_AUDIT.md) (58% overclaimed baseline; audit OK = baseline held, not fully substantiated)",
         f"- threat nodes open: {threats_open}",
         f"- kani_harness_count: {kani_count}",
         "- validation: [`VALIDATION_GATES.md`](docs/VALIDATION_GATES.md)",
-        "- release_scorecard: [`RELEASE_SCORECARD_M500.md`](docs/RELEASE_SCORECARD_M500.md)",
+        "- release_scorecard: [`RELEASE_SCORECARD.md`](docs/RELEASE_SCORECARD.md)",
         "",
         "## Threat coverage by goal",
         "",
@@ -219,10 +222,9 @@ def emit_status(matrix: dict) -> str:
             "",
             "| Gate family | Final serial line | Host check |",
             "|-------------|-------------------|------------|",
-            "| Boot | `ClanOS-BootGate: ok=true` | `scripts/gate/boot_host.py` |",
-            "| System | `ClanOS-SystemGate: ok=true` | `scripts/gate/system_host.py` |",
+            "| Unified validation | `ClanOS-Gate: ok=true` | `scripts/gate/gate_host.py` |",
             "",
-            "QEMU: `scripts/gate/boot.py --gate boot`, `scripts/gate/system.py --gate system`",
+            "QEMU: `scripts/gate/run.py --gate all`",
             "",
         ]
     )

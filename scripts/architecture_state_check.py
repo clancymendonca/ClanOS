@@ -45,6 +45,14 @@ def main() -> int:
     flags = parse_flags(arch)
     deferred = parse_deferred_nodes(threats)
     errors: list[str] = []
+    # Hard deny: flag must stay false until scope-475 Real gate exists AND this check
+    # is replaced with gate-pass verification. Does NOT look up a gate today — any
+    # true value fails CI immediately (non-vacuous even before scope-475 is built).
+    if flags.get("has_external_network"):
+        errors.append(
+            "has_external_network=true without scope-475 external NIC gate "
+            "(see docs/GATE_AUDIT_401_500.md)"
+        )
     for flag, node_id in TRIGGER_MAP.items():
         if flags.get(flag) and node_id in deferred:
             errors.append(f"{flag}=true but {node_id} still deferred without re-eval commit")

@@ -1,0 +1,10 @@
+[[gaps]]
+id = 9999
+summary = """Synthetic overclaimed gap for audit self-test"""
+fix = """no doc path"""
+when = """test"""
+status = """addressed"""
+addressing_commit = null
+implementing_doc = """missing-placeholder-stub"""
+split_into = []
+superseded_by_commit = null
