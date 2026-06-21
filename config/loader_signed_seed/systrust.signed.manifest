@@ -1,0 +1,11 @@
+clan-exec-v1
+name=systrust
+kind=elf64-image
+entry=0x400000
+image=/bin/tickprobe.elf
+requires=execute
+digest=sha256:0d051143803d91d064935f7191b3d7c753c5538a2992b46900e009cc0aab806b
+trust=system-signed
+owner=admin
+description=Trust-gated ELF fixture
+sig=ed25519:3662a0f61acc3e312f485a6d8c295a9bf284c395d893f7d1bdd6879ad7a632a1a8d820df2fae6a5469dfae6153c465fb72bdd560107c63f2c22b60ac1da1da0e

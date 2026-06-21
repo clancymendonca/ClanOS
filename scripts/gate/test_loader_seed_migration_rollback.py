@@ -20,7 +20,7 @@ ELF_PROGRAM = "tickprobe"
 EXT2_PROGRAM = "ring3-io-demo-ext2"
 RING3_ELF = SEED_DIR / "fixtures" / "ring3_io_demo.bin"
 # digest-only remaining after demo-hello…tickprobe + ring3-io-demo-ext2 migrated.
-EXPECTED_DIGEST_ONLY_REMAINING = 8
+EXPECTED_DIGEST_ONLY_REMAINING = 7
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import loader_signed_exec_lib as lsel  # noqa: E402

@@ -762,11 +762,11 @@ fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), Stor
         ("/bin/tickprobe.elf", sample_elf.as_str()),
         (
             "/bin/systrust",
-            "clan-exec-v1\nname=systrust\nkind=elf64-image\nentry=0x400000\nimage=/bin/tickprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=Trust-gated ELF fixture",
+            include_str!("../../config/loader_signed_seed/systrust.signed.manifest"),
         ),
         (
             "/bin/syscallprobe",
-            "clan-exec-v1\nname=syscallprobe\nkind=elf64-image\nentry=0x400000\nimage=/bin/syscallprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=HW syscall probe ELF fixture",
+            include_str!("../../config/loader_signed_seed/syscallprobe.signed.manifest"),
         ),
         ("/bin/syscallprobe.elf", sample_elf.as_str()),
         (
