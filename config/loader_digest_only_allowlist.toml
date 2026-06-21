@@ -1,11 +1,9 @@
 [schema]
 version = "1.0.0"
 # Program name= values permitted trust=system (digest-only) during scopes 460–464.
+# len([[programs]]) = digest-only seeds NOT YET migrated (countdown toward 0; started at 16).
 # Remove ONE name only after that program's trust=system-signed manifest passes gate suite (ADR-0003 § Seed migration workflow).
 # Rollback: revert manifest to trust=system and re-add name here. Empty list = migration complete (scope 465).
-
-[[programs]]
-name = "time"
 
 [[programs]]
 name = "sysinfo"

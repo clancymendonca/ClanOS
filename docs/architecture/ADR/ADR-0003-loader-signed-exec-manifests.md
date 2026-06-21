@@ -94,7 +94,8 @@ Verification machinery (PR1–PR2, anchor guard) is proven on **pinned synthetic
 | Rollback | **Not a one-way door.** Wrong sig, bad `kind`/`entry`, or typo → revert manifest to `trust=system` (digest-only) and **re-add** `name=` to `loader_digest_only_allowlist.toml` in the same revert commit. Digest-only path remains available while `loader_digest_only_grace = true`. |
 | Allowlist role | **Staging safety net**, not permanent exception bucket. A name stays on the allowlist until its signed manifest is confirmed working; only then remove it. |
 | Gate bar before shrink | Host: `test_loader_signed_exec.py` + `loader_signed_exec.py` on that manifest bytes. Matrix: `run.py --gate` smokes covering the program (e.g. `functional`, `desktop`, `dynamic_runtime` as applicable). QEMU integration already proves verifier; per-binary PR must prove **that binary** still runs. |
-| Progress metric | **`len(allowlist)`** — sunset scope 465 is a countdown (16 → 0 today), not a single event. Track in commit messages / scope checklist. |
+| Progress metric | **`len(allowlist)`** — digest-only names **remaining**; countdown **16 → 0** (not "done" count). Report as **`N digest-only remaining`** and/or **`(16−N) signed of 16`** — never bare `N/16` without label. Sunset scope 465 is tied to allowlist empty, not a single cutover event. Track in commit messages / scope checklist. |
+| `VALIDATION_GATE_VERSION` | **Do not bump per seed binary.** Bump only when verification **semantics** change (verifier hook, canonical body, anchor epoch, gate smoke composition). Seed migration progress is **`len(allowlist)`**, not gate version. |
 | Batch signing | **Rejected** — do not empty allowlist in one commit; defeats rollback and obscures which binary broke gates. |
 | Re-add to allowlist | Permitted during scopes 461–464 for rollback only; new programs after 460 still may not join allowlist (Q3). |
 

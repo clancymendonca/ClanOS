@@ -727,7 +727,7 @@ fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), Stor
         ),
         (
             "/bin/time",
-            "clan-exec-v1\nname=time\nkind=builtin-alias\nentry=time\nrequires=execute\ntrust=system\nowner=admin\ndescription=Show uptime",
+            include_str!("../../config/loader_signed_seed/time.signed.manifest"),
         ),
         (
             "/bin/sysinfo",

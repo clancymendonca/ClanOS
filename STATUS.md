@@ -4,13 +4,13 @@
 
 **GitHub Actions is not currently substantiating pushes.** Run [27895509720](https://github.com/clancymendonca/ClanOS/actions/runs/27895509720) (tip `e4939f4`) failed before any job steps: account billing lock — workflow did not execute (`cargo fmt`, `validation_matrix.py`, QEMU). Re-run CI after billing is restored; do not treat a green local matrix as CI proof until then.
 
-**Last verified locally (2026-06-21):** scope-462 seed migration — `echo` → `trust=system-signed`; gate `2.4.0` (allowlist 14/16).
+**Last verified locally (2026-06-21):** scope-463 seed migration — `time` → `trust=system-signed`; gate `2.4.0` (**3 signed**, **13 digest-only remaining** of 16 seeds).
 
 ## Snapshot (Functional OS — scope 400, QEMU gate v2.4.0)
 
 - **Validation gate:** `kernel/src/validation_gate.rs` (`VALIDATION_GATE_VERSION = 2.4.0`)
 - **ADR-0002 signed ELF (epoch 450):** kernel verifier + in-QEMU negative gauntlet (`signed_elf_integration`; 9 cases)
-- **ADR-0003 loader signed exec (epoch 460):** kernel `loader_signed_exec.rs` + `loader_signed_exec_integration` (12 cases); seed migration **2/16** (`demo-hello`, `echo` signed; allowlist sunset scope 465)
+- **ADR-0003 loader signed exec (epoch 460):** kernel `loader_signed_exec.rs` + `loader_signed_exec_integration` (12 cases); seed migration **3 signed / 13 digest-only remaining** of 16 (`demo-hello`, `echo`, `time`; sunset scope 465)
 - **Gate audit:** [`docs/GATE_AUDIT.md`](docs/GATE_AUDIT.md) — per-gate substance classification
 - **Gap audit:** [`docs/GAP_AUDIT.md`](docs/GAP_AUDIT.md) — `addressed` ≠ Implemented (204 overclaimed baseline)
 - **Desktop:** VGA 320×200, double-buffered compositor, PS/2 mouse, window manager, taskbar shell
@@ -19,7 +19,7 @@
 - gap_registry: 0 open, 350 addressed — see [`docs/GAP_AUDIT.md`](docs/GAP_AUDIT.md) (58% overclaimed baseline; audit OK = baseline held, not fully substantiated)
 - threat nodes open: 0
 - release_scorecard: [`RELEASE_SCORECARD.md`](docs/RELEASE_SCORECARD.md)
-- **ADR-0003 (epoch 460):** verification epoch **done** (PR1 host, PR2 kernel, anchor guard). **Next:** seed `/bin/*` migration — one binary per PR, allowlist as rollback staging (16 → 0 by scope 465); see ADR-0003 § Seed migration workflow
+- **ADR-0003 (epoch 460):** verification epoch **done** (PR1 host, PR2 kernel, anchor guard). **Next:** seed `/bin/*` migration — one binary per PR, allowlist as rollback staging (**digest-only remaining 16 → 0** by scope 465); see ADR-0003 § Seed migration workflow
 - Track 1 doc migration: **landed** (`8579e17`)
 - **Q3 sunset (locked):** `sunset_scope=465`, `implementation_scope=460`; CI fails if `current_scope>=465` with non-empty allowlist
 

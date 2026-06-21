@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[2]
 POLICY = ROOT / "config" / "loader_signing_policy.toml"
 ALLOWLIST = ROOT / "config" / "loader_digest_only_allowlist.toml"
 ARCH = ROOT / "architecture_state.toml"
+SEED_MIGRATION_TOTAL = 16
 
 
 def _toml_int(text: str, key: str) -> int | None:
@@ -78,10 +79,14 @@ def main() -> int:
             print(f"loader_signing_sunset_check: {e}", file=sys.stderr)
         return 1
 
+    digest_only_remaining = len(names)
+    seeds_signed = SEED_MIGRATION_TOTAL - digest_only_remaining
+
     print(
         f"loader_signing_sunset_check: OK "
         f"(current_scope={current_scope}, sunset_scope={sunset_scope}, "
-        f"allowlist={len(names)}, grace={grace})"
+        f"digest_only_remaining={digest_only_remaining}, "
+        f"seeds_signed={seeds_signed} of {SEED_MIGRATION_TOTAL}, grace={grace})"
     )
     return 0
 

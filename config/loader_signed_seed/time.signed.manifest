@@ -1,0 +1,10 @@
+clan-exec-v1
+name=time
+kind=builtin-alias
+entry=time
+requires=execute
+digest=sha256:bef14de95b851125604f924b4ef15d8f21a46a7706434c23248be2aacb76cc32
+trust=system-signed
+owner=admin
+description=Show uptime
+sig=ed25519:de2ac99e28502d83c025816afe5dea109ac03986847960a00b2b95468b419b0b0914188b273f325fbe11d8b6366b4161f7a6541fb18896685a4b115d22fa630f

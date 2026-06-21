@@ -107,10 +107,11 @@ def main() -> int:
             file=sys.stderr,
         )
         failures += 1
-    elif len(names) != 14:
+    elif len(names) != 13:
         print(
             "test_loader_seed_migration_rollback: FAIL allowlist count "
-            f"{len(names)} expected 14 after demo-hello and echo migrations",
+            f"{len(names)} expected 13 digest-only remaining "
+            "(demo-hello, echo, time migrated)",
             file=sys.stderr,
         )
         failures += 1
@@ -118,7 +119,8 @@ def main() -> int:
         names_restored = names + [PROGRAM]
         print(
             "test_loader_seed_migration_rollback: OK re-add to allowlist restores "
-            f"digest-only staging ({len(names)} -> {len(names_restored)} entries)"
+            f"digest-only staging ({len(names)} digest-only remaining -> "
+            f"{len(names_restored)} after simulated rollback)"
         )
 
     # Signed path must fail without sig line.
