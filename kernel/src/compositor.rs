@@ -1,5 +1,5 @@
 //! Compositor IPC stub (scope 145) — ABI_COMPOSITOR_IPC minimum contract.
-//! : pixel frame submission via VGA mode 13h framebuffer.
+//! : pixel frame submission via Bochs VBE RGB framebuffer (ADR-0004).
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -20,7 +20,7 @@ pub fn submit_frame(caps: CompositorCaps) -> bool {
     if caps.flags & 0x8000_0000 != 0 {
         UNKNOWN_CAPS_IGNORED.fetch_add(1, Ordering::Relaxed);
     }
-    if caps.flags & 0x01 != 0 && crate::framebuffer::init_mode_13h() {
+    if caps.flags & 0x01 != 0 && crate::framebuffer::init_display() {
         crate::framebuffer::render_desktop_frame();
         PIXEL_FRAMES.fetch_add(1, Ordering::Relaxed);
     }

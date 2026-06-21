@@ -785,7 +785,10 @@ pub fn system_gate() -> bool {
 }
 
 /// Evaluate all subsystems and emit unified serial gate lines.
-pub fn run_validation_gate() {
+pub fn run_validation_gate(
+    mapper: &mut x86_64::structures::paging::OffsetPageTable<'static>,
+    frame_allocator: &mut crate::memory::BootInfoFrameAllocator,
+) {
     let shell = smoke_shell_storage();
     emit("shell_storage", shell, true);
     let loader = smoke_loader_security();
@@ -853,7 +856,8 @@ pub fn run_validation_gate() {
     emit("federation", federation, false);
     let release = release_gate();
     emit("release", release, false);
-    let desktop_preview = desktop_preview_gate();
+    let back_buffer = crate::bga::map_back_buffer_for_desktop(mapper, frame_allocator);
+    let desktop_preview = back_buffer && desktop_preview_gate();
     emit("desktop_preview", desktop_preview, false);
     let desktop = desktop_gate();
     emit("desktop", desktop, false);

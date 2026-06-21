@@ -1,31 +1,41 @@
-//! VGA mode 13h linear framebuffer (320×200, 256 colors @ 0xA0000).
-//!
-//! Pixel path, double buffer, and expanded font.
+//! Bochs VBE RGB framebuffer (1024×768×32) with mode 13h dev fallback — ADR-0004.
 
 use core::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-use lazy_static::lazy_static;
-use spin::Mutex;
+
 use x86_64::instructions::port::{Port, PortReadOnly};
 
-pub const WIDTH: usize = 320;
-pub const HEIGHT: usize = 200;
-pub const BUFFER_LEN: usize = WIDTH * HEIGHT;
-const FRAMEBUFFER: *mut u8 = 0xA0000 as *mut u8;
+pub type Pixel = u32;
 
-static MODE_ACTIVE: AtomicBool = AtomicBool::new(false);
+pub const WIDTH: usize = crate::bga::WIDTH;
+pub const HEIGHT: usize = crate::bga::HEIGHT;
+pub const BUFFER_LEN: usize = WIDTH * HEIGHT;
+
+const FONT_SCALE: usize = 3;
+const FONT_ADVANCE: usize = 6 * FONT_SCALE;
+
+static MODE13H_ACTIVE: AtomicBool = AtomicBool::new(false);
 static PIXELS_DRAWN: AtomicU64 = AtomicU64::new(0);
 static FLUSH_COUNT: AtomicU64 = AtomicU64::new(0);
 
-lazy_static! {
-    static ref BACK_BUFFER: Mutex<[u8; BUFFER_LEN]> = Mutex::new([0; BUFFER_LEN]);
+const fn vga6_to8(c: u8) -> u8 {
+    (c as u16 * 255 / 63) as u8
 }
 
-/// VGA palette index — mode 13h default palette is close enough for UI blocks.
-pub const COLOR_DESKTOP: u8 = 3;
-pub const COLOR_TITLEBAR: u8 = 1;
-pub const COLOR_ACCENT: u8 = 14;
-pub const COLOR_TEXT: u8 = 15;
-pub const COLOR_CURSOR: u8 = 15;
+const fn bgrx_from_vga6(r: u8, g: u8, b: u8) -> Pixel {
+    let r = vga6_to8(r);
+    let g = vga6_to8(g);
+    let b = vga6_to8(b);
+    (b as u32) | ((g as u32) << 8) | ((r as u32) << 16)
+}
+
+/// BGRx8888 theme colors (VGA 16-color palette indices mapped to RGB).
+pub const COLOR_DESKTOP: Pixel = bgrx_from_vga6(0, 42, 42);
+pub const COLOR_TITLEBAR: Pixel = bgrx_from_vga6(0, 0, 42);
+pub const COLOR_ACCENT: Pixel = bgrx_from_vga6(63, 63, 21);
+pub const COLOR_TEXT: Pixel = bgrx_from_vga6(63, 63, 63);
+pub const COLOR_CURSOR: Pixel = COLOR_TEXT;
+pub const COLOR_PANEL: Pixel = bgrx_from_vga6(21, 21, 21);
+pub const COLOR_WINDOW_BODY: Pixel = bgrx_from_vga6(42, 42, 42);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Rect {
@@ -51,7 +61,7 @@ impl Rect {
 }
 
 pub fn mode_active() -> bool {
-    MODE_ACTIVE.load(Ordering::Relaxed)
+    crate::bga::mode_active() || MODE13H_ACTIVE.load(Ordering::Relaxed)
 }
 
 pub fn pixels_drawn() -> u64 {
@@ -64,20 +74,36 @@ pub fn flush_count() -> u64 {
 
 pub fn back_buffer_mut<F>(f: F)
 where
-    F: FnOnce(&mut [u8; BUFFER_LEN]),
+    F: FnOnce(&mut [Pixel]),
 {
-    let mut buf = BACK_BUFFER.lock();
-    f(&mut buf);
+    if !crate::bga::mode_active() {
+        return;
+    }
+    unsafe {
+        let ptr = crate::bga::back_buffer_ptr();
+        let slice = core::slice::from_raw_parts_mut(ptr, BUFFER_LEN);
+        f(slice);
+    }
 }
 
-/// Switch to 320×200×256 graphics mode (BIOS mode 13h register sequence).
+pub fn init_display() -> bool {
+    if crate::bga::mode_active() {
+        return true;
+    }
+    let _ = init_mode_13h();
+    mode_active()
+}
+
+/// Switch to 320×200×256 mode 13h (dev fallback only — gate-unsubstantiated).
 pub fn init_mode_13h() -> bool {
-    if MODE_ACTIVE.load(Ordering::Relaxed) {
+    if MODE13H_ACTIVE.load(Ordering::Relaxed) {
+        return true;
+    }
+    if crate::bga::mode_active() {
         return true;
     }
 
     unsafe {
-        // Misc output: OSDev mode 13h canonical (0x63 — not 0xE3 used by mode 12h).
         Port::<u8>::new(0x3C2).write(0x63);
 
         let mut isr = PortReadOnly::<u8>::new(0x3DA);
@@ -89,7 +115,6 @@ pub fn init_mode_13h() -> bool {
         let mut gc_data = Port::<u8>::new(0x3CF);
         let mut attr = Port::<u8>::new(0x3C0);
 
-        // Sequencer: async reset, program chain-4 (required for linear 0xA0000 bytes).
         seq_index.write(0x00);
         seq_data.write(0x01);
         seq_index.write(0x01);
@@ -103,7 +128,6 @@ pub fn init_mode_13h() -> bool {
         seq_index.write(0x00);
         seq_data.write(0x03);
 
-        // Unlock CRTC registers 0–7.
         crtc_index.write(0x11);
         let crtc11 = crtc_data.read();
         crtc_data.write(crtc11 & 0x7F);
@@ -140,7 +164,6 @@ pub fn init_mode_13h() -> bool {
             crtc_data.write(val);
         }
 
-        // Graphics controller: write mode 0, map 0xA0000.
         for (idx, val) in [
             (0x00, 0x00),
             (0x01, 0x00),
@@ -156,17 +179,14 @@ pub fn init_mode_13h() -> bool {
             gc_data.write(val);
         }
 
-        // Attribute controller: identity palette + 256-color graphics mode.
         let _ = isr.read();
         for i in 0..16u8 {
             attr.write(i);
             attr.write(i);
         }
         let _ = isr.read();
-        // Mode control: 256-color graphics (required for linear 0xA0000 bytes).
         attr.write(0x10);
         attr.write(0x41);
-        // Overscan, plane enable, panning, color select — missing these leaves planar stripes in QEMU.
         attr.write(0x11);
         attr.write(0x00);
         attr.write(0x12);
@@ -180,18 +200,10 @@ pub fn init_mode_13h() -> bool {
     }
 
     init_vga_palette();
-    // Clear VRAM so stale planar data does not show through before first flush.
-    unsafe {
-        for i in 0..BUFFER_LEN {
-            FRAMEBUFFER.add(i).write_volatile(0);
-        }
-    }
-    MODE_ACTIVE.store(true, Ordering::Relaxed);
+    MODE13H_ACTIVE.store(true, Ordering::Relaxed);
     true
 }
 
-/// Read back the mode-critical registers to confirm the writes landed.
-/// Returns (misc_output, seq4, gc6, crtc1).
 pub fn mode13h_register_readback() -> (u8, u8, u8, u8) {
     unsafe {
         let misc = PortReadOnly::<u8>::new(0x3CC).read();
@@ -211,12 +223,7 @@ pub fn mode13h_register_readback() -> (u8, u8, u8, u8) {
     }
 }
 
-/// Load 256-color DAC entries for mode 13h (QEMU defaults are often all black).
-///
-/// Indices 0–15 carry the standard VGA 16-color palette (the UI block colors:
-/// `COLOR_DESKTOP`=cyan, `COLOR_TITLEBAR`=blue, …); 16–255 are a grayscale ramp.
 fn init_vga_palette() {
-    // 6-bit DAC RGB triplets for the standard VGA 16-color palette.
     const STD16: [(u8, u8, u8); 16] = [
         (0, 0, 0),
         (0, 0, 42),
@@ -252,30 +259,20 @@ fn init_vga_palette() {
     }
 }
 
-pub fn plot_pixel(x: usize, y: usize, color: u8) {
-    if !mode_active() || x >= WIDTH || y >= HEIGHT {
-        return;
-    }
-    unsafe {
-        FRAMEBUFFER.add(y * WIDTH + x).write_volatile(color);
-    }
-    PIXELS_DRAWN.fetch_add(1, Ordering::Relaxed);
-}
-
-pub fn fill_rect_buf(buf: &mut [u8], x: usize, y: usize, w: usize, h: usize, color: u8) {
+pub fn fill_rect_buf(buf: &mut [Pixel], x: usize, y: usize, w: usize, h: usize, color: Pixel) {
     if w == 0 || h == 0 {
         return;
     }
     let x_end = (x + w).min(WIDTH);
     let y_end = (y + h).min(HEIGHT);
     for row in y..y_end {
-        for col in x..x_end {
-            buf[row * WIDTH + col] = color;
-        }
+        let start = row * WIDTH + x;
+        let end = row * WIDTH + x_end;
+        buf[start..end].fill(color);
     }
 }
 
-pub fn fill_rect(x: usize, y: usize, w: usize, h: usize, color: u8) {
+pub fn fill_rect(x: usize, y: usize, w: usize, h: usize, color: Pixel) {
     back_buffer_mut(|buf| fill_rect_buf(buf, x, y, w, h, color));
 }
 
@@ -303,70 +300,78 @@ fn glyph(c: u8) -> Option<[u8; 7]> {
     }
 }
 
-pub fn draw_text_buf(buf: &mut [u8], x: usize, y: usize, text: &str, color: u8) {
+pub fn draw_text_buf(buf: &mut [Pixel], x: usize, y: usize, text: &str, color: Pixel) {
     let mut cursor = x;
     for ch in text.bytes() {
         if let Some(rows) = glyph(ch) {
             for (row_idx, row) in rows.iter().enumerate() {
                 for bit in 0..5 {
                     if row & (1 << (4 - bit)) != 0 {
-                        let px = cursor + bit;
-                        let py = y + row_idx;
-                        if px < WIDTH && py < HEIGHT {
-                            buf[py * WIDTH + px] = color;
+                        for sy in 0..FONT_SCALE {
+                            for sx in 0..FONT_SCALE {
+                                let px = cursor + bit * FONT_SCALE + sx;
+                                let py = y + row_idx * FONT_SCALE + sy;
+                                if px < WIDTH && py < HEIGHT {
+                                    buf[py * WIDTH + px] = color;
+                                }
+                            }
                         }
                     }
                 }
             }
         }
-        cursor += 6;
-        if cursor + 5 >= WIDTH {
+        cursor += FONT_ADVANCE;
+        if cursor + FONT_ADVANCE >= WIDTH {
             break;
         }
     }
 }
 
-pub fn draw_text(x: usize, y: usize, text: &str, color: u8) {
+pub fn draw_text(x: usize, y: usize, text: &str, color: Pixel) {
     back_buffer_mut(|buf| draw_text_buf(buf, x, y, text, color));
 }
 
-pub fn draw_cursor(buf: &mut [u8], x: i16, y: i16) {
+pub fn draw_cursor(buf: &mut [Pixel], x: i16, y: i16) {
     let x = x as usize;
     let y = y as usize;
-    if x + 1 < WIDTH && y + 1 < HEIGHT {
-        buf[y * WIDTH + x] = COLOR_CURSOR;
-        buf[y * WIDTH + x + 1] = COLOR_CURSOR;
-        buf[(y + 1) * WIDTH + x] = COLOR_CURSOR;
-        buf[(y + 1) * WIDTH + x + 1] = COLOR_CURSOR;
+    let size = 2 * FONT_SCALE;
+    for dy in 0..size {
+        for dx in 0..size {
+            let px = x + dx;
+            let py = y + dy;
+            if px < WIDTH && py < HEIGHT {
+                buf[py * WIDTH + px] = COLOR_CURSOR;
+            }
+        }
     }
 }
 
-pub fn flush_to_screen(buf: &[u8; BUFFER_LEN]) {
-    if !mode_active() {
+pub fn flush_to_screen(_buf: &[Pixel]) {
+    if !crate::bga::mode_active() {
         return;
     }
-    unsafe {
-        for (i, &byte) in buf.iter().enumerate() {
-            FRAMEBUFFER.add(i).write_volatile(byte);
-        }
-    }
+    crate::bga::flush_back_to_lfb();
     FLUSH_COUNT.fetch_add(1, Ordering::Relaxed);
 }
 
 pub fn render_desktop_frame() {
     if !mode_active() {
-        let _ = init_mode_13h();
+        let _ = init_display();
+    }
+    if !crate::bga::mode_active() {
+        return;
     }
     back_buffer_mut(|buf| {
         fill_rect_buf(buf, 0, 0, WIDTH, HEIGHT, COLOR_DESKTOP);
-        fill_rect_buf(buf, 0, 0, WIDTH, 16, COLOR_TITLEBAR);
-        draw_text_buf(buf, 8, 4, "CLANOS", COLOR_TEXT);
         crate::desktop_shell::render_shell(buf);
         let (cx, cy) = crate::mouse::cursor_position();
         draw_cursor(buf, cx, cy);
     });
-    let buf = BACK_BUFFER.lock();
-    flush_to_screen(&buf);
+    unsafe {
+        let ptr = crate::bga::back_buffer_ptr();
+        let slice = core::slice::from_raw_parts(ptr, BUFFER_LEN);
+        flush_to_screen(slice);
+    }
 }
 
 pub fn draw_desktop_shell() {
@@ -374,25 +379,32 @@ pub fn draw_desktop_shell() {
 }
 
 pub fn smoke_framebuffer_smoke() -> bool {
-    init_mode_13h() && mode_active() && {
+    init_display() && mode_active() && {
         draw_desktop_shell();
         flush_count() >= 1
     }
 }
 
 pub fn smoke_double_buffer() -> bool {
-    init_mode_13h() && {
-        render_desktop_frame();
-        flush_count() >= 1
-    }
+    init_display()
+        && crate::bga::back_buffer_mapped()
+        && crate::bga::back_buffer_map_ok()
+        && {
+            render_desktop_frame();
+            flush_count() >= 1
+        }
 }
 
 pub fn smoke_font() -> bool {
-    init_mode_13h() && {
+    init_display() && {
         back_buffer_mut(|buf| {
-            draw_text_buf(buf, 10, 30, "CLANOS DESKTOP", COLOR_TEXT);
-            draw_text_buf(buf, 10, 40, "CONSOLE FILES RUN", COLOR_ACCENT);
+            draw_text_buf(buf, 30, 90, "CLANOS DESKTOP", COLOR_TEXT);
+            draw_text_buf(buf, 30, 120, "CONSOLE FILES RUN", COLOR_ACCENT);
         });
         true
     }
+}
+
+pub fn smoke_bga_id_readback() -> bool {
+    crate::bga::smoke_bga_id_probe()
 }

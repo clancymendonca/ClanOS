@@ -24,7 +24,9 @@ pub const BGA_DEVICE: u16 = 0x1111;
 const BACK_BUFFER_VIRT: u64 = 0x5300_0000_0000;
 
 static BGA_ACTIVE: AtomicBool = AtomicBool::new(false);
-static LFB_MAP_OK: AtomicBool = AtomicBool::new(false);
+static BACK_BUFFER_MAPPED: AtomicBool = AtomicBool::new(false);
+static BACK_BUFFER_MAP_OK: AtomicBool = AtomicBool::new(false);
+static LFB_WRITE_OK: AtomicBool = AtomicBool::new(false);
 static BACK_FRAMES: AtomicU64 = AtomicU64::new(0);
 static LAST_BGA_ID: AtomicU64 = AtomicU64::new(0);
 static LFB_PHYS: AtomicU64 = AtomicU64::new(0);
@@ -41,11 +43,19 @@ pub fn mode_active() -> bool {
     BGA_ACTIVE.load(Ordering::Relaxed)
 }
 
+pub fn back_buffer_mapped() -> bool {
+    BACK_BUFFER_MAPPED.load(Ordering::Relaxed)
+}
+
 pub fn video_memory_proof() -> (u64, bool) {
     (
         BACK_FRAMES.load(Ordering::Relaxed),
-        LFB_MAP_OK.load(Ordering::Relaxed),
+        LFB_WRITE_OK.load(Ordering::Relaxed),
     )
+}
+
+pub fn back_buffer_map_ok() -> bool {
+    BACK_BUFFER_MAP_OK.load(Ordering::Relaxed)
 }
 
 /// `map_bytes = min(computed_size, bar_size)` — ADR-0004 Q4 (host mirror in bga_bounds_lib.py).
@@ -95,7 +105,7 @@ fn lfb_ptr() -> *mut u32 {
     (offset + lfb) as *mut u32
 }
 
-/// Prove buddy can satisfy the full back-buffer frame count (PR1: alloc/free without virt map).
+/// Prove buddy can satisfy the full back-buffer frame count (alloc/free without virt map).
 fn smoke_buddy_back_buffer_frames(frame_count: u64) -> bool {
     let mut buddy = crate::buddy::BuddyFrameAllocator;
     for _ in 0..frame_count {
@@ -132,6 +142,7 @@ fn map_back_buffer(
         }
     }
     BACK_FRAMES.store(page_count, Ordering::Relaxed);
+    BACK_BUFFER_MAPPED.store(true, Ordering::Relaxed);
     true
 }
 
@@ -168,9 +179,66 @@ fn init_bga_path(
 
     LFB_PHYS.store(lfb_phys, Ordering::Relaxed);
     MAP_BYTES.store(map_bytes, Ordering::Relaxed);
-    LFB_MAP_OK.store(true, Ordering::Relaxed);
     BGA_ACTIVE.store(true, Ordering::Relaxed);
     true
+}
+
+/// Map buddy back buffer at `BACK_BUFFER_VIRT`, write/readback, flush spot-check — ADR-0004 Q4/Q5.
+/// Called after `scheduler_epoch` (page-table pressure from hw_paging smokes is behind us).
+pub fn map_back_buffer_for_desktop(
+    mapper: &mut impl Mapper<Size4KiB>,
+    frame_allocator: &mut impl FrameAllocator<Size4KiB>,
+) -> bool {
+    if back_buffer_map_ok() {
+        return true;
+    }
+    if !mode_active() {
+        crate::serial_println!("ClanOS-Video: back_buffer_map_ok=false reason=bga_inactive");
+        return false;
+    }
+    if !map_back_buffer(mapper, frame_allocator, BUFFER_BYTES as u64) {
+        crate::serial_println!("ClanOS-Video: back_buffer_map_ok=false reason=map_failed");
+        return false;
+    }
+
+    const TEST_PIXEL: u32 = 0x0000_FF00; // BGRx green
+    unsafe {
+        (BACK_BUFFER_VIRT as *mut u32).write_volatile(TEST_PIXEL);
+    }
+    let readback = unsafe { (BACK_BUFFER_VIRT as *mut u32).read_volatile() };
+    if readback != TEST_PIXEL {
+        crate::serial_println!(
+            "ClanOS-Video: back_buffer_map_ok=false reason=readback readback={:#x}",
+            readback
+        );
+        return false;
+    }
+
+    flush_back_to_lfb();
+    let lfb_readback = unsafe { lfb_ptr().read_volatile() };
+    if lfb_readback != TEST_PIXEL {
+        crate::serial_println!(
+            "ClanOS-Video: back_buffer_map_ok=false reason=lfb_flush lfb_readback={:#x}",
+            lfb_readback
+        );
+        return false;
+    }
+
+    BACK_BUFFER_MAP_OK.store(true, Ordering::Relaxed);
+    crate::serial_println!(
+        "ClanOS-Video: back_buffer_map_ok=true back_virt={:#x} back_frames={}",
+        BACK_BUFFER_VIRT,
+        BACK_FRAMES.load(Ordering::Relaxed)
+    );
+    true
+}
+
+/// Idempotent alias for post-gate boot (`main.rs`).
+pub fn init_desktop_framebuffer(
+    mapper: &mut impl Mapper<Size4KiB>,
+    frame_allocator: &mut impl FrameAllocator<Size4KiB>,
+) -> bool {
+    map_back_buffer_for_desktop(mapper, frame_allocator)
 }
 
 /// BGA primary, mode 13h fallback, fail closed — ADR-0004 Q3.
@@ -204,21 +272,25 @@ pub fn init_display(
     false
 }
 
+/// Kernel draw target. Before `map_back_buffer_for_desktop`, falls back to LFB (scheduler_epoch compositor smoke only).
 pub fn back_buffer_ptr() -> *mut u32 {
-    BACK_BUFFER_VIRT as *mut u32
+    if back_buffer_mapped() {
+        BACK_BUFFER_VIRT as *mut u32
+    } else {
+        lfb_ptr()
+    }
 }
 
 pub fn flush_back_to_lfb() {
-    if !mode_active() {
+    if !mode_active() || !back_buffer_mapped() {
         return;
     }
-    let count = BUFFER_LEN;
     unsafe {
-        let src = back_buffer_ptr();
-        let dst = lfb_ptr();
-        for i in 0..count {
-            dst.add(i).write_volatile(src.add(i).read_volatile());
-        }
+        core::ptr::copy_nonoverlapping(
+            back_buffer_ptr(),
+            lfb_ptr(),
+            BUFFER_LEN,
+        );
     }
 }
 
@@ -227,8 +299,10 @@ pub fn run_video_memory_smoke(
     mapper: &mut impl Mapper<Size4KiB>,
     frame_allocator: &mut impl FrameAllocator<Size4KiB>,
 ) -> bool {
-    LFB_MAP_OK.store(false, Ordering::Relaxed);
+    LFB_WRITE_OK.store(false, Ordering::Relaxed);
     BACK_FRAMES.store(0, Ordering::Relaxed);
+    BACK_BUFFER_MAPPED.store(false, Ordering::Relaxed);
+    BACK_BUFFER_MAP_OK.store(false, Ordering::Relaxed);
     BGA_ACTIVE.store(false, Ordering::Relaxed);
     VIDEO_SMOKE_RAN.store(true, Ordering::Relaxed);
 
@@ -248,6 +322,8 @@ pub fn run_video_memory_smoke(
         return false;
     }
 
+    LFB_WRITE_OK.store(true, Ordering::Relaxed);
+
     let (frames, lfb_ok) = video_memory_proof();
     let expected_frames = (BUFFER_BYTES / 4096) as u64;
     if frames != expected_frames || !lfb_ok {
@@ -257,15 +333,19 @@ pub fn run_video_memory_smoke(
     }
 
     crate::serial_println!(
-        "ClanOS-Video: back_frames={} lfb_map_ok=true map_bytes={}",
+        "ClanOS-Video: back_frames={} lfb_write_ok=true map_bytes={}",
         frames,
         MAP_BYTES.load(Ordering::Relaxed)
     );
+    crate::serial_println!(
+        "Desktop: bga {}x{} depth={} lfb={:#x} id={:#04x}",
+        WIDTH,
+        HEIGHT,
+        BPP,
+        LFB_PHYS.load(Ordering::Relaxed),
+        LAST_BGA_ID.load(Ordering::Relaxed) as u16
+    );
 
-    disable_bga();
-    // PR1: restore mode 13h for compositor path until PR2 RGB migration.
-    let _ = crate::framebuffer::init_mode_13h();
-    BGA_ACTIVE.store(false, Ordering::Relaxed);
     VIDEO_SMOKE_OK.store(true, Ordering::Relaxed);
     true
 }

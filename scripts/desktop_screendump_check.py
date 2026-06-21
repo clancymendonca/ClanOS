@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Capture QEMU VGA screendump and detect mode-13h stripe corruption."""
+"""Capture QEMU VGA screendump and validate 1024×768 BGA RGB desktop (ADR-0004)."""
 
 from __future__ import annotations
 
 import argparse
+import os
+import shutil
 import socket
 import subprocess
 import sys
@@ -11,27 +13,33 @@ import time
 from pathlib import Path
 from typing import IO, TextIO
 
+_SCRIPTS = Path(__file__).resolve().parents[1]
+if str(_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS))
+
+from smoke_qemu import cleanup_qemu_processes, ensure_qemu_on_path
+
 REPO = Path(__file__).resolve().parents[1]
 IMG = REPO / "target" / "x86_64-unknown-none" / "debug" / "bootimage-kernel.bin"
 OUT = REPO / "target" / "desktop_screendump.ppm"
 SERIAL_LOG = REPO / "target" / "desktop_boot_serial.log"
 BOOT_ATTEMPTS = 3
+# Measured on pinned gate corpus (2026-06-21): full validation gate + shell ready ~24s
+# (5 consecutive screendump launches: min 23.8s, max 24.4s). Retries cover transient
+# QEMU/monitor failures — not slow boot — so each attempt gets the full `--timeout`.
+MEASURED_BOOT_READY_P99_S = 45
+
+EXPECTED_W = 1024
+EXPECTED_H = 768
+TASKBAR_H = 54
 
 READY_MARKERS = (
-    "Clan OS shell ready",
-    "ClanOS-Gate: ok=true",
-    "ClanOS-Gate: name=desktop_preview ok=true",
+    "ClanOS shell ready",
 )
 
 
 def cleanup() -> None:
-    if sys.platform == "win32":
-        subprocess.run(
-            ["taskkill", "/IM", "qemu-system-x86_64.exe", "/F"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            check=False,
-        )
+    cleanup_qemu_processes()
 
 
 def screendump_via_monitor(port: int, out_path: Path, timeout: float = 30.0) -> bool:
@@ -61,15 +69,39 @@ def analyze_ppm(path: Path) -> tuple[bool, str]:
     if len(parts) < 2:
         return False, "missing width/height"
     file_w, file_h = int(parts[0]), int(parts[1])
+    if file_w < EXPECTED_W or file_h < EXPECTED_H:
+        return False, f"expected>={EXPECTED_W}x{EXPECTED_H} got {file_w}x{file_h}"
+
     pixels = data[header_end + 5 :]
-    # Mode 13h desktop occupies top-left 320x200 of the VGA surface.
-    width = min(320, file_w)
-    height = min(200, file_h)
+    width = EXPECTED_W
+    height = EXPECTED_H
     stride = file_w * 3
+
+    def rgb_at(x: int, y: int) -> tuple[int, int, int]:
+        i = y * stride + x * 3
+        return pixels[i], pixels[i + 1], pixels[i + 2]
+
+    # Sample desktop chrome + window regions (layout from desktop_shell.rs, ~3× scale).
+    probe_points = [
+        (512, 384),  # desktop center
+        (512, height - TASKBAR_H // 2),  # taskbar
+        (120, 120),  # console window body
+        (600, 150),  # files window body
+        (120, 72),   # console title bar
+    ]
+    probe_colors = [rgb_at(x, y) for x, y in probe_points]
+    distinct = len(set(probe_colors))
+    if distinct < 3:
+        return False, f"insufficient color variance distinct={distinct} probes={probe_colors}"
+
+    center = probe_colors[0]
+    taskbar = probe_colors[1]
+    if center == taskbar:
+        return False, "taskbar/desktop indistinguishable"
 
     def col_score(x: int) -> float:
         diffs = 0
-        samples = 0
+        samples_n = 0
         for y in range(1, height - 1):
             i = y * stride + x * 3
             prev = pixels[i - stride : i - stride + 3]
@@ -79,15 +111,17 @@ def analyze_ppm(path: Path) -> tuple[bool, str]:
                 diffs += abs(a - b)
             for a, b in zip(cur, nxt):
                 diffs += abs(a - b)
-            samples += 6
-        return diffs / max(samples, 1)
+            samples_n += 6
+        return diffs / max(samples_n, 1)
 
     scores = [col_score(x) for x in range(width)]
     avg = sum(scores) / len(scores)
     hot = sum(1 for s in scores if s > avg * 2.5)
-    # Stripe corruption: many columns with high vertical delta vs neighbors.
     ok = hot < width * 0.15
-    return ok, f"columns_high_vertical_delta={hot}/{width} avg_delta={avg:.2f}"
+    return ok, (
+        f"surface={width}x{height} distinct={distinct} "
+        f"columns_high_vertical_delta={hot}/{width} avg_delta={avg:.2f}"
+    )
 
 
 def wait_for_boot(
@@ -110,10 +144,15 @@ def wait_for_boot(
 
 
 def launch_qemu(monitor_port: int) -> tuple[subprocess.Popen[bytes], TextIO]:
+    if not ensure_qemu_on_path():
+        raise FileNotFoundError("qemu-system-x86_64 not found on PATH")
+    qemu = shutil.which("qemu-system-x86_64")
+    if qemu is None:
+        raise FileNotFoundError("qemu-system-x86_64 not found on PATH")
     drive_path = IMG.relative_to(REPO).as_posix()
     monitor = f"tcp:127.0.0.1:{monitor_port},server,nowait"
     cmd = [
-        "qemu-system-x86_64",
+        qemu,
         "-drive",
         f"format=raw,file={drive_path}",
         "-serial",
@@ -134,12 +173,21 @@ def launch_qemu(monitor_port: int) -> tuple[subprocess.Popen[bytes], TextIO]:
         stdout=serial_out,
         stderr=subprocess.STDOUT,
         cwd=REPO,
+        env=os.environ.copy(),
     )
     return proc, serial_out
 
 
-def boot_qemu_with_retries(base_port: int, timeout: int) -> tuple[subprocess.Popen[bytes], int] | None:
-    per_attempt = max(timeout // BOOT_ATTEMPTS, 45)
+def boot_qemu_with_retries(
+    base_port: int, timeout: int
+) -> tuple[tuple[subprocess.Popen[bytes], int], float] | None:
+    if timeout < MEASURED_BOOT_READY_P99_S:
+        print(
+            f"desktop_screendump_check: warn timeout={timeout}s below measured p99 "
+            f"boot budget {MEASURED_BOOT_READY_P99_S}s",
+            file=sys.stderr,
+        )
+    per_attempt = timeout
     for attempt in range(BOOT_ATTEMPTS):
         if attempt:
             cleanup()
@@ -147,9 +195,11 @@ def boot_qemu_with_retries(base_port: int, timeout: int) -> tuple[subprocess.Pop
         SERIAL_LOG.unlink(missing_ok=True)
         monitor_port = base_port + attempt
         proc, serial_out = launch_qemu(monitor_port)
+        attempt_start = time.monotonic()
         try:
             if wait_for_boot(proc, serial_out, per_attempt):
-                return proc, monitor_port
+                boot_elapsed = time.monotonic() - attempt_start
+                return (proc, monitor_port), boot_elapsed
         finally:
             serial_out.close()
         try:
@@ -185,7 +235,8 @@ def main() -> int:
             print(tail, file=sys.stderr)
         return 1
 
-    proc, monitor_port = boot
+    (proc, monitor_port), boot_elapsed = boot
+
     time.sleep(2.0)
     dump_path = REPO / "target" / "desktop_screendump.ppm"
     if not screendump_via_monitor(monitor_port, dump_path):
@@ -202,10 +253,12 @@ def main() -> int:
         pass
 
     if ok:
-        print(f"desktop_screendump_check: OK ({detail})")
+        print(
+            f"desktop_screendump_check: OK ({detail} boot_elapsed={boot_elapsed:.1f}s)"
+        )
         print(f"screendump: {dump_path}")
         return 0
-    print(f"desktop_screendump_check: STRIPE/CORRUPTION ({detail})", file=sys.stderr)
+    print(f"desktop_screendump_check: FAIL ({detail})", file=sys.stderr)
     print(f"screendump: {dump_path}", file=sys.stderr)
     return 1
 

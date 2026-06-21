@@ -64,8 +64,11 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         kernel::bga::run_video_memory_smoke(&mut mapper, &mut frame_allocator);
     kernel::serial_println!("Boot: video_memory_smoke={}", video_smoke_ok);
 
-    kernel::validation_gate::run_validation_gate();
+    kernel::validation_gate::run_validation_gate(&mut mapper, &mut frame_allocator);
     kernel::serial_println!("Boot: validation gates complete");
+    if !kernel::bga::init_desktop_framebuffer(&mut mapper, &mut frame_allocator) {
+        kernel::serial_println!("Boot: init_desktop_framebuffer failed");
+    }
     kernel::desktop_runtime::boot_desktop();
 
     let counters = PerformanceCounters::read();

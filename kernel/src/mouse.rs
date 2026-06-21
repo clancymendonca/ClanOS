@@ -18,8 +18,8 @@ pub struct MouseEvent {
 
 static MOUSE_INITIALIZED: AtomicBool = AtomicBool::new(false);
 static MOUSE_EVENTS: AtomicU64 = AtomicU64::new(0);
-static CURSOR_X: AtomicU64 = AtomicU64::new(160);
-static CURSOR_Y: AtomicU64 = AtomicU64::new(100);
+static CURSOR_X: AtomicU64 = AtomicU64::new(512);
+static CURSOR_Y: AtomicU64 = AtomicU64::new(384);
 
 lazy_static! {
     static ref MOUSE_QUEUE: ArrayQueue<MouseEvent> = ArrayQueue::new(MOUSE_QUEUE_SIZE);
@@ -167,7 +167,7 @@ pub fn mouse_irq_vector() -> u8 {
 
 pub fn smoke_mouse() -> bool {
     init() && {
-        inject_event(100, 80, 0x01);
+        inject_event(300, 240, 0x01);
         event_count() > 0 && poll_event().is_some()
     }
 }

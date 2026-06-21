@@ -3,10 +3,11 @@
 use core::sync::atomic::{AtomicU64, Ordering};
 use spin::Mutex;
 
-use crate::framebuffer::{self, Rect};
+use crate::framebuffer::{self, Pixel, Rect};
 use crate::mouse::MouseEvent;
 
 const MAX_WINDOWS: usize = 4;
+const TITLE_BAR_H: usize = 30;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct WindowId(u32);
@@ -19,7 +20,7 @@ struct Window {
     w: usize,
     h: usize,
     title: &'static str,
-    body_color: u8,
+    body_color: Pixel,
 }
 
 struct WindowState {
@@ -75,7 +76,7 @@ pub fn create_window(
         w,
         h,
         title,
-        body_color: 7,
+        body_color: framebuffer::COLOR_WINDOW_BODY,
     });
     state.focused = Some(id);
     mark_damage(
@@ -109,21 +110,28 @@ pub fn handle_mouse(event: MouseEvent) {
     }
 }
 
-pub fn draw_windows(back: &mut [u8]) {
+pub fn draw_windows(back: &mut [Pixel]) {
     let state = STATE.lock();
     for win in state.windows.iter().filter_map(|w| w.as_ref()) {
         let focused = state.focused == Some(win.id);
         let border = if focused {
             framebuffer::COLOR_ACCENT
         } else {
-            8
+            framebuffer::COLOR_PANEL
         };
         framebuffer::fill_rect_buf(back, win.x, win.y, win.w, win.h, win.body_color);
-        framebuffer::fill_rect_buf(back, win.x, win.y.saturating_sub(10), win.w, 10, border);
+        framebuffer::fill_rect_buf(
+            back,
+            win.x,
+            win.y.saturating_sub(TITLE_BAR_H),
+            win.w,
+            TITLE_BAR_H,
+            border,
+        );
         framebuffer::draw_text_buf(
             back,
-            win.x + 4,
-            win.y.saturating_sub(8),
+            win.x + 12,
+            win.y.saturating_sub(TITLE_BAR_H - 9),
             win.title,
             framebuffer::COLOR_TEXT,
         );
@@ -136,11 +144,11 @@ pub fn damage_regions_flushed() -> usize {
 
 pub fn smoke_window_manager() -> bool {
     if window_count() < 2 {
-        let _ = create_window(40, 40, 100, 60, "TERM");
-        let _ = create_window(160, 50, 120, 70, "FILES");
+        let _ = create_window(120, 120, 300, 180, "TERM");
+        let _ = create_window(480, 150, 360, 210, "FILES");
     }
-    crate::mouse::inject_event(45, 45, 0x01);
-    window_count() >= 2 && focus_at(45, 45).is_some() && damage_regions_flushed() > 0
+    crate::mouse::inject_event(135, 135, 0x01);
+    window_count() >= 2 && focus_at(135, 135).is_some() && damage_regions_flushed() > 0
 }
 
 pub fn smoke_wm_smoke() -> bool {

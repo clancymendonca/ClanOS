@@ -191,6 +191,11 @@ def main() -> int:
             30,
         ),
         (
+            "desktop-screendump-check",
+            ["python", "scripts/desktop_screendump_check.py", "--timeout", "120"],
+            180,
+        ),
+        (
             "trust-anchor-embed-match",
             ["python", "scripts/gate/test_anchor_embed_match.py"],
             30,
