@@ -1,0 +1,5 @@
+clan-signed-manifest-v1
+name=demo-hello-gate-corpus
+digest=sha256:fc7bba0b52a9811bef56f9791294de7ba39d5397f58bb80c770252e7e651a92d
+trust=system
+sig=ed25519:8ce71d56cb433347383639a2e5af473f2530dad978a1067d24495892d59aae9c28ee99b867fcf883a0c5594c2a7dbb6c14d22a615aba369927a7aa38557bd50d

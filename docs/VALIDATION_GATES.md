@@ -105,5 +105,7 @@ Per-scope checklists under `docs/scope-*-checklist.md` record **implementation s
 | `compat-subsystems-host-check` | `scripts/gate/compat_subsystems.py` |
 | `preemption-soak-check` | `scripts/preemption/soak.py` |
 | `preemption-latency-check` | `scripts/preemption/latency.py` |
+| `gate-signed-elf-host-check` | `scripts/gate/signed_elf.py` |
+| `gate-signed-elf-self-test` | `scripts/gate/test_signed_elf.py` |
 
 See also [`RELEASE_SCORECARD.md`](RELEASE_SCORECARD.md).

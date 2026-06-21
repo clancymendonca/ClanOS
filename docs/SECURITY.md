@@ -89,7 +89,7 @@ See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 Validation:
 
 ```bash
-python scripts/gate/boot.py --gate dynamic_runtime --timeout 180
+python scripts/gate/run.py --gate dynamic_runtime --timeout 180
 ```
 
 ## Manifest Digest (Scope 58)
@@ -103,3 +103,12 @@ See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ```
 
 Deferred: cryptographic signatures, capability tokens, and per-user trust policies beyond static manifest fields.
+
+## Epoch-450 signed ELF gate corpus (ADR-0002)
+
+The production gate pinned corpus (`config/signed_elf_test_corpus/`) uses a **public, deterministic Ed25519 development seed** in host tooling (`scripts/gate/signed_elf_lib.py`). Anyone with the repository can derive the private key. That is intentional for CI reproducibility and **must never anchor anything beyond the gate test corpus and `scripts/gate/fixtures/signed_elf/`**.
+
+- Do **not** reuse `sign_test_corpus.py` or `epoch450_dev_private_key()` to sign real `/bin/*` payloads, loader manifests, or shipping userland.
+- This is separate from `clan-exec-v1` manifest digest checks (`digest=sha256:`) — see above; ADR-0002 adds a signature layer for the gate smoke only until loader integration lands.
+
+Wire format: [`config/signed_elf_test_corpus/WIRE_FORMAT.txt`](../config/signed_elf_test_corpus/WIRE_FORMAT.txt). Kernel verification must test against committed fixture bytes verbatim.

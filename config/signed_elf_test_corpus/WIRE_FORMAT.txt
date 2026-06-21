@@ -1,0 +1,64 @@
+clan-signed-manifest-v1 — wire format (ADR-0002)
+=================================================
+
+Normative host reference: scripts/gate/signed_elf_lib.py
+Golden signed bytes:     config/signed_elf_test_corpus/canonical_body.utf8
+Fixture corpus (literal): config/signed_elf_test_corpus/ + scripts/gate/fixtures/signed_elf/
+
+Kernel implementers MUST pass tests against the committed fixture bytes verbatim.
+Do not regenerate manifests from this prose alone.
+
+Files per corpus directory
+--------------------------
+  payload.bin     Raw octets; digest input (no implicit encoding transform).
+  manifest.toml   Text manifest; see below.
+
+Manifest text (on disk)
+-----------------------
+  Encoding: UTF-8, no BOM.
+  Line endings: LF preferred; host parser strips trailing CR on read (\r\n tolerated on input only).
+  Blank lines and # comments (after header) are ignored by parser.
+  Required non-sig lines (in order):
+    1. clan-signed-manifest-v1
+    2. name=<corpus-name>
+    3. digest=sha256:<64 lowercase hex chars>
+    4. trust=system
+  Optional trailing line (NOT signed):
+    sig=ed25519:<128 lowercase hex chars>   (64-byte Ed25519 signature)
+
+Canonical signed body (exact bytes Ed25519 verifies)
+----------------------------------------------------
+  UTF-8, LF only (\n, 0x0A), no CR, no BOM, no trailing blank line after trust= line.
+
+  Byte layout (angle brackets = literal; values = fields):
+
+    clan-signed-manifest-v1\n
+    name=<name>\n
+    digest=sha256:<digest_hex>\n
+    trust=system\n
+
+  Rules:
+  - <name>: UTF-8 bytes of name= field value after parse (strip outer whitespace only).
+  - <digest_hex>: exactly 64 chars, lowercase [0-9a-f], MUST equal SHA256(payload.bin) hex.
+  - trust= line value MUST be exactly the literal ASCII string "system" for epoch-450 gate corpus.
+  - The sig= line is NEVER included in the signed byte sequence.
+  - Recompute digest from payload.bin at verify time; never trust manifest digest without check.
+
+Verification order (fail closed)
+--------------------------------
+  1. Parse manifest.toml (reject missing header, bad digest format, missing sig).
+  2. digest_actual = SHA256(payload.bin) as lowercase hex.
+  3. Reject if digest_actual != manifest digest_hex.
+  4. Reconstruct canonical signed body bytes from parsed name + digest_actual + trust.
+  5. Ed25519 verify(signature, canonical_body_bytes, anchor_public_key).
+
+Trust anchor
+------------
+  config/trust_anchor_epoch450.toml — public_key_hex only (Ed25519, 32 bytes hex).
+
+Development signing seed (HOST ONLY — NOT SECRET)
+-----------------------------------------------
+  Private key derived in host tooling from public domain string
+  "clanos-epoch450-signed-elf-gate-test-anchor-v1" (SHA256 → Ed25519 seed).
+  Anyone with the repo can derive this key. It MUST anchor ONLY
+  config/signed_elf_test_corpus/ and gate fixtures — never production userland.

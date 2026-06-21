@@ -1,0 +1,9 @@
+[schema]
+version = "1.0.0"
+algorithm = "ed25519"
+purpose = "signed_elf_gate_corpus"
+
+[anchor]
+epoch = 450
+# Public key only — private signing material stays in host tooling (sign_test_corpus.py seed).
+public_key_hex = "d0de5d01ad511bd10c6be1b8b4fe71e9ac9e4f3f4b740fde8d61af58b11fc825"

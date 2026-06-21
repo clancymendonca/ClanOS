@@ -175,6 +175,16 @@ def main() -> int:
             ["python", "scripts/gate/test_close_remaining_plan_gaps.py"],
             30,
         ),
+        (
+            "gate-signed-elf-host-check",
+            ["python", "scripts/gate/signed_elf.py"],
+            30,
+        ),
+        (
+            "gate-signed-elf-self-test",
+            ["python", "scripts/gate/test_signed_elf.py"],
+            30,
+        ),
         ("semantic-lint", ["python", "scripts/semantic_lint.py"], None),
         ("covenant-ci", ["python", "scripts/covenant_ci.py"], 120),
         ("loom-gate", ["python", "scripts/loom_gate.py"], None),
