@@ -717,8 +717,21 @@ pub fn sample_elf_fixture_image() -> String {
     String::from_utf8(bytes).unwrap_or_else(|_| String::new())
 }
 
+fn signed_seed_elf_fixture(name: &str) -> String {
+    let bytes: &[u8] = match name {
+        "mendo" => include_bytes!("../../config/loader_signed_seed/fixtures/mendo.bin"),
+        "ring3-io-demo" => include_bytes!("../../config/loader_signed_seed/fixtures/ring3_io_demo.bin"),
+        "hello-alloc" => include_bytes!("../../config/loader_signed_seed/fixtures/hello_alloc.bin"),
+        "sig-demo" => include_bytes!("../../config/loader_signed_seed/fixtures/sig_demo.bin"),
+        _ => &[],
+    };
+    String::from_utf8_lossy(bytes).into_owned()
+}
+
 fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), StorageError> {
     let sample_elf = sample_elf_fixture_image();
+    let mendo_elf = signed_seed_elf_fixture("mendo");
+    let ring3_elf = signed_seed_elf_fixture("ring3-io-demo");
     for (path, contents) in [
         ("/README.txt", "Clan OS persistent storage"),
         (
@@ -782,8 +795,9 @@ fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), Stor
         ("/bin/libc_stub.elf", sample_elf.as_str()),
         (
             "/bin/mendo",
-            "clan-exec-v1\nname=mendo\nkind=elf64-image\nentry=0x400000\nimage=/bin/mendo.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=Mendo interactive shell",
+            include_str!("../../config/loader_signed_seed/mendo.signed.manifest"),
         ),
+        ("/bin/mendo.elf", mendo_elf.as_str()),
         (
             "/bin/ring3-io-demo",
             "clan-exec-v1\nname=ring3-io-demo\nkind=elf64-image\nentry=0x400000\nimage=/bin/ring3-io-demo.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=Ring-3 I/O demo",

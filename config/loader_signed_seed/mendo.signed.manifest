@@ -1,0 +1,11 @@
+clan-exec-v1
+name=mendo
+kind=elf64-image
+entry=0x400000
+image=/bin/mendo.elf
+requires=execute
+digest=sha256:3010e69e712af0d3dc8c4a9916a9b1739447172b548395244feddabada535328
+trust=system-signed
+owner=admin
+description=Mendo interactive shell
+sig=ed25519:c5385b9f3b560c679ba25ca6f7bf1873c7bd45427a4768db14e81646decaf8a7aff2e72b66ba289879a188875044b607d4bf2d2e6baeb41e98f49d49e2a7da09
