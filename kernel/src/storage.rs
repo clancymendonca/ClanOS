@@ -771,7 +771,7 @@ fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), Stor
         ("/bin/syscallprobe.elf", sample_elf.as_str()),
         (
             "/bin/chdirprobe",
-            "clan-exec-v1\nname=chdirprobe\nkind=elf64-image\nentry=0x400000\nimage=/bin/chdirprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=HW chdir/getcwd probe ELF fixture",
+            include_str!("../../config/loader_signed_seed/chdirprobe.signed.manifest"),
         ),
         ("/bin/chdirprobe.elf", sample_elf.as_str()),
         (

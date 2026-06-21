@@ -1,0 +1,11 @@
+clan-exec-v1
+name=syscallprobe
+kind=elf64-image
+entry=0x400000
+image=/bin/syscallprobe.elf
+requires=execute
+digest=sha256:0d051143803d91d064935f7191b3d7c753c5538a2992b46900e009cc0aab806b
+trust=system-signed
+owner=admin
+description=HW syscall probe ELF fixture
+sig=ed25519:5979c3ceece1bac70ca2e69ae3adf1d7d292a0159411c5b1cc568884e9f5bcd62866adf4b7135f6e2f2b6cb63b118c5c2b28914f119361debcecdb463be6e702
