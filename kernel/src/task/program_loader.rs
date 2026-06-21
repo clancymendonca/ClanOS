@@ -354,6 +354,73 @@ pub fn resolve_program(name: &str) -> Result<LoadedProgram, ProgramLoadError> {
         .ok_or(ProgramLoadError::NotFound)
 }
 
+/// Fail closed when `trust=system-signed` does not verify (ADR-0003).
+///
+/// ELF digest payload is read via [`crate::vfs::read_bytes`] so `/ext2/…` image paths
+/// resolve to ext2-backed bytes (same SHA256(ELF) construction as `/bin/…`).
+pub fn verify_system_signed_program(program: &LoadedProgram) -> Result<(), ProgramLoadError> {
+    if program.trust != ProgramTrust::SystemSigned {
+        return Ok(());
+    }
+    let Some(manifest) = crate::storage::read_file(&program.source_path)
+        .ok()
+        .flatten()
+    else {
+        record_launch_failure();
+        return Err(ProgramLoadError::PermissionDenied);
+    };
+    match program.kind {
+        ProgramKind::BuiltinAlias => {
+            if crate::loader_signed_exec::verify_signed_builtin_alias(&manifest).is_err() {
+                record_launch_failure();
+                return Err(ProgramLoadError::PermissionDenied);
+            }
+        }
+        ProgramKind::Elf64Image => {
+            let image_path = program
+                .image_path
+                .as_ref()
+                .ok_or(ProgramLoadError::MissingImage)?;
+            let Some(elf) = crate::vfs::read_bytes(image_path)
+                .map_err(|_| ProgramLoadError::PermissionDenied)?
+            else {
+                record_launch_failure();
+                return Err(ProgramLoadError::PermissionDenied);
+            };
+            if crate::loader_signed_exec::verify_signed_exec(elf.as_slice(), &manifest).is_err() {
+                record_launch_failure();
+                return Err(ProgramLoadError::PermissionDenied);
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Verify `trust=system-signed` ELF using caller-supplied payload bytes (corpus / ext2 exec).
+pub fn verify_system_signed_elf_payload(
+    program: &LoadedProgram,
+    elf_payload: &[u8],
+) -> Result<(), ProgramLoadError> {
+    if program.trust != ProgramTrust::SystemSigned {
+        return Ok(());
+    }
+    if program.kind != ProgramKind::Elf64Image {
+        return Err(ProgramLoadError::UnsupportedKind);
+    }
+    let Some(manifest) = crate::storage::read_file(&program.source_path)
+        .ok()
+        .flatten()
+    else {
+        record_launch_failure();
+        return Err(ProgramLoadError::PermissionDenied);
+    };
+    if crate::loader_signed_exec::verify_signed_exec(elf_payload, &manifest).is_err() {
+        record_launch_failure();
+        return Err(ProgramLoadError::PermissionDenied);
+    }
+    Ok(())
+}
+
 pub fn resolve_program_for(
     credentials: crate::security::Credentials,
     name: &str,
@@ -371,6 +438,7 @@ pub fn resolve_program_for(
             ProgramLoadError::PermissionDenied
         })?;
     }
+    verify_system_signed_program(&program)?;
     if program.kind == ProgramKind::Elf64Image {
         if program.image_error.is_some() {
             record_launch_failure();
@@ -378,25 +446,6 @@ pub fn resolve_program_for(
         }
         record_unsupported_execution();
         return Err(ProgramLoadError::UnsupportedExecution);
-    }
-    if program.trust == ProgramTrust::SystemSigned {
-        let Some(manifest) = crate::storage::read_file(&program.source_path)
-            .ok()
-            .flatten()
-        else {
-            record_launch_failure();
-            return Err(ProgramLoadError::PermissionDenied);
-        };
-        let verify_ok = match program.kind {
-            ProgramKind::BuiltinAlias => {
-                crate::loader_signed_exec::verify_signed_builtin_alias(&manifest).is_ok()
-            }
-            ProgramKind::Elf64Image => false,
-        };
-        if !verify_ok {
-            record_launch_failure();
-            return Err(ProgramLoadError::PermissionDenied);
-        }
     }
     Ok(program)
 }
@@ -519,6 +568,7 @@ pub fn validate_program_image(
         .ok_or(ProgramLoadError::MissingImage)?;
     crate::storage::can_execute(credentials, image_path)
         .map_err(|_| ProgramLoadError::PermissionDenied)?;
+    verify_system_signed_program(&program)?;
     program.image.ok_or(ProgramLoadError::ImageInvalid)
 }
 
@@ -547,6 +597,7 @@ pub fn prepare_program_image(
         .image
         .clone()
         .ok_or(ProgramLoadError::ImageInvalid)?;
+    verify_system_signed_program(&program)?;
     let load_plan = crate::load_plan::build_load_plan(&image).map_err(|_| {
         REJECTED_LOAD_PLAN_COUNT.fetch_add(1, Ordering::Relaxed);
         ProgramLoadError::LoadPlanRejected
@@ -1198,6 +1249,8 @@ pub fn execute_allowlisted_user_elf(
         REJECTED_HW_ELF_COUNT.fetch_add(1, Ordering::Relaxed);
         return Err(ProgramLoadError::HwElfRejected);
     }
+    let program = resolve_program(name)?;
+    verify_system_signed_program(&program)?;
     if name == "hello" || name == "tickprobe" || name == "syscallprobe" {
         return execute_hw_user_elf(credentials, "hello");
     }
@@ -1383,22 +1436,7 @@ pub fn execute_manifest_elf_gated(
         return Err(ProgramLoadError::HwElfRejected);
     }
     if program.trust == ProgramTrust::SystemSigned {
-        let manifest_text = crate::storage::read_file(&program.source_path)
-            .ok()
-            .flatten();
-        let elf_bytes = program
-            .image_path
-            .as_ref()
-            .and_then(|path| crate::storage::read_file(path).ok().flatten());
-        let Some(manifest) = manifest_text else {
-            MANIFEST_ELF_REJECTED.fetch_add(1, Ordering::Relaxed);
-            return Err(ProgramLoadError::HwElfRejected);
-        };
-        let Some(elf) = elf_bytes else {
-            MANIFEST_ELF_REJECTED.fetch_add(1, Ordering::Relaxed);
-            return Err(ProgramLoadError::HwElfRejected);
-        };
-        if crate::loader_signed_exec::verify_signed_exec(elf.as_bytes(), &manifest).is_err() {
+        if verify_system_signed_program(&program).is_err() {
             MANIFEST_ELF_REJECTED.fetch_add(1, Ordering::Relaxed);
             return Err(ProgramLoadError::HwElfRejected);
         }
@@ -1496,15 +1534,7 @@ pub fn execute_trusted_manifest_elf(
         .and_then(|path| crate::storage::read_file(path).ok().flatten());
     match program.trust {
         ProgramTrust::SystemSigned => {
-            let Some(manifest) = manifest_text else {
-                TRUST_EXEC_REJECTED.fetch_add(1, Ordering::Relaxed);
-                return Err(ProgramLoadError::HwElfRejected);
-            };
-            let Some(elf) = elf_bytes else {
-                TRUST_EXEC_REJECTED.fetch_add(1, Ordering::Relaxed);
-                return Err(ProgramLoadError::HwElfRejected);
-            };
-            if crate::loader_signed_exec::verify_signed_exec(elf.as_bytes(), &manifest).is_err() {
+            if verify_system_signed_program(&program).is_err() {
                 TRUST_EXEC_REJECTED.fetch_add(1, Ordering::Relaxed);
                 return Err(ProgramLoadError::HwElfRejected);
             }

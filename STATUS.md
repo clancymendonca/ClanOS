@@ -4,13 +4,13 @@
 
 **GitHub Actions is not currently substantiating pushes.** Run [27895509720](https://github.com/clancymendonca/ClanOS/actions/runs/27895509720) (tip `e4939f4`) failed before any job steps: account billing lock — workflow did not execute (`cargo fmt`, `validation_matrix.py`, QEMU). Re-run CI after billing is restored; do not treat a green local matrix as CI proof until then.
 
-**Last verified locally (2026-06-21):** scope-467 seed migration — `tickprobe` → `trust=system-signed` (first `elf64-image`); gate `2.5.0` (**7 signed**, **9 digest-only remaining** of 16 seeds).
+**Last verified locally (2026-06-21):** scope-468 — execution-path verify audit + `ring3-io-demo-ext2` signed; gate `2.6.0` (**8 signed**, **8 digest-only remaining** of 16 seeds). **`/ext2/` image path = same ELF-byte digest** (not a third variant).
 
-## Snapshot (Functional OS — scope 400, QEMU gate v2.5.0)
+## Snapshot (Functional OS — scope 400, QEMU gate v2.6.0)
 
-- **Validation gate:** `kernel/src/validation_gate.rs` (`VALIDATION_GATE_VERSION = 2.5.0`)
+- **Validation gate:** `kernel/src/validation_gate.rs` (`VALIDATION_GATE_VERSION = 2.6.0`)
 - **ADR-0002 signed ELF (epoch 450):** kernel verifier + in-QEMU negative gauntlet (`signed_elf_integration`; 9 cases)
-- **ADR-0003 loader signed exec (epoch 460):** kernel `loader_signed_exec.rs` + `loader_signed_exec_integration` (12 cases); seed migration **7 signed / 9 digest-only remaining** of 16 (`tickprobe` first elf64-image; **next: `ring3-io-demo-ext2` early** for `/ext2/` image path check; sunset scope 465)
+- **ADR-0003 loader signed exec (epoch 460):** seed migration **8 signed / 8 digest-only remaining** of 16; execution-path verify audit in ADR-0003 § Q4 (all `trust=system-signed` entry points); `/ext2/` uses `vfs::read_bytes` + same SHA256(ELF) digest
 - **Gate audit:** [`docs/GATE_AUDIT.md`](docs/GATE_AUDIT.md) — per-gate substance classification
 - **Gap audit:** [`docs/GAP_AUDIT.md`](docs/GAP_AUDIT.md) — `addressed` ≠ Implemented (204 overclaimed baseline)
 - **Desktop:** VGA 320×200, double-buffered compositor, PS/2 mouse, window manager, taskbar shell

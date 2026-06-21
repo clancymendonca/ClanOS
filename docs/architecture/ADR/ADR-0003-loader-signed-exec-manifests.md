@@ -115,6 +115,21 @@ Suggested order (lowest gate blast radius first): shell builtins (`echo`, `time`
 | Gate honesty | `loader_security` "Real (digest+sig)" only when pinned inventory in `GATE_AUDIT_401_500.md` lists signature-verified programs and Q3 sunset guards pass |
 | Host role | Negative fixtures + `loader_signing_sunset_check.py`; host preflight does **not** substitute for kernel QEMU proof |
 
+**Execution-path verify enumeration (scope 467 audit):** every kernel entry that runs a seed program must call `verify_system_signed_program` / `verify_system_signed_elf_payload` when `trust=system-signed`. ELF digest bytes are loaded via [`vfs::read_bytes`](../../../kernel/src/vfs.rs) (covers `/bin/…` and `/ext2/…`; digest construction unchanged — SHA256 of ELF octets).
+
+| Entry point | Kind | Verify helper |
+|-------------|------|---------------|
+| `resolve_program_for` | builtin + ELF | `verify_system_signed_program` (before ELF `UnsupportedExecution` dispatch) |
+| `execute_trusted_manifest_elf` | ELF | `verify_system_signed_program` |
+| `execute_manifest_elf_gated` | ELF | `verify_system_signed_program` |
+| `execute_allowlisted_user_elf` | ELF | `verify_system_signed_program` |
+| `prepare_program_image` / `build_hw_page_table_program` chain | ELF | `verify_system_signed_program` |
+| `validate_program_image` | ELF | `verify_system_signed_program` |
+| `corpus_runner::execute_corpus_bytes` | ELF (embedded / ext2) | `verify_system_signed_elf_payload` (bytes about to execute) |
+| `execute_corpus_elf` | raw bytes | caller must verify first (corpus_runner does) |
+| `execute_minimal_user_elf_descriptor` | `hello` only | N/A until `hello` signed |
+| `userspace::run_program` | builtin | via `resolve_program_for`; ELF via allowlisted path above |
+
 ---
 
 ### Q5 — Canonical signed body for `clan-exec-v1`: **locked (PR1 golden bytes)**

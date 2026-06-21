@@ -798,7 +798,7 @@ fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), Stor
         ),
         (
             "/bin/ring3-io-demo-ext2",
-            "clan-exec-v1\nname=ring3-io-demo-ext2\nkind=elf64-image\nentry=0x400000\nimage=/ext2/ring3-io-demo.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=Ring-3 I/O demo from ext2",
+            include_str!("../../config/loader_signed_seed/ring3-io-demo-ext2.signed.manifest"),
         ),
         ("/lib/libaux_stub.elf", sample_elf.as_str()),
         ("/tmp/fd-dup-smoke.txt", "relative-open"),

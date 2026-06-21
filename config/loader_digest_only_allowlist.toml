@@ -28,6 +28,3 @@ name = "hello-alloc"
 
 [[programs]]
 name = "sig-demo"
-
-[[programs]]
-name = "ring3-io-demo-ext2"

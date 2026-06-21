@@ -17,8 +17,10 @@ SEED_DIR = ROOT / "config" / "loader_signed_seed"
 SAMPLE_ELF = SEED_DIR / "fixtures" / "sample_elf_fixture.bin"
 BUILTIN_PROGRAM = "demo-hello"
 ELF_PROGRAM = "tickprobe"
-# digest-only remaining after demo-hello + echo + time + sysinfo + fsinfo + clan-info + tickprobe migrated.
-EXPECTED_DIGEST_ONLY_REMAINING = 9
+EXT2_PROGRAM = "ring3-io-demo-ext2"
+RING3_ELF = SEED_DIR / "fixtures" / "ring3_io_demo.bin"
+# digest-only remaining after demo-hello…tickprobe + ring3-io-demo-ext2 migrated.
+EXPECTED_DIGEST_ONLY_REMAINING = 8
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import loader_signed_exec_lib as lsel  # noqa: E402
@@ -201,27 +203,109 @@ def prove_elf64_image_rollback(anchor: lsel.TrustAnchor, failures: int) -> int:
     return failures
 
 
+def prove_ext2_image_path_rollback(anchor: lsel.TrustAnchor, failures: int) -> int:
+    """Confirm /ext2/… image= uses same SHA256(ELF bytes) digest, not a third variant."""
+    signed_path = SEED_DIR / f"{EXT2_PROGRAM}.signed.manifest"
+    if not signed_path.is_file():
+        print(
+            f"test_loader_seed_migration_rollback: FAIL missing {signed_path}",
+            file=sys.stderr,
+        )
+        return failures + 1
+    if not RING3_ELF.is_file():
+        print(
+            f"test_loader_seed_migration_rollback: FAIL missing {RING3_ELF}",
+            file=sys.stderr,
+        )
+        return failures + 1
+
+    elf_bytes = RING3_ELF.read_bytes()
+    signed = signed_path.read_text(encoding="utf-8")
+    if "image=/ext2/ring3-io-demo.elf" not in signed:
+        print(
+            "test_loader_seed_migration_rollback: FAIL ext2 manifest missing /ext2/ image path",
+            file=sys.stderr,
+        )
+        failures += 1
+
+    ok, msg = lsel.verify_signed_manifest(signed, elf_bytes, anchor)
+    if not ok:
+        print(
+            f"test_loader_seed_migration_rollback: FAIL signed {EXT2_PROGRAM}: {msg}",
+            file=sys.stderr,
+        )
+        failures += 1
+    else:
+        print(
+            f"test_loader_seed_migration_rollback: OK signed {EXT2_PROGRAM} "
+            "(/ext2/ image path, ELF-byte digest) verifies"
+        )
+
+    tampered_elf = bytearray(elf_bytes)
+    tampered_elf[0] ^= 0x01
+    ok, msg = lsel.verify_signed_manifest(signed, bytes(tampered_elf), anchor)
+    if ok:
+        print(
+            "test_loader_seed_migration_rollback: FAIL ext2 elf tampered payload should not verify",
+            file=sys.stderr,
+        )
+        failures += 1
+    elif "digest payload mismatch" not in msg:
+        print(
+            f"test_loader_seed_migration_rollback: FAIL ext2 tampered payload wrong reason: {msg}",
+            file=sys.stderr,
+        )
+        failures += 1
+    else:
+        print(f"test_loader_seed_migration_rollback: OK ext2 rejects tampered payload ({msg})")
+
+    rb = rollback_elf_manifest(
+        EXT2_PROGRAM,
+        "0x400000",
+        "/ext2/ring3-io-demo.elf",
+        "Ring-3 I/O demo from ext2",
+    )
+    if "trust=system-signed" in rb or "digest=sha256:" in rb or "sig=ed25519:" in rb:
+        print(
+            "test_loader_seed_migration_rollback: FAIL ext2 rollback shape",
+            file=sys.stderr,
+        )
+        failures += 1
+    else:
+        print("test_loader_seed_migration_rollback: OK ext2 rollback manifest is digest-only trust=system")
+
+    ok, msg = lsel.verify_signed_manifest(rb, elf_bytes, anchor)
+    if ok:
+        print(
+            "test_loader_seed_migration_rollback: FAIL ext2 rollback must not pass signed verify",
+            file=sys.stderr,
+        )
+        failures += 1
+    else:
+        print(
+            f"test_loader_seed_migration_rollback: OK ext2 rollback rejected by signed path ({msg})"
+        )
+
+    return failures
+
+
 def main() -> int:
     failures = 0
     anchor = lsel.load_trust_anchor(ANCHOR)
 
     failures = prove_builtin_alias_rollback(anchor, failures)
     failures = prove_elf64_image_rollback(anchor, failures)
+    failures = prove_ext2_image_path_rollback(anchor, failures)
 
     names = load_allowlist_names()
-    if BUILTIN_PROGRAM in names:
-        print(
-            f"test_loader_seed_migration_rollback: FAIL {BUILTIN_PROGRAM} still on digest-only allowlist",
-            file=sys.stderr,
-        )
-        failures += 1
-    if ELF_PROGRAM in names:
-        print(
-            f"test_loader_seed_migration_rollback: FAIL {ELF_PROGRAM} still on digest-only allowlist",
-            file=sys.stderr,
-        )
-        failures += 1
-    elif len(names) != EXPECTED_DIGEST_ONLY_REMAINING:
+    for prog in (BUILTIN_PROGRAM, ELF_PROGRAM, EXT2_PROGRAM):
+        if prog in names:
+            print(
+                f"test_loader_seed_migration_rollback: FAIL {prog} still on digest-only allowlist",
+                file=sys.stderr,
+            )
+            failures += 1
+    if len(names) != EXPECTED_DIGEST_ONLY_REMAINING:
         print(
             "test_loader_seed_migration_rollback: FAIL allowlist count "
             f"{len(names)} expected {EXPECTED_DIGEST_ONLY_REMAINING} digest-only remaining",
@@ -229,7 +313,7 @@ def main() -> int:
         )
         failures += 1
     else:
-        names_restored = names + [ELF_PROGRAM]
+        names_restored = names + [EXT2_PROGRAM]
         print(
             "test_loader_seed_migration_rollback: OK re-add to allowlist restores "
             f"digest-only staging ({len(names)} digest-only remaining -> "
@@ -239,7 +323,10 @@ def main() -> int:
     if failures:
         print(f"test_loader_seed_migration_rollback: {failures} failure(s)", file=sys.stderr)
         return 1
-    print("test_loader_seed_migration_rollback: OK (builtin + elf rollback paths proven)")
+    print(
+        "test_loader_seed_migration_rollback: OK "
+        "(builtin + elf + ext2-image-path rollback paths proven)"
+    )
     return 0
 
 

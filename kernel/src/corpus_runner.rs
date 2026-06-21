@@ -86,6 +86,9 @@ fn execute_corpus_bytes(
     name: &str,
     bytes: &[u8],
 ) -> Result<UserElfExecution, ProgramLoadError> {
+    if let Ok(program) = crate::task::program_loader::resolve_program(name) {
+        crate::task::program_loader::verify_system_signed_elf_payload(&program, bytes)?;
+    }
     CORPUS_OUTPUT.lock().clear();
     let tick =
         crate::performance::metrics::TICK_COUNTER.load(core::sync::atomic::Ordering::Relaxed);

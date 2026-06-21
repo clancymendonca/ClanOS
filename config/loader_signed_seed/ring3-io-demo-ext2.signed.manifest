@@ -1,0 +1,11 @@
+clan-exec-v1
+name=ring3-io-demo-ext2
+kind=elf64-image
+entry=0x400000
+image=/ext2/ring3-io-demo.elf
+requires=execute
+digest=sha256:7914fecb901b8e5486f13275f381473a08ab5748c8ee9d756782004f135aaf5f
+trust=system-signed
+owner=admin
+description=Ring-3 I/O demo from ext2
+sig=ed25519:f7aabf7539fa2bcf78d5e6140a5ea654437af417fac4c8fc3d73ee413b00e2cd7aca4bd024c76cda51303ae2ea48ed623d5e1424d359c854680eef08213fb900
