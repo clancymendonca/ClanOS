@@ -104,10 +104,9 @@ Host check: `python scripts/gate/module_wiring_check.py` (also `module-wiring-ch
 | File | Status | Notes |
 |------|--------|-------|
 | `kernel/src/cow_fork.rs` | Superseded | Live CoW in `user_paging.rs` / `task/process.rs`; `scripts/gate/cow_fork.py` expects `demand_paging` wiring that does not exist |
-| `kernel/src/buddy.rs` | Unwired | `smoke_buddy_allocator` never referenced from `validation_gate.rs` |
 | `kernel/src/block_cache.rs` | Unwired | `smoke_block_cache` never referenced from `validation_gate.rs` |
 
-New orphan `.rs` files outside this inventory fail CI until wired or added to the documented inventory. Allow-list entries are **full paths** under `kernel/src/` only (`scripts/gate/module_wiring_check.py`); `EXPECTED_KNOWN_DEAD_COUNT = 3` is self-tested — a fourth entry requires updating this table and the test.
+New orphan `.rs` files outside this inventory fail CI until wired or added to the documented inventory. Allow-list entries are **full paths** under `kernel/src/` only (`scripts/gate/module_wiring_check.py`); `EXPECTED_KNOWN_DEAD_COUNT = 2` is self-tested — a third entry requires updating this table and the test.
 
 ## Compat wiring blast radius (v2.1.0)
 

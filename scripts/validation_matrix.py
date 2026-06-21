@@ -186,6 +186,11 @@ def main() -> int:
             30,
         ),
         (
+            "gate-bga-bounds-self-test",
+            ["python", "scripts/gate/test_bga_bounds.py"],
+            30,
+        ),
+        (
             "trust-anchor-embed-match",
             ["python", "scripts/gate/test_anchor_embed_match.py"],
             30,

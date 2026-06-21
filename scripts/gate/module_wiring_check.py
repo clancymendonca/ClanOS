@@ -17,10 +17,9 @@ MOD_DECL = re.compile(r"^\s*(?:pub\s+)?mod\s+(\w+)\s*;", re.MULTILINE)
 
 # Must match docs/GATE_AUDIT.md "Dead source inventory" table row-for-row.
 # Full paths under kernel/src only — never match by bare filename.
-EXPECTED_KNOWN_DEAD_COUNT = 3
+EXPECTED_KNOWN_DEAD_COUNT = 2
 KNOWN_DEAD_SOURCES = frozenset(
     {
-        (KERNEL_SRC / "buddy.rs").resolve(),
         (KERNEL_SRC / "block_cache.rs").resolve(),
         (KERNEL_SRC / "cow_fork.rs").resolve(),
     }

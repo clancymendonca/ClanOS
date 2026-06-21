@@ -196,7 +196,7 @@ Build order — separate PRs:
 | PR | Content | Status |
 |----|---------|--------|
 | **PR0 (doc)** | This ADR + `DECISION_LOG` + **`T-desktop-bga-mmio` open** | **Done** |
-| **PR1** | `bga.rs`: probe, mode-set, PCI LFB map (`min` rule), buddy back buffer, **required** `memory_layout` video smoke, dual-probe + LFB bound negatives, gate `2.7.0`, close threat node | Next |
+| **PR1** | `bga.rs`: probe, mode-set, PCI LFB map (`min` rule), buddy back buffer, **required** `memory_layout` video smoke, dual-probe + LFB bound negatives, gate `2.7.0`, close threat node | **Done** |
 | **PR2** | RGB compositor rewrite + layout rescale; full PPM `desktop_screendump_check` + matrix wiring | Pending |
 | **PR3** | `GATE_AUDIT_401_500` reclassification; `STATUS.md`; `project_health.py` | Pending |
 

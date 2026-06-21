@@ -3,7 +3,7 @@
 //! Serial: `ClanOS-Gate: name=<subsystem> ok=<bool>` and summary `ClanOS-Gate: ok=<bool>`.
 //! Legacy aliases optional via `VALIDATION_GATE_EMIT_LEGACY_ALIASES`.
 
-pub const VALIDATION_GATE_VERSION: &str = "2.6.0";
+pub const VALIDATION_GATE_VERSION: &str = "2.7.0";
 const VALIDATION_GATE_EMIT_LEGACY_ALIASES: bool = false;
 
 use core::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -52,6 +52,7 @@ pub fn smoke_memory_layout() -> bool {
     crate::frame_ownership::smoke_frame_registry()
         && crate::task::program_loader::smoke_frame_backing()
         && crate::task::program_loader::smoke_hw_page_tables()
+        && crate::bga::confirm_video_memory_smoke()
 }
 
 pub fn smoke_userspace_bootstrap() -> bool {

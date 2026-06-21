@@ -243,6 +243,74 @@ fn pci_config_read_u32(bus: u8, slot: u8, function: u8, offset: u8) -> u32 {
     }
 }
 
+fn pci_config_write_u32(bus: u8, slot: u8, function: u8, offset: u8, value: u32) {
+    use x86_64::instructions::port::Port;
+
+    let address = 0x8000_0000u32
+        | ((bus as u32) << 16)
+        | ((slot as u32) << 11)
+        | ((function as u32) << 8)
+        | ((offset as u32) & 0xfc);
+    unsafe {
+        let mut address_port = Port::<u32>::new(0xcf8);
+        let mut data_port = Port::<u32>::new(0xcfc);
+        address_port.write(address);
+        data_port.write(value);
+    }
+}
+
+/// QEMU std VGA BGA — ADR-0004 PCI BAR0 base + size.
+pub fn find_bga_bar() -> Option<(u8, u8, u8, u64, u64)> {
+    const BGA_VENDOR: u16 = 0x1234;
+    const BGA_DEVICE: u16 = 0x1111;
+
+    for bus in 0u8..=0 {
+        for slot in 0u8..32 {
+            for function in 0u8..8 {
+                let vendor_id = pci_config_read_u16(bus, slot, function, 0x00);
+                if vendor_id == 0xffff {
+                    continue;
+                }
+                let device_id = pci_config_read_u16(bus, slot, function, 0x02);
+                if vendor_id != BGA_VENDOR || device_id != BGA_DEVICE {
+                    continue;
+                }
+                let bar_low = pci_config_read_u32(bus, slot, function, 0x10);
+                if bar_low & 0x1 != 0 {
+                    return None;
+                }
+                let lfb_phys = u64::from(bar_low & 0xffff_fff0);
+                let bar_size = pci_bar_memory_size(bus, slot, function, 0x10)?;
+                if lfb_phys == 0 || bar_size == 0 {
+                    return None;
+                }
+                return Some((bus, slot, function, lfb_phys, bar_size));
+            }
+        }
+    }
+    None
+}
+
+fn pci_bar_memory_size(bus: u8, slot: u8, function: u8, offset: u8) -> Option<u64> {
+    let old = pci_config_read_u32(bus, slot, function, offset);
+    if old & 0x1 != 0 {
+        return None;
+    }
+    pci_config_write_u32(bus, slot, function, offset, 0xffff_ffff);
+    let sized = pci_config_read_u32(bus, slot, function, offset);
+    pci_config_write_u32(bus, slot, function, offset, old);
+    let mask = if (old & 0x6) == 0x4 {
+        0xffff_0000u32
+    } else {
+        0xffff_f000u32
+    };
+    let decoded = sized & mask;
+    if decoded == 0 {
+        return None;
+    }
+    Some(((!decoded) as u64) + 1)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -20,6 +20,8 @@ pub mod allocator;
 pub mod audit_wire;
 pub mod block;
 pub mod boundary_gate;
+pub mod bga;
+pub mod buddy;
 pub mod build_integrity;
 pub mod checkpoint;
 pub mod clipboard_broker;

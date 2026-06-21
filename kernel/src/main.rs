@@ -44,6 +44,11 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     unsafe {
         kernel::user_paging::set_boot_frame_allocator(&boot_info.memory_map, skip_frames);
     }
+    kernel::buddy::init_from_memory_map(
+        &boot_info.memory_map,
+        frame_allocator.allocated_frame_count(),
+    );
+    kernel::bga::set_physical_memory_offset(phys_mem_offset);
     kernel::task::keyboard::init_scancode_queue();
     kernel::storage::init();
     let _ = kernel::ext2::init();
@@ -54,6 +59,10 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     let _ = kernel::task::process::create_kernel_process("shell", boot_tick);
 
     println!("Memory subsystem initialised.");
+
+    let video_smoke_ok =
+        kernel::bga::run_video_memory_smoke(&mut mapper, &mut frame_allocator);
+    kernel::serial_println!("Boot: video_memory_smoke={}", video_smoke_ok);
 
     kernel::validation_gate::run_validation_gate();
     kernel::serial_println!("Boot: validation gates complete");

@@ -1,0 +1,17 @@
+# ADR-0004 normative desktop framebuffer constants (scope 470).
+# Kernel mirrors these values in kernel/src/bga.rs — amend ADR before changing.
+
+[mode]
+width = 1024
+height = 768
+bpp = 32
+
+[bga]
+id = 0xB0C5
+vendor_id = 0x1234
+device_id = 0x1111
+
+[memory]
+# Virt windows for kernel video mappings (must not overlap HEAP @ 0x4444_4444_0000).
+back_buffer_virt = 0x5300_0000_0000
+lfb_virt = 0x7778_0000_0000

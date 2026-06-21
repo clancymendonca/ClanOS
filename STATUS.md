@@ -4,22 +4,21 @@
 
 **GitHub Actions is not currently substantiating pushes.** Run [27895509720](https://github.com/clancymendonca/ClanOS/actions/runs/27895509720) (tip `e4939f4`) failed before any job steps: account billing lock — workflow did not execute (`cargo fmt`, `validation_matrix.py`, QEMU). Re-run CI after billing is restored; do not treat a green local matrix as CI proof until then.
 
-**Last verified locally (2026-06-21):** ADR-0003 scope **465** closed — 16/16 seeds signed, `loader_digest_only_grace=false`, allowlist empty; gate `2.6.0`.
+**Last verified locally (2026-06-21):** ADR-0004 PR1 — BGA video smoke in QEMU (`ClanOS-Video: back_frames=768 lfb_map_ok=true`); gate `2.7.0`; `T-desktop-bga-mmio` **closed**. ADR-0003 scope **465** closed.
 
-## Snapshot (Functional OS — scope 400, QEMU gate v2.6.0)
+## Snapshot (Functional OS — scope 470 PR1, QEMU gate v2.7.0)
 
-- **Validation gate:** `kernel/src/validation_gate.rs` (`VALIDATION_GATE_VERSION = 2.6.0`)
+- **Validation gate:** `kernel/src/validation_gate.rs` (`VALIDATION_GATE_VERSION = 2.7.0`)
 - **ADR-0002 signed ELF (epoch 450):** kernel verifier + in-QEMU negative gauntlet (`signed_elf_integration`; 9 cases)
 - **ADR-0003 loader signed exec (epoch 460):** **closed (scope 465)** — 16/16 seeds `trust=system-signed`; `loader_digest_only_grace=false`; `/bin/hello` intentionally exempt (`trust=user`, see `GATE_AUDIT_401_500.md` § Scope honesty)
-- **ADR-0004 Bochs VBE RGB (scope 470):** **PR0 locked** — [`docs/architecture/ADR/ADR-0004-bochs-vbe-rgb-framebuffer.md`](docs/architecture/ADR/ADR-0004-bochs-vbe-rgb-framebuffer.md); `T-desktop-bga-mmio` **open** until PR1 negatives + QEMU smokes land
-- **ADR-0004 CI gap (one PR window):** `threat_node_lifecycle_check` / `release_scorecard_check` **expected red until PR1 merges** — deliberate doc-then-code exception, not a new normal. **Drift trigger:** if PR1 is not merged before scope **470** closes (or by **2026-07-05**, whichever comes first), treat open `T-desktop-bga-mmio` as process failure, not acceptable steady state
+- **ADR-0004 Bochs VBE RGB (scope 470):** **PR1 done** — `kernel/src/bga.rs`, buddy wired, `memory_layout` video smoke (QEMU-executed); host `test_bga_bounds.py`; gate `2.7.0`; `T-desktop-bga-mmio` closed
 - **Gate audit:** [`docs/GATE_AUDIT.md`](docs/GATE_AUDIT.md) — per-gate substance classification
 - **Gap audit:** [`docs/GAP_AUDIT.md`](docs/GAP_AUDIT.md) — `addressed` ≠ Implemented (204 overclaimed baseline)
 - **Desktop:** VGA 320×200, double-buffered compositor, PS/2 mouse, window manager, taskbar shell
 - **Userland:** `/bin/demo-hello`, `/bin/clan-info`, `/bin/mendo`, `/bin/ring3-io-demo`, `/bin/ring3-io-demo-ext2`, `/bin/hello-alloc` (Clan OS runtime: `clan-rt` with optional `ring3-heap` bump allocator)
 - **Network:** virtio-net loopback + external route simulation
 - gap_registry: 0 open, 350 addressed — see [`docs/GAP_AUDIT.md`](docs/GAP_AUDIT.md) (58% overclaimed baseline; audit OK = baseline held, not fully substantiated)
-- threat nodes open: 1 (`T-desktop-bga-mmio` — intentional PR0→PR1 gap; `threat_node_lifecycle_check` fails until PR1 closes)
+- threat nodes open: 0
 - release_scorecard: [`RELEASE_SCORECARD.md`](docs/RELEASE_SCORECARD.md)
 - **Q3 sunset (locked):** **closed** — `sunset_scope=465`, `loader_digest_only_grace=false`, allowlist empty
 
