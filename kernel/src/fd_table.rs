@@ -7,6 +7,10 @@ use crate::task::process::{self, ProcessId};
 
 pub const MAX_FDS: usize = 8;
 
+const DEV_STDIN: &str = "/dev/stdin";
+const DEV_STDOUT: &str = "/dev/stdout";
+const DEV_STDERR: &str = "/dev/stderr";
+
 static FD_OPENS: AtomicU64 = AtomicU64::new(0);
 static FD_CLOSES: AtomicU64 = AtomicU64::new(0);
 static FD_READS: AtomicU64 = AtomicU64::new(0);
@@ -101,10 +105,51 @@ pub fn open_file_for_process(pid: ProcessId, path: &str) -> Result<u32, ()> {
     crate::path_broker::resolve_open_compat(pid, path)
 }
 
+pub fn install_standard_fds(pid: ProcessId) {
+    let _ = process::with_process_mut(pid, |proc| {
+        let table = proc.fds_mut();
+        table[0] = Some(FdSlotStorage {
+            path: String::from(DEV_STDIN),
+            flags: 0,
+        });
+        table[1] = Some(FdSlotStorage {
+            path: String::from(DEV_STDOUT),
+            flags: 0,
+        });
+        table[2] = Some(FdSlotStorage {
+            path: String::from(DEV_STDERR),
+            flags: 0,
+        });
+    });
+}
+
+fn is_dev_output(path: &str) -> bool {
+    path == DEV_STDOUT || path == DEV_STDERR
+}
+
 pub fn open_file_for_process_inner(pid: ProcessId, path: &str) -> Result<u32, ()> {
     let path = resolve_path_for_process(pid, path).map_err(|_| {
         FD_REJECTED.fetch_add(1, Ordering::Relaxed);
     })?;
+    if path.starts_with("/dev/") {
+        return match process::with_process_mut(pid, |proc| {
+            for (idx, slot) in proc.fds_mut().iter_mut().enumerate() {
+                if slot.is_none() {
+                    *slot = Some(FdSlotStorage {
+                        path: path.clone(),
+                        flags: 0,
+                    });
+                    FD_OPENS.fetch_add(1, Ordering::Relaxed);
+                    return Ok(idx as u32);
+                }
+            }
+            FD_REJECTED.fetch_add(1, Ordering::Relaxed);
+            Err(())
+        }) {
+            Some(Ok(fd)) => Ok(fd),
+            _ => Err(()),
+        };
+    }
     let creds = process::process_owner(pid).unwrap_or(crate::security::current_credentials());
     if crate::storage::read_file_checked(creds, &path).is_err() {
         FD_REJECTED.fetch_add(1, Ordering::Relaxed);
@@ -251,6 +296,19 @@ pub fn write_fd(fd: u32, user_buf: u64, max_len: u64) -> Result<u64, ()> {
             return Err(());
         }
         return crate::pipe::write_pipe(pipe_id, user_buf, max_len);
+    }
+    if is_dev_output(&path) {
+        let cap = core::cmp::min(max_len, 256) as usize;
+        let mut buf = [0u8; 256];
+        crate::user_copy::copy_from_user(user_buf, &mut buf[..cap]).map_err(|_| {
+            FD_REJECTED.fetch_add(1, Ordering::Relaxed);
+        })?;
+        crate::corpus_runner::append_corpus_output(&buf[..cap]);
+        use core::fmt::Write;
+        let text = core::str::from_utf8(&buf[..cap]).unwrap_or("");
+        let _ = crate::serial::SERIAL1.lock().write_str(text);
+        FD_WRITES.fetch_add(1, Ordering::Relaxed);
+        return Ok(cap as u64);
     }
     if !path.starts_with("/tmp/") {
         FD_REJECTED.fetch_add(1, Ordering::Relaxed);

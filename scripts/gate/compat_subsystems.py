@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Host check: consolidated compat subsystem gates in system_gate.rs."""
+"""Host check: consolidated compat subsystem gates in validation_gate.rs."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-GATE = ROOT / "kernel" / "src" / "system_gate.rs"
+GATE = ROOT / "kernel" / "src" / "validation_gate.rs"
 
 SMOKES = (
     "smoke_compat_runtime",

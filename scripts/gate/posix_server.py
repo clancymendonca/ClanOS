@@ -10,7 +10,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 POSIX = REPO / "kernel" / "src" / "posix_server.rs"
 LIB = REPO / "kernel" / "src" / "lib.rs"
-GATE = REPO / "kernel" / "src" / "system_gate.rs"
+GATE = REPO / "kernel" / "src" / "validation_gate.rs"
 
 
 def main() -> int:
@@ -34,7 +34,7 @@ def main() -> int:
         print("gate/posix_server: module not in lib.rs", file=sys.stderr)
         return 1
     if "posix_server" not in GATE.read_text(encoding="utf-8"):
-        print("gate/posix_server: not wired in system_gate", file=sys.stderr)
+        print("gate/posix_server: not wired in validation_gate", file=sys.stderr)
         return 1
     print("gate/posix_server: OK")
     return 0

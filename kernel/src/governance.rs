@@ -198,32 +198,56 @@ pub fn smoke_scheduler_epoch_integration() -> bool {
 }
 
 pub fn smoke_milestone_boundary() -> bool {
-    crate::milestone150::smoke_milestone_boundary()
+    crate::boundary_gate::smoke_boundary()
+}
+
+pub fn smoke_boundary_gate() -> bool {
+    crate::boundary_gate::smoke_boundary()
 }
 
 pub fn smoke_epoch7_integrity() -> bool {
-    crate::system_gate::integrity_gate()
+    crate::validation_gate::integrity_gate()
 }
 
-pub fn smoke_scheduling_milestone() -> bool {
-    crate::system_gate::scheduling_gate()
+pub fn smoke_scheduling_gate() -> bool {
+    crate::validation_gate::scheduling_gate()
 }
 
-pub fn smoke_hardware_milestone() -> bool {
-    crate::system_gate::hardware_gate()
+pub fn smoke_hardware_gate() -> bool {
+    crate::validation_gate::hardware_gate()
 }
 
-pub fn smoke_federation_milestone() -> bool {
-    crate::system_gate::federation_gate()
+pub fn smoke_federation_gate() -> bool {
+    crate::validation_gate::federation_gate()
 }
 
-pub fn smoke_release_milestone() -> bool {
-    crate::system_gate::release_gate()
+pub fn smoke_release_gate() -> bool {
+    crate::validation_gate::release_gate()
 }
 
 /// Final release compat — compat sunset + build integrity + functional OS.
 pub fn smoke_release_final() -> bool {
-    crate::system_gate::release_compat_smoke()
+    crate::validation_gate::release_compat_smoke()
+}
+
+#[deprecated(note = "use smoke_scheduling_gate")]
+pub fn smoke_scheduling_milestone() -> bool {
+    smoke_scheduling_gate()
+}
+
+#[deprecated(note = "use smoke_hardware_gate")]
+pub fn smoke_hardware_milestone() -> bool {
+    smoke_hardware_gate()
+}
+
+#[deprecated(note = "use smoke_federation_gate")]
+pub fn smoke_federation_milestone() -> bool {
+    smoke_federation_gate()
+}
+
+#[deprecated(note = "use smoke_release_gate")]
+pub fn smoke_release_milestone() -> bool {
+    smoke_release_gate()
 }
 
 pub fn smoke_platform_integration() -> bool {

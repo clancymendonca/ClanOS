@@ -46,6 +46,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     }
     kernel::task::keyboard::init_scancode_queue();
     kernel::storage::init();
+    let _ = kernel::ext2::init();
     kernel::mouse::init();
     kernel::userland_install::install_native_packages();
     let boot_tick =
@@ -54,8 +55,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
     println!("Memory subsystem initialised.");
 
-    kernel::boot_gate::run_boot_gate();
-    kernel::system_gate::run_boot_gate();
+    kernel::validation_gate::run_validation_gate();
     kernel::serial_println!("Boot: validation gates complete");
     kernel::desktop_runtime::boot_desktop();
 

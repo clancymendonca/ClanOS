@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""QEMU smoke gate for boot validation (subsystem gates)."""
+"""Deprecated — use `gate/run.py`."""
 
 from __future__ import annotations
 
-import argparse
 import sys
 from pathlib import Path
 
@@ -11,24 +10,20 @@ _SCRIPTS = Path(__file__).resolve().parents[1]
 if str(_SCRIPTS) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS))
 
-from gate.map import BOOT_GATES
-from gate.qemu import run_smoke
-
-PREEMPTION_GATES = frozenset({"boot", "boundary", "shell_storage"})
+from gate.run import main
 
 
-def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--gate", choices=sorted(BOOT_GATES.keys()), help="Boot subsystem gate")
-    ap.add_argument("--timeout", type=int, default=360)
-    args = ap.parse_args(argv)
-    if args.gate is None:
-        ap.error("specify --gate")
-    pattern = BOOT_GATES[args.gate]
-    label = f"gate/boot:{args.gate}"
-    features = ["--features", "preemption"] if args.gate in PREEMPTION_GATES else None
-    return run_smoke(pattern, label, args.timeout, features)
+def _warn() -> None:
+    print("gate/boot.py: deprecated; use scripts/gate/run.py", file=sys.stderr)
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    import argparse
+
+    ap = argparse.ArgumentParser(add_help=False)
+    ap.add_argument("--gate", default="boot")
+    ap.add_argument("--timeout", type=int, default=360)
+    args, _ = ap.parse_known_args()
+    _warn()
+    gate = "all" if args.gate == "boot" else args.gate
+    raise SystemExit(main(["--gate", gate, "--timeout", str(args.timeout)]))

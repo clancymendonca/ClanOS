@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compatibility shim — use scripts/gate/system_host.py."""
+"""Compatibility shim — use scripts/gate/gate_host.py."""
 
 import sys
 from pathlib import Path

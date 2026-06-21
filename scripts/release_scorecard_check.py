@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""M350 release scorecard gate (epoch 14 graduation)."""
+"""Release scorecard gate — unified validation gate version + gap/threat hygiene."""
 
 from __future__ import annotations
 
@@ -13,24 +13,25 @@ from mark_epoch0_addressed import parse_gaps  # noqa: E402
 
 
 def main() -> int:
-    gate = (ROOT / "kernel" / "src" / "system_gate.rs").read_text(encoding="utf-8")
-    m = re.search(r'SYSTEM_GATE_VERSION: &str = "([^"]+)"', gate)
+    gate = (ROOT / "kernel" / "src" / "validation_gate.rs").read_text(encoding="utf-8")
+    m = re.search(r'VALIDATION_GATE_VERSION: &str = "([^"]+)"', gate)
     if not m:
-        print("release_scorecard_check: SYSTEM_GATE_VERSION not found", file=sys.stderr)
+        print("release_scorecard_check: VALIDATION_GATE_VERSION not found", file=sys.stderr)
         return 1
     gaps = parse_gaps((ROOT / "gap_registry.toml").read_text(encoding="utf-8"))
     open_gaps = sum(1 for g in gaps if g.get("status") == "open")
     if open_gaps > 0:
         print(f"release_scorecard_check: {open_gaps} open gaps remain", file=sys.stderr)
         return 1
-    nodes = parse_gaps((ROOT / "docs" / "THREAT_NODES.toml").read_text(encoding="utf-8"))
-    # THREAT_NODES uses [[nodes]] not [[gaps]]
     threat_text = (ROOT / "docs" / "THREAT_NODES.toml").read_text(encoding="utf-8")
     open_threats = len(re.findall(r'status = "open"', threat_text))
     if open_threats > 0:
         print(f"release_scorecard_check: {open_threats} open threat nodes", file=sys.stderr)
         return 1
-    print(f"release_scorecard_check: OK (system_gate={m.group(1)}, 0 open gaps, 0 open threats)")
+    print(
+        f"release_scorecard_check: OK (validation_gate={m.group(1)}, "
+        "0 open gaps, 0 open threats)"
+    )
     return 0
 
 

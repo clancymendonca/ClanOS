@@ -18,7 +18,7 @@ const HEADER_SECTOR: usize = 0;
 const DIRECTORY_START_SECTOR: usize = 1;
 const DIRECTORY_SECTORS: usize = 4;
 const DATA_START_SECTOR: usize = DIRECTORY_START_SECTOR + DIRECTORY_SECTORS;
-const MAX_FILES: usize = 28;
+const MAX_FILES: usize = 32;
 const MAX_PATH_LEN: usize = 48;
 const MAX_FILE_SIZE: usize = SECTOR_SIZE;
 const DIR_ENTRY_SIZE: usize = 64;
@@ -780,11 +780,37 @@ fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), Stor
         ),
         ("/bin/pipeprobe.elf", sample_elf.as_str()),
         ("/bin/libc_stub.elf", sample_elf.as_str()),
+        (
+            "/bin/mendo",
+            "clan-exec-v1\nname=mendo\nkind=elf64-image\nentry=0x400000\nimage=/bin/mendo.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=Mendo interactive shell",
+        ),
+        (
+            "/bin/ring3-io-demo",
+            "clan-exec-v1\nname=ring3-io-demo\nkind=elf64-image\nentry=0x400000\nimage=/bin/ring3-io-demo.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=Ring-3 I/O demo",
+        ),
+        (
+            "/bin/hello-alloc",
+            "clan-exec-v1\nname=hello-alloc\nkind=elf64-image\nentry=0x400000\nimage=/bin/hello-alloc.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=Heap allocation demo",
+        ),
+        (
+            "/bin/sig-demo",
+            "clan-exec-v1\nname=sig-demo\nkind=elf64-image\nentry=0x400000\nimage=/bin/sig-demo.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=Signal demo stub",
+        ),
+        (
+            "/bin/ring3-io-demo-ext2",
+            "clan-exec-v1\nname=ring3-io-demo-ext2\nkind=elf64-image\nentry=0x400000\nimage=/ext2/ring3-io-demo.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=Ring-3 I/O demo from ext2",
+        ),
         ("/lib/libaux_stub.elf", sample_elf.as_str()),
         ("/tmp/fd-dup-smoke.txt", "relative-open"),
+        ("/persistence-smoke.txt", ""),
+        ("/driver-smoke.txt", ""),
+        ("/tmp/cred-smoke.txt", ""),
+        ("/tmp/user-path-smoke", ""),
     ] {
         let owner = if path.starts_with("/bin/") {
             Credentials::admin().user
+        } else if path == "/tmp/cred-smoke.txt" || path == "/tmp/user-path-smoke" {
+            Credentials::shell_user().user
         } else {
             Credentials::kernel().user
         };

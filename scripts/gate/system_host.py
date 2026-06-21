@@ -1,54 +1,11 @@
 #!/usr/bin/env python3
-"""Host-side system gate validation when QEMU is unavailable."""
+"""Deprecated — use `gate/gate_host.py`."""
 
 from __future__ import annotations
 
-import re
-import subprocess
 import sys
-from pathlib import Path
-
-ROOT = Path(__file__).resolve().parents[2]
-GATE = ROOT / "kernel" / "src" / "system_gate.rs"
-GATES = [
-    "integrity_gate",
-    "scheduling_gate",
-    "hardware_gate",
-    "federation_gate",
-    "release_gate",
-    "desktop_gate",
-    "functional_gate",
-    "smoke_compat_runtime",
-    "smoke_compat_fd_vm",
-    "smoke_compat_signal",
-    "smoke_storage_depth",
-    "smoke_posix_compat",
-    "system_gate",
-]
-
-
-def main() -> int:
-    text = GATE.read_text(encoding="utf-8")
-    version = re.search(r'SYSTEM_GATE_VERSION: &str = "([^"]+)"', text)
-    if not version:
-        print("gate/system_host: SYSTEM_GATE_VERSION not found", file=sys.stderr)
-        return 1
-    for fn in GATES:
-        if fn not in text:
-            print(f"gate/system_host: missing {fn}", file=sys.stderr)
-            return 1
-    proc = subprocess.run(
-        ["cargo", "check", "-p", "kernel"],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-    )
-    if proc.returncode != 0:
-        print(proc.stdout + proc.stderr, file=sys.stderr)
-        return 1
-    print(f"gate/system_host: OK (version={version.group(1)}, cargo check, gate fns present)")
-    return 0
-
+from gate.gate_host import main
 
 if __name__ == "__main__":
+    print("gate/system_host.py: deprecated; use scripts/gate/gate_host.py", file=sys.stderr)
     raise SystemExit(main())

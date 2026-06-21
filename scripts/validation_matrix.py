@@ -15,6 +15,14 @@ from smoke_qemu import (
     wait_for_bootimage_unlock,
 )
 
+# Deprecated matrix check names → canonical (ADR-0001 unified validation gate).
+CHECK_ALIASES: dict[str, str] = {
+    "boot-gate-host-check": "gate-host-check",
+    "boot-gate-check": "gate-check",
+    "system-gate-host-check": "gate-host-check",
+    "system-gate-check": "gate-check",
+}
+
 
 def run_command_with_retries(
     cmd: list[str], timeout: int | None = None, max_attempts: int = 4
@@ -70,7 +78,7 @@ def main() -> int:
         "--from-check",
         type=str,
         default="",
-        help="Skip checks before this name (e.g. boot-gate-check)",
+        help="Skip checks before this name (e.g. gate-check)",
     )
     args = parser.parse_args()
 
@@ -96,34 +104,17 @@ def main() -> int:
             900,
         ),
         (
-            "boot-gate-host-check",
-            ["python", "scripts/gate/boot_host.py"],
+            "gate-host-check",
+            ["python", "scripts/gate/gate_host.py"],
             None,
         ),
         (
-            "boot-gate-check",
+            "gate-check",
             [
                 "python",
-                "scripts/gate/boot.py",
+                "scripts/gate/run.py",
                 "--gate",
-                "boot",
-                "--timeout",
-                str(args.smoke_timeout),
-            ],
-            None,
-        ),
-        (
-            "system-gate-host-check",
-            ["python", "scripts/gate/system_host.py"],
-            None,
-        ),
-        (
-            "system-gate-check",
-            [
-                "python",
-                "scripts/gate/system.py",
-                "--gate",
-                "system",
+                "all",
                 "--timeout",
                 str(args.smoke_timeout),
             ],
@@ -133,6 +124,16 @@ def main() -> int:
             "compat-subsystems-host-check",
             ["python", "scripts/gate/compat_subsystems.py"],
             180,
+        ),
+        (
+            "gate-posix-server-host-check",
+            ["python", "scripts/gate/posix_server.py"],
+            60,
+        ),
+        (
+            "gate-signal-skeleton-host-check",
+            ["python", "scripts/gate/signal_skeleton.py"],
+            60,
         ),
         ("semantic-lint", ["python", "scripts/semantic_lint.py"], None),
         ("covenant-ci", ["python", "scripts/covenant_ci.py"], 120),
@@ -173,6 +174,7 @@ def main() -> int:
     ]
 
     if args.from_check:
+        args.from_check = CHECK_ALIASES.get(args.from_check, args.from_check)
         names = [name for name, _, _ in checks]
         if args.from_check not in names:
             print(f"Unknown --from-check name: {args.from_check}")
@@ -195,7 +197,7 @@ def main() -> int:
     for name, cmd, timeout in checks:
         if name in ("preemption-soak-check", "preemption-latency-check"):
             timeout = preemption_timeout
-        if name == "system-gate-check":
+        if name == "gate-check":
             timeout = max(timeout or 0, args.smoke_timeout, 480)
         print(f"\n=== {name} ===")
         print("Command:", " ".join(cmd))

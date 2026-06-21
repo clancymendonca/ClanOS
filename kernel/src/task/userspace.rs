@@ -49,6 +49,15 @@ pub fn run_program(name: &str, args: &[&str]) -> Result<String, &'static str> {
             image: None,
             image_error: None,
         },
+        Err(_) if crate::corpus_runner::is_corpus_program(name) => {
+            match crate::corpus_runner::execute_corpus(credentials, name) {
+                Ok(execution) => {
+                    crate::task::program_loader::record_launch_success();
+                    return Ok(execution.output);
+                }
+                Err(_) => return Err("unsupported executable image"),
+            }
+        }
         Err(_) => {
             crate::task::program_loader::record_launch_failure();
             return Err("program not found");

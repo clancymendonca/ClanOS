@@ -8,6 +8,8 @@ use alloc::{
 use crate::{security::UserId, task::program_loader::ProgramTrust};
 
 pub const MAX_IMAGE_SIZE: usize = 512;
+/// Signed / embedded ring-3 corpus ELFs (mendo, ring3-io-demo, …).
+pub const MAX_CORPUS_IMAGE_SIZE: usize = 16 * 1024;
 const ELF_MAGIC: &[u8; 4] = b"\x7fELF";
 const ELFCLASS64: u8 = 2;
 const ELFDATA2LSB: u8 = 1;
@@ -109,7 +111,42 @@ pub fn parse_elf64_image(
     trust: ProgramTrust,
     owner: UserId,
 ) -> Result<ExecutableImage, ImageLoadError> {
-    if bytes.len() > MAX_IMAGE_SIZE {
+    parse_elf64_image_with_limit(
+        name,
+        source_path,
+        bytes,
+        trust,
+        owner,
+        MAX_IMAGE_SIZE,
+    )
+}
+
+pub fn parse_elf64_corpus_image(
+    name: &str,
+    source_path: &str,
+    bytes: &[u8],
+    trust: ProgramTrust,
+    owner: UserId,
+) -> Result<ExecutableImage, ImageLoadError> {
+    parse_elf64_image_with_limit(
+        name,
+        source_path,
+        bytes,
+        trust,
+        owner,
+        MAX_CORPUS_IMAGE_SIZE,
+    )
+}
+
+fn parse_elf64_image_with_limit(
+    name: &str,
+    source_path: &str,
+    bytes: &[u8],
+    trust: ProgramTrust,
+    owner: UserId,
+    max_size: usize,
+) -> Result<ExecutableImage, ImageLoadError> {
+    if bytes.len() > max_size {
         return Err(ImageLoadError::OversizedImage);
     }
     if bytes.len() < 64 || &bytes[..4] != ELF_MAGIC {

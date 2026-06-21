@@ -269,6 +269,7 @@ pub fn smoke_signal_register() -> bool {
     let Some(victim) = process::create_kernel_process_as("sig-victim", tick, creds) else {
         return false;
     };
+    init_process(victim);
     process::set_smoke_process_id(Some(victim));
 
     let old = sigaction_lite(SIGUSR1 as u64, SIG_IGN).ok() == Some(SIG_DFL);
@@ -293,6 +294,7 @@ pub fn smoke_signal_delivery() -> bool {
     let Some(victim) = process::create_kernel_process_as("sig-deliver", tick, creds) else {
         return false;
     };
+    init_process(victim);
     process::set_smoke_process_id(Some(victim));
 
     let handler_set = sigaction_lite(SIGUSR1 as u64, HANDLER_RIP).ok() == Some(SIG_DFL);

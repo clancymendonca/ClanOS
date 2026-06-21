@@ -6,7 +6,7 @@ use crate::exec_image::{ExecutableFormat, ExecutableImage, SegmentFlags};
 
 pub const PAGE_SIZE: usize = 4096;
 pub const MAX_LOAD_REGIONS: usize = 4;
-pub const MAX_IMAGE_PAGES: usize = 16;
+pub const MAX_IMAGE_PAGES: usize = 32;
 pub const STACK_RESERVATION_PAGES: usize = 2;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

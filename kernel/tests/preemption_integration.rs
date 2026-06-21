@@ -1,4 +1,4 @@
-//! QEMU integration harness: preemption core + unified boot/system gates.
+//! QEMU integration harness: preemption core + unified validation gate.
 
 #![no_std]
 #![no_main]
@@ -133,6 +133,6 @@ fn syscall_invalid_paths_are_rejected() {
 }
 
 #[test_case]
-fn boot_gate_unified() {
-    assert!(kernel::boot_gate::boot_gate());
+fn validation_gate_unified() {
+    assert!(kernel::validation_gate::boot_gate());
 }

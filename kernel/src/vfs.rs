@@ -19,7 +19,8 @@ pub fn read_bytes(path: &str) -> Result<Option<Vec<u8>>, VfsError> {
             .map(Some)
             .map_err(|_| VfsError::Backend);
     }
-    crate::storage::read_file_bytes(path)
+    crate::storage::read_file(path)
+        .map(|opt| opt.map(|text| text.into_bytes()))
         .map_err(|_| VfsError::Backend)
 }
 
@@ -42,10 +43,11 @@ pub fn write_bytes(path: &str, bytes: &[u8]) -> Result<(), VfsError> {
     if let Some(relative) = path.strip_prefix(EXT2_MOUNT_PREFIX) {
         return crate::ext2::write_file(relative, bytes).map_err(|_| VfsError::Backend);
     }
-    crate::storage::write_file_bytes_checked(
+    let text = core::str::from_utf8(bytes).unwrap_or("");
+    crate::storage::write_file_checked(
         crate::security::Credentials::admin(),
         path,
-        bytes,
+        text,
     )
     .map_err(|_| VfsError::Backend)
 }

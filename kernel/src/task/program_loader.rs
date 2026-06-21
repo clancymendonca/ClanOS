@@ -2580,6 +2580,206 @@ fn record_user_elf_process(
     }
 }
 
+static LAST_CORPUS_CR3: AtomicU64 = AtomicU64::new(0);
+
+pub fn last_corpus_cr3() -> Option<u64> {
+    let cr3 = LAST_CORPUS_CR3.load(Ordering::Relaxed);
+    if cr3 == 0 { None } else { Some(cr3) }
+}
+
+pub fn build_hw_page_table_from_elf_bytes(
+    credentials: crate::security::Credentials,
+    name: &str,
+    elf_bytes: &[u8],
+) -> Result<HwPageTableProgramImage, ProgramLoadError> {
+    let image = crate::exec_image::parse_elf64_corpus_image(
+        name,
+        &format!("/bin/{name}.elf"),
+        elf_bytes,
+        ProgramTrust::System,
+        owner_id_for_manifest("admin"),
+    )
+    .map_err(|_| ProgramLoadError::ImageInvalid)?;
+    let program = LoadedProgram {
+        name: String::from(name),
+        source_path: format!("/bin/{name}"),
+        kind: ProgramKind::Elf64Image,
+        entry: format!("0x{:x}", image.entry_point),
+        image_path: Some(format!("/bin/{name}.elf")),
+        description: String::from("corpus ring-3 ELF"),
+        requires_execute: true,
+        trust: ProgramTrust::System,
+        owner: String::from("admin"),
+        image: Some(image.clone()),
+        image_error: None,
+    };
+    let load_plan = crate::load_plan::build_load_plan(&image).map_err(|_| {
+        REJECTED_LOAD_PLAN_COUNT.fetch_add(1, Ordering::Relaxed);
+        ProgramLoadError::LoadPlanRejected
+    })?;
+    let address_space_id = crate::address_space::AddressSpaceId::from_raw(
+        PREPARED_IMAGE_COUNT
+            .load(Ordering::Relaxed)
+            .saturating_add(1),
+    );
+    let address_space =
+        crate::address_space::descriptor_for_load_plan(address_space_id, &load_plan).map_err(
+            |_| {
+                REJECTED_LOAD_PLAN_COUNT.fetch_add(1, Ordering::Relaxed);
+                ProgramLoadError::LoadPlanRejected
+            },
+        )?;
+    PREPARED_IMAGE_COUNT.fetch_add(1, Ordering::Relaxed);
+    TOTAL_PLANNED_PAGES.fetch_add(load_plan.total_pages as u64, Ordering::Relaxed);
+    record_prepared_process(credentials, &program, &image, &load_plan, address_space_id);
+    let prepared = PreparedProgramImage {
+        program,
+        image,
+        load_plan,
+        address_space,
+    };
+    let mapping = crate::mapping_stub::register_mapping(
+        credentials,
+        prepared.address_space.id,
+        &prepared.load_plan,
+    )
+    .map_err(|_| {
+        REJECTED_MAPPING_COUNT.fetch_add(1, Ordering::Relaxed);
+        ProgramLoadError::MappingRejected
+    })?;
+    MAPPED_IMAGE_COUNT.fetch_add(1, Ordering::Relaxed);
+    TOTAL_MAPPED_PAGES.fetch_add(mapping.total_pages as u64, Ordering::Relaxed);
+    record_mapped_process(credentials, &prepared, &mapping);
+    let mapped_address_space = crate::address_space::descriptor_for_mapped_image(&mapping);
+    let mapped = MappedProgramImage {
+        prepared,
+        mapped: mapping,
+        address_space: mapped_address_space,
+    };
+    let mut backed = crate::frame_backing::back_mapped_image(&mapped.mapped).map_err(|_| {
+        REJECTED_FRAME_BACKING_COUNT.fetch_add(1, Ordering::Relaxed);
+        ProgramLoadError::FrameBackingRejected
+    })?;
+    let relocs = crate::elf_reloc::relocs_for_image(elf_bytes, mapped.prepared.load_plan.entry_point);
+    let _ = crate::elf_reloc::apply_dynamic_needed(&mut backed, elf_bytes, &relocs);
+    write_image_bytes_to_backed(&mut backed, elf_bytes, &mapped.prepared.load_plan);
+    FRAME_BACKED_IMAGE_COUNT.fetch_add(1, Ordering::Relaxed);
+    let backed_image = FrameBackedProgramImage { mapped, backed };
+    let id = crate::user_memory::UserPageTableId::from_raw(
+        USER_PAGE_TABLE_COUNT
+            .load(Ordering::Relaxed)
+            .saturating_add(1),
+    );
+    let page_table =
+        crate::user_memory::build_inactive_page_table(id, &backed_image.backed).map_err(|_| {
+            REJECTED_USER_PAGE_TABLE_COUNT.fetch_add(1, Ordering::Relaxed);
+            ProgramLoadError::PageTableRejected
+        })?;
+    USER_PAGE_TABLE_COUNT.fetch_add(1, Ordering::Relaxed);
+    TOTAL_USER_PAGE_TABLE_PAGES.fetch_add(page_table.mapped_pages as u64, Ordering::Relaxed);
+    record_page_table_process(
+        credentials,
+        &backed_image.mapped.prepared,
+        &backed_image.backed,
+        &page_table,
+    );
+    let mut inactive = UserPageTableProgramImage {
+        backed: backed_image,
+        page_table,
+    };
+    let hw = crate::user_paging::build_hw_page_table(&inactive.page_table).map_err(|_| {
+        REJECTED_HW_PAGE_TABLE_COUNT.fetch_add(1, Ordering::Relaxed);
+        ProgramLoadError::HwPageTableRejected
+    })?;
+    inactive.page_table.cr3_switch_ready = true;
+    HW_PAGE_TABLE_COUNT.fetch_add(1, Ordering::Relaxed);
+    let _ = record_hw_page_table_process(
+        credentials,
+        &inactive.backed.mapped.prepared,
+        &inactive.backed.backed,
+        hw.cr3_phys,
+    );
+    LAST_CORPUS_CR3.store(hw.cr3_phys, Ordering::Relaxed);
+    Ok(HwPageTableProgramImage { inactive, hw })
+}
+
+pub fn execute_corpus_elf(
+    credentials: crate::security::Credentials,
+    name: &str,
+    elf_bytes: &[u8],
+    pid: crate::task::process::ProcessId,
+) -> Result<UserElfExecution, ProgramLoadError> {
+    crate::user_syscall_hw::init_syscall_msrs();
+    let built = build_hw_page_table_from_elf_bytes(credentials, name, elf_bytes)?;
+    let _ = crate::task::process::set_process_cr3(pid, built.hw.cr3_phys);
+    let selectors = crate::gdt::user_selectors();
+    let entry_point = built.inactive.backed.mapped.prepared.load_plan.entry_point;
+    let entry = crate::user_context::build_user_context(
+        &built.inactive.page_table,
+        entry_point,
+        selectors,
+    )
+    .map_err(|_| ProgramLoadError::UserContextRejected)?
+    .entry;
+    crate::user_syscall_hw::set_corpus_ring3_exec(true);
+    crate::user_entry::set_hw_syscall_bringup_flag();
+    let run_ok = crate::user_paging::with_user_page_table(&built.hw, || {
+        crate::user_entry::enter_user_syscall_hw_iretq(&built.hw, &entry, selectors).is_ok()
+    })
+    .unwrap_or(false);
+    crate::user_syscall_hw::set_corpus_ring3_exec(false);
+    let _ = crate::user_paging::restore_kernel_page_table();
+    if !run_ok {
+        return Err(ProgramLoadError::HwEntryRejected);
+    }
+    let exit_code = crate::syscall::exit_wait_status().2 as i32;
+    let mut output_bytes = crate::corpus_runner::take_corpus_output();
+    if output_bytes.is_empty() {
+        output_bytes.extend_from_slice(format!("{name}: exit={exit_code}\n").as_bytes());
+    }
+    let output = String::from_utf8_lossy(&output_bytes).into_owned();
+    HW_ELF_EXECUTION_COUNT.fetch_add(1, Ordering::Relaxed);
+    USER_ELF_EXECUTION_COUNT.fetch_add(1, Ordering::Relaxed);
+    USER_ELF_EXIT_COUNT.fetch_add(1, Ordering::Relaxed);
+    Ok(UserElfExecution {
+        user_syscall: UserSyscallProgramImage {
+            ring3: Ring3TrampolineProgramImage {
+                user_context: UserContextProgramImage {
+                    page_table: built.inactive,
+                    context: crate::user_context::UserContextDescriptor {
+                        page_table_id: crate::user_memory::UserPageTableId::from_raw(0),
+                        entry,
+                        stack: crate::user_context::UserStackDescriptor {
+                            top: crate::user_context::DEFAULT_USER_STACK_TOP,
+                            size: crate::user_context::DEFAULT_USER_STACK_SIZE,
+                        },
+                        selectors_ready: true,
+                        entry_ready: true,
+                        ring3_entered: true,
+                    },
+                },
+                result: crate::ring3_trampoline::Ring3TrampolineResult {
+                    entry_rip: entry.rip,
+                    user_rsp: entry.rsp,
+                    trap_vector: crate::interrupts::USER_TRAP_VECTOR,
+                    reason: crate::ring3_trampoline::UserTrapReason::ControlledReturn,
+                    ring3_entered: true,
+                    trapped_back: true,
+                },
+            },
+            syscall_return: crate::user_syscall::UserSyscallReturn {
+                syscall_id: crate::syscall::SyscallId::ExitProcess as u64,
+                arg0: exit_code as u64,
+                return_value: 0,
+                error: None,
+                returned_to_user: false,
+            },
+        },
+        output,
+        exit_code,
+    })
+}
+
 fn static_source_path(path: &str) -> &'static str {
     match path {
         "/bin/hello" => "/bin/hello",

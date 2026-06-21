@@ -198,6 +198,17 @@ pub fn set_active(id: BlockDeviceId) -> Result<(), BlockError> {
     }
 }
 
+/// Run `f` while `id` is the active block device, then restore the previous active device.
+pub fn with_device<R>(id: BlockDeviceId, f: impl FnOnce() -> R) -> Result<R, BlockError> {
+    let previous = MANAGER.lock().active;
+    set_active(id)?;
+    let result = f();
+    if let Some(prev) = previous {
+        let _ = set_active(prev);
+    }
+    Ok(result)
+}
+
 pub fn list_block_devices() -> Vec<BlockDeviceInfo> {
     MANAGER
         .lock()

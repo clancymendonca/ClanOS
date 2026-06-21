@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Regenerate boot_gate.rs header from template; preserves run_* smoke bodies in place."""
+"""Regenerate validation_gate.rs early smokes from template (manual merge for run_* bodies)."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / "kernel" / "src" / "boot_gate.rs"
+OUT = ROOT / "kernel" / "src" / "validation_gate.rs"
 MARKER = "#[allow(unused_variables)]\nfn run_sched_userspace_smokes()"
 
 HEADER = '''//! Unified boot-time validation gate (subsystem smokes consolidated).

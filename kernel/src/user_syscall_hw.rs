@@ -27,6 +27,15 @@ static SYSRET_APPLIED: AtomicU64 = AtomicU64::new(0);
 static HW_SYSRET_REAL: AtomicU64 = AtomicU64::new(0);
 static HW_SYSCALL_PROBES: AtomicU64 = AtomicU64::new(0);
 pub static REAL_HW_PROBE: AtomicU64 = AtomicU64::new(0);
+static CORPUS_RING3_EXEC: AtomicU64 = AtomicU64::new(0);
+
+pub fn set_corpus_ring3_exec(enabled: bool) {
+    CORPUS_RING3_EXEC.store(if enabled { 1 } else { 0 }, Ordering::Relaxed);
+}
+
+pub fn corpus_ring3_exec_active() -> bool {
+    CORPUS_RING3_EXEC.load(Ordering::Relaxed) != 0
+}
 
 #[repr(C, align(16))]
 struct SyscallStack {
@@ -394,6 +403,9 @@ extern "C" fn syscall_entry_trampoline() {
     HW_SYSCALLS.fetch_add(1, Ordering::Relaxed);
     HW_SYSRETS.fetch_add(1, Ordering::Relaxed);
     if REAL_HW_PROBE.load(Ordering::Relaxed) != 0 {
+        user_entry::return_from_hw_syscall_probe();
+    }
+    if corpus_ring3_exec_active() && syscall_id == SyscallId::ExitProcess as u64 {
         user_entry::return_from_hw_syscall_probe();
     }
     unsafe {

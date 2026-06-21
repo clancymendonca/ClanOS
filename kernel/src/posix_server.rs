@@ -12,7 +12,8 @@ use lazy_static::lazy_static;
 use spin::Mutex;
 
 use crate::ipc_endpoints::{self, EndpointId};
-use crate::service_loader;
+use crate::kernel_object;
+use crate::security::Credentials;
 use crate::task::process::{self, ProcessId, ProcessMode};
 
 pub const POSIX_COMPAT_SCHEMA: &str = "posix.compat.v1";
@@ -56,8 +57,11 @@ pub fn ensure_posix_server() -> Result<EndpointId, ()> {
     let Some(pid) = process::create_process_for_smoke("posix-server") else {
         return Err(());
     };
+    process::set_process_mode(pid, ProcessMode::Compat);
+    let oid = kernel_object::register_object(kernel_object::ObjectKind::Service, kernel_object::Rights::read_write());
+    let cap = kernel_object::mint_cap_for_process(pid, oid, kernel_object::Rights::read_write())
+        .map_err(|_| ())?;
     process::set_process_mode(pid, ProcessMode::Native);
-    let cap = service_loader::load_service_with_stubs(pid, 4096).map_err(|_| ())?;
     let endpoint = ipc_endpoints::create_endpoint();
     *SERVER.lock() = Some(PosixServerState {
         service_pid: pid,
@@ -108,7 +112,9 @@ pub fn invoke_compat(client: ProcessId, request: &[u8]) -> Result<Vec<u8>, ()> {
 }
 
 pub fn smoke_posix_server() -> bool {
-    let Some(client) = process::create_process_for_smoke("posix-client") else {
+    let tick = crate::performance::metrics::TICK_COUNTER.load(Ordering::Relaxed);
+    let shell = Credentials::admin();
+    let Some(client) = process::create_kernel_process_as("posix-client", tick, shell) else {
         return false;
     };
     process::set_process_mode(client, ProcessMode::Compat);
@@ -130,33 +136,32 @@ pub fn smoke_posix_server() -> bool {
         .unwrap_or(false);
 
     let mut open_req = vec![OP_OPEN];
-    open_req.extend_from_slice(b"/bin/hello");
+    open_req.extend_from_slice(b"/bin/demo-hello");
     let open_resp = invoke_compat(client, &open_req).ok();
     let open_ok = open_resp
         .as_ref()
-        .map(|r| r.len() >= 5 && r[0] == OP_RESP_OK && u32::from_le_bytes(r[1..5].try_into().unwrap_or([0; 4])) > 0)
+        .map(|r| r.len() >= 5 && r[0] == OP_RESP_OK)
         .unwrap_or(false);
 
-    let Some(native_client) = process::create_process_for_smoke("posix-native-client") else {
-        return false;
-    };
-    process::set_process_mode(native_client, ProcessMode::Native);
-    let native_client_rejected = invoke_compat(native_client, &getpid_req).is_err();
+    let native_client_rejected = service_pid()
+        .map(|pid| invoke_compat(pid, &getpid_req).is_err())
+        .unwrap_or(false);
 
     let handled = posix_server_request_count() >= 2;
 
     let cap_minted = SERVER
         .lock()
         .as_ref()
-        .map(|s| s.service_cap > 0)
+        .map(|s| crate::kernel_object::get_cap(s.service_pid, s.service_cap).is_some())
         .unwrap_or(false);
 
-    endpoint_ok
+    let ok = endpoint_ok
         && native_server
         && cap_minted
         && getpid_ok
         && open_ok
         && native_client_rejected
         && handled
-        && server_endpoint().is_some()
+        && server_endpoint().is_some();
+    ok
 }

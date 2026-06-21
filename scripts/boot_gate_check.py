@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compatibility shim — use scripts/gate/boot.py."""
+"""Compatibility shim — use scripts/gate/run.py."""
 
 import sys
 from pathlib import Path

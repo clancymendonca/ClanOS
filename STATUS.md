@@ -1,25 +1,25 @@
 # Clan OS Project Status
 
-## Snapshot (fully operational OS)
+## Snapshot (Functional OS — scope 400, QEMU gate v2.1.0)
 
-- **Boot gate:** `kernel/src/boot_gate.rs` (`BOOT_GATE_VERSION = 1.0.0`)
-- **System gate:** `kernel/src/system_gate.rs` (`SYSTEM_GATE_VERSION = 1.0.0`)
+- **Validation gate:** `kernel/src/validation_gate.rs` (`VALIDATION_GATE_VERSION = 2.1.0`)
+- **Gate audit:** [`docs/GATE_AUDIT.md`](docs/GATE_AUDIT.md) — per-gate substance classification
 - **Desktop:** VGA 320×200, double-buffered compositor, PS/2 mouse, window manager, taskbar shell
 - **Userland:** `/bin/demo-hello`, `/bin/clan-info`, `/bin/mendo`, `/bin/ring3-io-demo`, `/bin/ring3-io-demo-ext2`, `/bin/hello-alloc` (Clan OS runtime: `clan-rt` with optional `ring3-heap` bump allocator)
 - **Network:** virtio-net loopback + external route simulation
-- gap_registry: 0 open, 350 addressed (350 total)
+- gap_registry: 0 open, 350 addressed
 - threat nodes open: 0
-- release_scorecard: [`RELEASE_SCORECARD_M500.md`](docs/RELEASE_SCORECARD_M500.md)
+- release_scorecard: [`RELEASE_SCORECARD.md`](docs/RELEASE_SCORECARD.md)
 - Track 1 doc migration: **gated** (see `config/track1_scope_freeze.toml`)
 
 ## Validation gates
 
-Boot and system validation emit two serial families at boot:
+Unified validation emits one serial family at boot:
 
-| Family | Final line | Module |
-|--------|------------|--------|
-| Boot | `ClanOS-BootGate: ok=true` | `boot_gate.rs` |
-| System | `ClanOS-SystemGate: ok=true` | `system_gate.rs` |
+| Line | Module |
+|------|--------|
+| `ClanOS-Gate: name=<subsystem> ok=true` | `validation_gate.rs` |
+| `ClanOS-Gate: ok=true` | summary |
 
 Host checks (no QEMU):
 
@@ -31,13 +31,12 @@ python scripts/gate/compat_subsystems.py
 QEMU checks:
 
 ```
-python scripts/gate/boot.py --gate boot --timeout 360
-python scripts/gate/system.py --gate system --timeout 360
+python scripts/gate/run.py --gate all --timeout 360
 ```
 
-Use `--gate <subsystem>` for individual boot/system subsystem smokes (see `scripts/gate/map.py`).
+Use `--gate <subsystem>` for individual smokes (see `scripts/gate/map.py` and [`VALIDATION_GATES.md`](docs/VALIDATION_GATES.md)).
 
-### Boot gate subsystems
+### Subsystem gates
 
 | Gate | Role |
 |------|------|
@@ -61,12 +60,7 @@ Use `--gate <subsystem>` for individual boot/system subsystem smokes (see `scrip
 | virtio_blk | Virtio block probe |
 | network_compat | Virtio net + compat socket epoch |
 | scheduler_epoch | Service scheduler integration |
-| boundary | Milestone boundary smoke |
-
-### System gate subsystems
-
-| Gate | Role |
-|------|------|
+| boundary | Four-layer boundary review |
 | integrity | Build integrity, audit, OOM, loom |
 | scheduling | Unified service scheduling |
 | hardware | Virtio block/net, SDK path |

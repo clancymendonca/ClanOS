@@ -233,7 +233,8 @@ fn execute_console_command(command: &str) {
             con_println!("  metrics");
             con_println!("  whoami");
             con_println!("  su <admin|user|guest>");
-            con_println!("  run <echo|time|sysinfo|fsinfo|demo-hello|clan-info> [args...]");
+            con_println!("  run <program> [args...]  (mendo, ring3-io-demo, hello-alloc, demo-hello, …)");
+            con_println!("  fork-run <corpus-program>");
             con_println!("  programs");
             con_println!("  bin list");
             con_println!("  bin info <program>");
@@ -403,6 +404,16 @@ fn execute_console_command(command: &str) {
             Ok(output) => con_println!("{}", output),
             Err(err) => con_println!("run error: {}", err),
         },
+        ["fork-run", program] => {
+            let credentials = crate::security::current_credentials();
+            match crate::corpus_runner::fork_run_corpus(credentials, program) {
+                Ok(output) => con_println!("{}", output),
+                Err(crate::task::program_loader::ProgramLoadError::NotFound) => {
+                    con_println!("fork-run error: program not found")
+                }
+                Err(_) => con_println!("fork-run error: execution failed"),
+            }
+        }
         ["programs"] | ["bin", "list"] => {
             let programs = crate::task::program_loader::discover_programs();
             if programs.is_empty() {
@@ -631,14 +642,17 @@ fn execute_console_command(command: &str) {
             }
             Err(err) => con_println!("ls error: {}", err),
         },
-        ["cat", path] => match crate::storage::read_file_checked(
-            crate::security::current_credentials(),
-            path,
-        ) {
-            Ok(Some(contents)) => con_println!("{}", contents),
-            Ok(None) => con_println!("No such file: {}", path),
-            Err(err) => con_println!("cat error: {}", err),
-        },
+        ["cat", path] => {
+            let creds = crate::security::current_credentials();
+            match crate::vfs::read_bytes_for(creds, path) {
+                Ok(Some(bytes)) => {
+                    let text = core::str::from_utf8(&bytes).unwrap_or("<binary>");
+                    con_println!("{}", text);
+                }
+                Ok(None) => con_println!("No such file: {}", path),
+                Err(_) => con_println!("cat error: read failed"),
+            }
+        }
         ["touch", path] => match crate::storage::create_file_checked(
             crate::security::current_credentials(),
             path,

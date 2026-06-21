@@ -1,4 +1,4 @@
-//! Milestone 150 — four-layer boundary review (epoch 6).
+//! Four-layer boundary review gate (epoch 6).
 
 /// Layer 1: kernel TCB
 pub const LAYER_KERNEL: bool = true;
@@ -13,9 +13,14 @@ pub fn four_layer_boundary_review() -> bool {
     LAYER_KERNEL && LAYER_RUNTIME && LAYER_SERVICES && LAYER_COMPAT
 }
 
-pub fn smoke_milestone_boundary() -> bool {
+pub fn smoke_boundary() -> bool {
     four_layer_boundary_review()
         && crate::build_integrity::boot_verified()
         && crate::ipc_endpoints::endpoint_send_count() > 0
         && crate::virtio_blk::probe_count() > 0
+}
+
+#[deprecated(note = "use boundary_gate::smoke_boundary")]
+pub fn smoke_milestone_boundary() -> bool {
+    smoke_boundary()
 }
