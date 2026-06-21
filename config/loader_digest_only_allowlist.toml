@@ -6,9 +6,6 @@ version = "1.0.0"
 # Rollback: revert manifest to trust=system and re-add name here. Empty list = migration complete (scope 465).
 
 [[programs]]
-name = "ring3-io-demo"
-
-[[programs]]
 name = "hello-alloc"
 
 [[programs]]
