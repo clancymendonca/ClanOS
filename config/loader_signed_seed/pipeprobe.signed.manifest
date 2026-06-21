@@ -1,0 +1,11 @@
+clan-exec-v1
+name=pipeprobe
+kind=elf64-image
+entry=0x400000
+image=/bin/pipeprobe.elf
+requires=execute
+digest=sha256:0d051143803d91d064935f7191b3d7c753c5538a2992b46900e009cc0aab806b
+trust=system-signed
+owner=admin
+description=HW pipe probe ELF fixture
+sig=ed25519:f7c006ef7675cd8f28780c0deaee67c16a3de125b3f82a16f91257665d29ed29e789815e6c06981088e2a8ff7d473dfff70edbef6d3445f3a2867f106c7ad305
