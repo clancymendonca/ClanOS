@@ -1,0 +1,8 @@
+clan-exec-v1
+name=sysinfo
+kind=builtin-alias
+entry=sysinfo
+requires=execute
+trust=system
+owner=admin
+description=Show system metrics

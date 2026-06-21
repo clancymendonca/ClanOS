@@ -1,0 +1,10 @@
+clan-exec-v1
+name=sysinfo
+kind=builtin-alias
+entry=sysinfo
+requires=execute
+digest=sha256:e3807e489018e5996a5639dcd223f0fe846cc025bfe54ce1a8d8835f34e25328
+trust=system-signed
+owner=admin
+description=Show system metrics
+sig=ed25519:c9852868744b1d5ad3e7dbe20d0931838ea03311c22b1e76f9aa564612cc702f830f337e87537e18b33f18d99eab871df3fdad429c7262eeca9a0aedfeaf5202
