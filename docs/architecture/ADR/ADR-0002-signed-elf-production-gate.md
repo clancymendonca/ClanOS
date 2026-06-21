@@ -101,7 +101,7 @@ Build order — separate PRs, negative tests at each layer:
 
 1. `config/trust_anchor_epoch450.toml` + manifest wire format (`WIRE_FORMAT.txt`, `canonical_body.utf8` golden bytes)
 2. Host sign + verify tooling + fixtures (must fail on negatives)
-3. Kernel verifier (embedded pubkey) + swap `verify_signed_user_elf_corpus`
-4. Gate swap + `VALIDATION_GATE_VERSION` bump + threat node + GATE_AUDIT_401_500 reclassification
+3. ~~Kernel verifier (embedded pubkey) + swap `verify_signed_user_elf_corpus`~~ **Done** — `kernel/src/signed_elf.rs`, `kernel/tests/signed_elf_integration.rs`
+4. ~~Gate swap + `VALIDATION_GATE_VERSION` bump + threat node + GATE_AUDIT_401_500 reclassification~~ **Done** — `2.2.0`, `T-signed-elf-forgery`
 
 See [`GATE_DESIGN_401_500.md`](../../GATE_DESIGN_401_500.md) §1.

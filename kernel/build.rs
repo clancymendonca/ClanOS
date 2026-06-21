@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 fn main() {
+    println!("cargo:rustc-cfg=curve25519_dalek_backend=\"serial\"");
     let manifest_dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
     let repo_root = manifest_dir.parent().unwrap();
 
@@ -38,6 +39,17 @@ fn main() {
     rerun_if_changed(repo_root.join("userland/src"));
 
     println!("cargo:rerun-if-changed=build.rs");
+
+    let corpus = repo_root.join("config/signed_elf_test_corpus");
+    for name in ["payload.bin", "manifest.toml", "canonical_body.utf8", "WIRE_FORMAT.txt"] {
+        println!("cargo:rerun-if-changed={}", corpus.join(name).display());
+    }
+    println!(
+        "cargo:rerun-if-changed={}",
+        repo_root
+            .join("config/trust_anchor_epoch450.toml")
+            .display()
+    );
 }
 
 fn build_embed_elf(

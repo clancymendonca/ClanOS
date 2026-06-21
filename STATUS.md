@@ -1,8 +1,9 @@
 # Clan OS Project Status
 
-## Snapshot (Functional OS — scope 400, QEMU gate v2.1.0)
+## Snapshot (Functional OS — scope 400, QEMU gate v2.2.0)
 
-- **Validation gate:** `kernel/src/validation_gate.rs` (`VALIDATION_GATE_VERSION = 2.1.0`)
+- **Validation gate:** `kernel/src/validation_gate.rs` (`VALIDATION_GATE_VERSION = 2.2.0`)
+- **ADR-0002 signed ELF (epoch 450):** kernel verifier + in-QEMU negative gauntlet (`cargo test -p kernel --test signed_elf_integration` via `validation_matrix.py`; requires `qemu-system-x86_64` — compile-only is not substantiation)
 - **Gate audit:** [`docs/GATE_AUDIT.md`](docs/GATE_AUDIT.md) — per-gate substance classification
 - **Gap audit:** [`docs/GAP_AUDIT.md`](docs/GAP_AUDIT.md) — `addressed` ≠ Implemented (204 overclaimed baseline)
 - **Desktop:** VGA 320×200, double-buffered compositor, PS/2 mouse, window manager, taskbar shell

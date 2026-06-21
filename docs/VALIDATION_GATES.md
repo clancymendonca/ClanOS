@@ -2,7 +2,7 @@
 
 ```yaml
 status: authoritative
-validation_gate_version: "2.1.0"
+validation_gate_version: "2.2.0"
 kernel_module: kernel/src/validation_gate.rs
 scripts_package: scripts/gate/
 ```
@@ -107,5 +107,6 @@ Per-scope checklists under `docs/scope-*-checklist.md` record **implementation s
 | `preemption-latency-check` | `scripts/preemption/latency.py` |
 | `gate-signed-elf-host-check` | `scripts/gate/signed_elf.py` |
 | `gate-signed-elf-self-test` | `scripts/gate/test_signed_elf.py` |
+| `signed-elf-kernel-integration` | `cargo test -p kernel --test signed_elf_integration` in QEMU (**9 cases**). Run via `validation_matrix.py` (`ensure_qemu_on_path()`); bare `cargo test` fails if QEMU is not on PATH. Compile success alone is not a pass. |
 
 See also [`RELEASE_SCORECARD.md`](RELEASE_SCORECARD.md).

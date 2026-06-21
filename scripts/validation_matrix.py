@@ -185,6 +185,18 @@ def main() -> int:
             ["python", "scripts/gate/test_signed_elf.py"],
             30,
         ),
+        (
+            "signed-elf-kernel-integration",
+            [
+                "cargo",
+                "test",
+                "-p",
+                "kernel",
+                "--test",
+                "signed_elf_integration",
+            ],
+            300,
+        ),
         ("semantic-lint", ["python", "scripts/semantic_lint.py"], None),
         ("covenant-ci", ["python", "scripts/covenant_ci.py"], 120),
         ("loom-gate", ["python", "scripts/loom_gate.py"], None),

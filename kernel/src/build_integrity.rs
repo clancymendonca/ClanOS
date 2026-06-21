@@ -65,13 +65,9 @@ pub fn smoke_rollback() -> bool {
     verify_rollback_anchor()
 }
 
-/// signed user ELF manifest corpus (BUILD_INTEGRITY production path).
+/// Signed user ELF gate corpus (ADR-0002 production path).
 pub fn verify_signed_user_elf_corpus() -> bool {
-    let corpus = b"clan-rt demo:hello";
-    let digest = image_digest::sha256_hex(corpus);
-    let manifest = alloc::format!("digest=sha256:{digest}\ntrust=system\n");
-    let expected = image_digest::parse_manifest_digest(&manifest).unwrap_or("");
-    let ok = image_digest::verify_digest_hex(corpus, expected);
+    let ok = crate::signed_elf::verify_pinned_gate_corpus().is_ok();
     if ok {
         SIGNED_USER_ELF_VERIFIED.fetch_add(1, Ordering::Relaxed);
     }

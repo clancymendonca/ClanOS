@@ -140,6 +140,17 @@ depends_on = []
 summary = "Malicious or coerced contributor merges flawed TCB change"
 
 [[nodes]]
+id = "T-signed-elf-forgery"
+epoch = 450
+status = "closed"
+tier = "A"
+goals = ["integrity_violation"]
+surfaces = ["build_pipeline"]
+closing_commit = "kernel signed_elf.rs verifier + signed_elf_integration negative fixtures"
+depends_on = ["T-supply-chain"]
+summary = "Forged or tampered signed ELF gate corpus accepted via manifest parser or Ed25519 verify gap"
+
+[[nodes]]
 id = "T-physical-access"
 epoch = 6
 status = "deferred"
