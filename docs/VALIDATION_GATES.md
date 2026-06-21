@@ -107,6 +107,7 @@ Per-scope checklists under `docs/scope-*-checklist.md` record **implementation s
 | `preemption-latency-check` | `scripts/preemption/latency.py` |
 | `gate-signed-elf-host-check` | `scripts/gate/signed_elf.py` |
 | `gate-signed-elf-self-test` | `scripts/gate/test_signed_elf.py` |
+| `trust-anchor-embed-match` | `scripts/gate/test_anchor_embed_match.py` — kernel `[u8; 32]` embed must match anchor TOML hex (catches transcription errors before QEMU) |
 | `signed-elf-kernel-integration` | `cargo test -p kernel --test signed_elf_integration` in QEMU (**9 cases**). Run via `validation_matrix.py` (`ensure_qemu_on_path()`); bare `cargo test` fails if QEMU is not on PATH. Compile success alone is not a pass. |
 | `gate-loader-signed-exec-host-check` | `scripts/gate/loader_signed_exec.py` |
 | `gate-loader-signed-exec-self-test` | `scripts/gate/test_loader_signed_exec.py` |

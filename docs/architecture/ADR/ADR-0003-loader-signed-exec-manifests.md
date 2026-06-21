@@ -94,6 +94,7 @@ Same discipline as `architecture_state_check.py` hard-denying `has_external_netw
 |------|----------|
 | Verify where | Kernel `program_loader` on exec path only |
 | Fail mode | Reject load; increment `MANIFEST_ELF_REJECTED`; no audit-only warn path for `trust=system-signed` |
+| Verify ordering | **Parse-tolerant, verify-authoritative:** unsigned metadata and non-signed fields are parsed without short-circuiting before Ed25519; tamper/forgery rejection is at signature verification (not parse-order accidents). Malformed input still fails closed. |
 | Gate honesty | `loader_security` "Real (digest+sig)" only when pinned inventory in `GATE_AUDIT_401_500.md` lists signature-verified programs and Q3 sunset guards pass |
 | Host role | Negative fixtures + `loader_signing_sunset_check.py`; host preflight does **not** substitute for kernel QEMU proof |
 

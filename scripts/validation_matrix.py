@@ -186,6 +186,11 @@ def main() -> int:
             30,
         ),
         (
+            "trust-anchor-embed-match",
+            ["python", "scripts/gate/test_anchor_embed_match.py"],
+            30,
+        ),
+        (
             "gate-loader-signed-exec-host-check",
             ["python", "scripts/gate/loader_signed_exec.py"],
             30,

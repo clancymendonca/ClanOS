@@ -63,6 +63,12 @@ pub fn verify_pinned_loader_corpus() -> Result<(), VerifyError> {
 }
 
 /// Verify ELF payload + clan-exec-v1 manifest against epoch-460 loader anchor.
+///
+/// **Verify ordering (design property):** parse manifest fields tolerantly (ignore unsigned
+/// metadata such as `owner=`/`description=`; do not reject `kind`/`image` inconsistency at
+/// parse time). Recompute digest, reconstruct canonical signed body, then Ed25519 verify.
+/// Forgery/tamper rejection is authoritative at signature verification — not parse-order
+/// accidents. Malformed manifests still fail closed via `ManifestParse` or verify errors.
 pub fn verify_signed_exec(payload: &[u8], manifest_text: &str) -> Result<(), VerifyError> {
     let manifest = parse_manifest(manifest_text)?;
     let signature_hex = manifest.signature_hex.ok_or(VerifyError::MissingSignature)?;
