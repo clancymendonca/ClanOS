@@ -1,0 +1,11 @@
+clan-exec-v1
+name=tickprobe
+kind=elf64-image
+entry=0x400000
+image=/bin/tickprobe.elf
+requires=execute
+digest=sha256:0d051143803d91d064935f7191b3d7c753c5538a2992b46900e009cc0aab806b
+trust=system-signed
+owner=admin
+description=Tick probe ELF fixture
+sig=ed25519:7cb2fa3255f1a495272a53866ef9b8c87885babf51bf7fcc47518efff0e2f71341a8ae7aebf16da857547868ad4f89a96267524085681b223944e7dd585a710c

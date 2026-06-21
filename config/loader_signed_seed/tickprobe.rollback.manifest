@@ -1,0 +1,9 @@
+clan-exec-v1
+name=tickprobe
+kind=elf64-image
+entry=0x400000
+image=/bin/tickprobe.elf
+requires=execute
+trust=system
+owner=admin
+description=Tick probe ELF fixture

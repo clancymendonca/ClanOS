@@ -757,7 +757,7 @@ fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), Stor
         ("/bin/exit42.elf", sample_elf.as_str()),
         (
             "/bin/tickprobe",
-            "clan-exec-v1\nname=tickprobe\nkind=elf64-image\nentry=0x400000\nimage=/bin/tickprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=Tick probe ELF fixture",
+            include_str!("../../config/loader_signed_seed/tickprobe.signed.manifest"),
         ),
         ("/bin/tickprobe.elf", sample_elf.as_str()),
         (

@@ -3,7 +3,7 @@
 //! Serial: `ClanOS-Gate: name=<subsystem> ok=<bool>` and summary `ClanOS-Gate: ok=<bool>`.
 //! Legacy aliases optional via `VALIDATION_GATE_EMIT_LEGACY_ALIASES`.
 
-pub const VALIDATION_GATE_VERSION: &str = "2.4.0";
+pub const VALIDATION_GATE_VERSION: &str = "2.5.0";
 const VALIDATION_GATE_EMIT_LEGACY_ALIASES: bool = false;
 
 use core::sync::atomic::{AtomicBool, AtomicU64, Ordering};

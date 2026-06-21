@@ -1382,6 +1382,27 @@ pub fn execute_manifest_elf_gated(
         MANIFEST_ELF_REJECTED.fetch_add(1, Ordering::Relaxed);
         return Err(ProgramLoadError::HwElfRejected);
     }
+    if program.trust == ProgramTrust::SystemSigned {
+        let manifest_text = crate::storage::read_file(&program.source_path)
+            .ok()
+            .flatten();
+        let elf_bytes = program
+            .image_path
+            .as_ref()
+            .and_then(|path| crate::storage::read_file(path).ok().flatten());
+        let Some(manifest) = manifest_text else {
+            MANIFEST_ELF_REJECTED.fetch_add(1, Ordering::Relaxed);
+            return Err(ProgramLoadError::HwElfRejected);
+        };
+        let Some(elf) = elf_bytes else {
+            MANIFEST_ELF_REJECTED.fetch_add(1, Ordering::Relaxed);
+            return Err(ProgramLoadError::HwElfRejected);
+        };
+        if crate::loader_signed_exec::verify_signed_exec(elf.as_bytes(), &manifest).is_err() {
+            MANIFEST_ELF_REJECTED.fetch_add(1, Ordering::Relaxed);
+            return Err(ProgramLoadError::HwElfRejected);
+        }
+    }
     MANIFEST_ELF_EXECUTED.fetch_add(1, Ordering::Relaxed);
     execute_allowlisted_user_elf(credentials, name)
 }
