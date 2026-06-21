@@ -216,6 +216,11 @@ def main() -> int:
             30,
         ),
         (
+            "loader-signed-exec-path-audit",
+            ["python", "scripts/gate/test_loader_signed_exec_path_audit.py"],
+            30,
+        ),
+        (
             "loader-signed-exec-kernel-integration",
             [
                 "cargo",

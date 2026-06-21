@@ -115,7 +115,7 @@ Suggested order (lowest gate blast radius first): shell builtins (`echo`, `time`
 | Gate honesty | `loader_security` "Real (digest+sig)" only when pinned inventory in `GATE_AUDIT_401_500.md` lists signature-verified programs and Q3 sunset guards pass |
 | Host role | Negative fixtures + `loader_signing_sunset_check.py`; host preflight does **not** substitute for kernel QEMU proof |
 
-**Execution-path verify enumeration (scope 467 audit):** every kernel entry that runs a seed program must call `verify_system_signed_program` / `verify_system_signed_elf_payload` when `trust=system-signed`. ELF digest bytes are loaded via [`vfs::read_bytes`](../../../kernel/src/vfs.rs) (covers `/bin/…` and `/ext2/…`; digest construction unchanged — SHA256 of ELF octets).
+**Execution-path verify enumeration (scope 467 audit):** every kernel entry that runs a seed program must call `verify_system_signed_program` / `verify_system_signed_elf_payload` when `trust=system-signed`. ELF digest bytes are loaded via [`vfs::read_bytes`](../../../kernel/src/vfs.rs) (covers `/bin/…` and `/ext2/…`; digest construction unchanged — SHA256 of ELF octets). **Mechanical check:** [`scripts/gate/test_loader_signed_exec_path_audit.py`](../../../scripts/gate/test_loader_signed_exec_path_audit.py) — `REQUIRED_CALLS` must match this table; add a row here and an entry in that script when introducing a new execution entry point.
 
 | Entry point | Kind | Verify helper |
 |-------------|------|---------------|
