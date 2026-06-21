@@ -1,0 +1,10 @@
+clan-exec-v1
+name=fsinfo
+kind=builtin-alias
+entry=fsinfo
+requires=execute
+digest=sha256:997a09fd82f69e673b342a0df1783bd0f13c91a8e64fda1282ada67d348c01ae
+trust=system-signed
+owner=admin
+description=Show filesystem status
+sig=ed25519:32d1203744f4a74f8e2d3cb0fe6cb59f21b85bf9f04807133ef3456aa2319e0d8a955430afe0a14dca7fd891901ce4abd843d07ee8a937c658412a9e8d3cce08

@@ -735,7 +735,7 @@ fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), Stor
         ),
         (
             "/bin/fsinfo",
-            "clan-exec-v1\nname=fsinfo\nkind=builtin-alias\nentry=fsinfo\nrequires=execute\ntrust=system\nowner=admin\ndescription=Show filesystem status",
+            include_str!("../../config/loader_signed_seed/fsinfo.signed.manifest"),
         ),
         (
             "/bin/demo-hello",

@@ -1,0 +1,8 @@
+clan-exec-v1
+name=fsinfo
+kind=builtin-alias
+entry=fsinfo
+requires=execute
+trust=system
+owner=admin
+description=Show filesystem status
