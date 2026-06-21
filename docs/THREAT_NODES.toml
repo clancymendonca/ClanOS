@@ -168,7 +168,7 @@ status = "closed"
 tier = "A"
 goals = ["integrity_violation", "denial_of_service"]
 surfaces = ["kernel_heap"]
-closing_commit = "kernel bga.rs video smoke + test_bga_bounds negative fixtures + memory_layout gate 2.7.0"
+closing_commit = "kernel bga.rs two-phase video smoke + test_bga_bounds negative fixtures + memory_layout/desktop gates 2.7.0"
 depends_on = []
 summary = "Oversized BGA LFB MMIO map or unbounded back-buffer alloc — map_bytes must be min(computed_size, bar_size); fail closed on dual-probe init failure"
 

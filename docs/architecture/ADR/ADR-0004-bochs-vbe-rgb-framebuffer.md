@@ -108,7 +108,13 @@ flowchart TD
 
 Back-buffer buddy allocation uses **`computed_size`** only (kernel RAM, independent of BAR).
 
-**Required `memory_layout` smoke (not optional):** when BGA path active, verify back-buffer buddy allocation **and** LFB MMIO map succeeded. Emit serial proof e.g. `ClanOS-Video: back_frames={n} lfb_map_ok=true`. Wired into `memory_layout_gate()` before scope **470** close. Buddy failure at ~768 contiguous frames is a real failure mode — same "don't pass without proof it ran" discipline as ADR-0003 sunset checks.
+**Required `memory_layout` smoke (not optional):** when BGA path active, verify back-buffer **buddy allocation** and **LFB writability** (PCI BAR decode + pixel write/readback via bootloader physical offset — not kernel virt map). Emit serial proof e.g. `ClanOS-Video: back_frames={n} lfb_write_ok=true map_bytes={m}`. Wired into `memory_layout_gate()` before hw_paging smokes.
+
+**Back-buffer virt map smoke (not optional, separate phase):** mapping 768 contiguous kernel virt pages during early boot tripped page-table pressure and crashed during `scheduler_epoch` in QEMU. **Boot phasing (locked amendment):** virt map runs immediately before `desktop_preview` (after `scheduler_epoch`), not in the pre-gate video smoke. Emit `ClanOS-Video: back_buffer_map_ok=true back_virt=0x5300…` with back-buffer write/readback and LFB flush spot-check. `smoke_double_buffer()` requires `back_buffer_map_ok` — not LFB-direct draw.
+
+**`scheduler_epoch` compositor smoke:** may render LFB-direct (single-buffer) before virt map; gate-unsubstantiated for double-buffer semantics — see [`GATE_AUDIT_401_500.md`](../../GATE_AUDIT_401_500.md).
+
+Buddy failure at ~768 contiguous frames is a real failure mode — same "don't pass without proof it ran" discipline as ADR-0003 sunset checks.
 
 Implementation notes:
 
@@ -125,12 +131,13 @@ Implementation notes:
 |------|----------|
 | `VALIDATION_GATE_VERSION` | Bump **once** when kernel verification semantics change (e.g. `2.6.0` → `2.7.0`) — same rule as ADR-0003: seed/progress work does not bump; semantic change does |
 | Kernel smokes | BGA ID readback; mode active; known pixel write to back buffer + flush; LFB readback spot-check |
-| **`memory_layout` smoke** | **Required** — back-buffer allocation + LFB map when BGA active (Q4); executed in QEMU before scope close, not compile-only |
+| **`memory_layout` smoke** | **Required** — buddy allocation + LFB write/readback when BGA active (Q4 phase 1); executed in QEMU before hw_paging smokes |
+| **Back-buffer virt map smoke** | **Required** — `map_back_buffer_for_desktop()` before `desktop_preview`; serial `back_buffer_map_ok=true`; write/readback + flush spot-check (Q4 phase 2) |
 | Dual-probe negative | Host or kernel fixture: dual-probe failure → `mode_active() == false`, diagnostic serial, desktop gates fail. **PR1:** negative fixtures proven **before** BGA positive path trusted (ADR-0002 `signed_elf.py` discipline) |
 | LFB bound negative | Host fixture: `bar_size > computed_size` and `bar_size < computed_size` cases; map uses `min`; invalid sources fail closed |
 | `desktop_preview` / `desktop` | Existing compositor/shell/mouse smokes must pass on **BGA path** under pinned QEMU args |
 | Host screendump | [`scripts/desktop_screendump_check.py`](../../../scripts/desktop_screendump_check.py): **full PPM analysis** at 1024×768 (not a sub-region crop). Validates the delivered frame surface, not a plausible corner |
-| Matrix | Wire `desktop_screendump_check.py` into [`scripts/validation_matrix.py`](../../../scripts/validation_matrix.py) (currently standalone) — PR2 |
+| Matrix | Wire `desktop_screendump_check.py` into [`scripts/validation_matrix.py`](../../../scripts/validation_matrix.py) — done scope 470 |
 | Gate audit | Desktop leaf → **Real (BGA mode-set + pixel path)**; mode-13h fallback → **Partial / dev-only, gate-unsubstantiated** in [`GATE_AUDIT_401_500.md`](../../GATE_AUDIT_401_500.md) |
 
 **Rejected:** gate version bump per draw-primitive commit; claiming Real without BGA smokes; optional allocation smoke; sub-region-only screendump check.
@@ -185,7 +192,7 @@ Implementation notes:
 - Host: BGA register-sequence fixtures; dual-probe-failure negative; LFB bound mismatch negatives (PR1, before positive trust)
 - Kernel: QEMU — BGA smokes + required `memory_layout` video smoke **executed**, not compile-only
 - Tier A: proptest on `Pixel` packing and `map_bytes` min rule (bounded)
-- Matrix: `desktop_screendump_check` full PPM at 1024×768 (PR2)
+- Matrix: `desktop_screendump_check` full PPM at 1024×768 (scope 470)
 
 ---
 
@@ -197,7 +204,7 @@ Build order — separate PRs:
 |----|---------|--------|
 | **PR0 (doc)** | This ADR + `DECISION_LOG` + **`T-desktop-bga-mmio` open** | **Done** |
 | **PR1** | `bga.rs`: probe, mode-set, PCI LFB map (`min` rule), buddy back buffer, **required** `memory_layout` video smoke, dual-probe + LFB bound negatives, gate `2.7.0`, close threat node | **Done** |
-| **PR2** | RGB compositor rewrite + layout rescale; full PPM `desktop_screendump_check` + matrix wiring | Pending |
-| **PR3** | `GATE_AUDIT_401_500` reclassification; `STATUS.md`; `project_health.py` | Pending |
+| **PR2** | RGB compositor rewrite + layout rescale; full PPM `desktop_screendump_check` + matrix wiring | **Done** |
+| **PR3** | `GATE_AUDIT_401_500` reclassification; `STATUS.md`; `project_health.py` | **Done** |
 
 **PR1 bar (same standard as ADR-0002 PR2):** negative fixtures proven to fail before BGA positive path trusted; required `memory_layout` smoke **run in QEMU**, not merely compiled.

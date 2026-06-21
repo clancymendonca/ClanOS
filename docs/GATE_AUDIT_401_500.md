@@ -2,7 +2,7 @@
 
 ```yaml
 status: authoritative
-validation_gate_version: "2.6.0"
+validation_gate_version: "2.7.0"
 roadmap: docs/ROADMAP_401_500.md
 companion: docs/GATE_AUDIT.md
 ```
@@ -20,6 +20,27 @@ Legend matches [`GATE_AUDIT.md`](GATE_AUDIT.md): Real / Partial / Shallow / Hard
 | `network` | Shallow | `network_stack::smoke_external_network()` → loopback `external-probe` | Epoch 475: `has_external_network` | No real NIC TX/RX; flag stays `false` until scope-475 gate passes |
 | `hardware` | Counter + shallow | `HARDWARE_PATH_READY` increment + `build_integrity::boot_verified()` / digest stub | Epoch 500: hardware bring-up | No bare-metal procedure exercised in QEMU gate |
 | `release` / `system_gate` | Composite + shallow | `network_gate` + `hardware_path_smoke` + `release_compat_smoke` | Full `ClanOS-Gate: ok=true` | Chains shallow network/hardware smokes |
+
+## Desktop framebuffer (scope 470, ADR-0004)
+
+| Surface | Class | Gate proof | Notes |
+|---------|-------|------------|-------|
+| BGA 1024×768×32 RGB double-buffer | **Real** | Phase 1: `memory_layout` (`back_frames` + `lfb_write_ok`); Phase 2: `back_buffer_map_ok` before `desktop_preview`; `smoke_double_buffer` requires mapped back buffer + flush; host screendump at full boot | Runtime refresh loop uses buddy back buffer + LFB flush after phase 2 |
+| Mode 13h 320×200 palette | **Partial / dev-only** | Not in validation matrix | Alive fallback when BGA ID probe fails; gate-unsubstantiated per ADR-0004 Q3 |
+
+## Scope honesty — `scheduler_epoch` compositor smoke (ADR-0004)
+
+**Partial-because-of-what:** `governance::smoke_scheduler_epoch_integration()` chains `compositor::smoke_compositor()`, which calls `submit_frame` → `render_desktop_frame()` **before** `map_back_buffer_for_desktop()` runs. At that boot point the back buffer is **not** virtually mapped; `back_buffer_ptr()` falls back to the LFB via the bootloader physical offset, and `flush_back_to_lfb()` is a no-op.
+
+| What this smoke proves | What it does **not** prove |
+|------------------------|----------------------------|
+| Compositor IPC accepts caps and invokes the pixel draw path | Buddy back-buffer virt map (`back_buffer_map_ok`) |
+| BGA mode is active and LFB accepts pixel writes (LFB-direct draw) | Double-buffer flush (back buffer → LFB copy) |
+| `render_desktop_frame()` completes without fault on the compositor call chain | `smoke_double_buffer()` semantics |
+
+**Downstream proof boundary:** double-buffer compositor semantics are substantiated only by **`desktop_preview` / `desktop`** (after `ClanOS-Video: back_buffer_map_ok=true`) and the runtime refresh loop post-gate. Do not infer double-buffer correctness from `ClanOS-Gate: name=scheduler_epoch ok=true` alone.
+
+**PR1 negatives (unchanged by two-phase rework):** host `scripts/gate/test_bga_bounds.py` still exercises `map_bytes = min(computed_size, bar_size)` reject cases and dual-probe fail-closed outcomes against `bga_bounds_lib.py` (mirror of `kernel/src/bga.rs::map_bytes_rule` and `init_display` fallback logic). Virt-map phasing does not alter bound-check or probe-failure code paths.
 
 ## ROADMAP falsifier mapping
 

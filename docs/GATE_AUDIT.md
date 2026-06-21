@@ -59,8 +59,13 @@ CI enforcement: `scripts/gate/gate_honesty_check.py` (parts A: trivial stubs, B:
 | `hardware` | Counter + shallow | Readiness atomic; virtio probe counts |
 | `federation` | Shallow | Token forward + driver chain |
 | `release` | Circular + shallow | `mark_release_scorecard` self-check |
-| `desktop_preview` | Real | Mode 13h compositor frame |
-| `desktop` | Real | Mouse, compositor, shell, font |
+| `desktop_preview` | Real (BGA) | Bochs VBE 1024×768×32; requires `back_buffer_map_ok` before gate; compositor frame + back-buffer flush |
+| `desktop` | Real (BGA) | Mouse, compositor, shell, font on BGA path; `smoke_double_buffer` requires mapped back buffer (`-vga std`) |
+
+**Mode 13h fallback (ADR-0004 Q3):** compiled and may run on non-BGA dev hardware; **Partial / dev-only, gate-unsubstantiated** — permanently outside the pinned `-vga std` matrix.
+
+**Boot phasing (ADR-0004 Q4 amendment):** `memory_layout` proves buddy allocation + LFB write (`lfb_write_ok`); virt map + double-buffer flush proved by `back_buffer_map_ok` immediately before `desktop_preview`. `scheduler_epoch` compositor smoke may use LFB-direct draw only — **Partial** for double-buffer semantics (see `GATE_AUDIT_401_500.md`).
+
 | `compat_runtime` | Real | `demo-hello` userland run |
 | `compat_fd_vm` | Real | FD open/io + anon mmap |
 | `compat_signal` | Real | `signal::smoke_signal_register/delivery` (wired v2.1.0) |
