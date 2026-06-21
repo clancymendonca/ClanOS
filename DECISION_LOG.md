@@ -66,7 +66,7 @@ Top-level architectural decisions resolved at project inception. Scope- and epoc
 
 **Consequences:** `docs/ABI_IPC.md`, `docs/CAP_TRANSFER_PROTOCOL.md`; wire schema versioned in registry.
 
-**Verification:** IPC reply rights bound (tier B); compat-internal bridge retired at M400.
+**Verification:** IPC reply rights bound (tier B); compat-internal bridge retired at functional-OS epoch.
 
 ---
 
@@ -123,6 +123,14 @@ Top-level architectural decisions resolved at project inception. Scope- and epoc
 **Context:** Workspace `cargo check` fails on the host target because `clan-rt` (`userland/`) does not declare `#![no_std]`. The crate is built for `x86_64-unknown-none` in the OS context; `cargo check -p kernel` passes. This is documentation and build-matrix debt, not a kernel soundness issue.
 **Reopen trigger:** `architecture_state.toml` → `has_no_std_enforcement = false` (CI-readable; must flip to `true` only after enforcement lands).
 **Resolution:** `#![no_std]` added to `clan-rt` lib; `scripts/gate/clan_rt.py` in validation matrix; `has_no_std_enforcement = true`.
+
+---
+
+### ADR-0003-loader-signed-exec — Loader `/bin/*` signing policy (scope 460)
+
+**Status:** accepted (2026-06-21) — Q1–Q4 locked; Q5 canonical body pending golden bytes  
+**Canonical doc:** [`docs/architecture/ADR/ADR-0003-loader-signed-exec-manifests.md`](docs/architecture/ADR/ADR-0003-loader-signed-exec-manifests.md)  
+**Summary:** `clan-exec-v1` + optional sig (distinct canonical body vs ADR-0002); epoch-460 loader anchor separate from epoch-450 gate anchor; `trust=system-signed` vs digest-only allowlist with scope-465 sunset enforced in CI.
 
 ---
 
