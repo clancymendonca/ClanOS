@@ -10,7 +10,7 @@
 
 - **Validation gate:** `kernel/src/validation_gate.rs` (`VALIDATION_GATE_VERSION = 2.6.0`)
 - **ADR-0002 signed ELF (epoch 450):** kernel verifier + in-QEMU negative gauntlet (`signed_elf_integration`; 9 cases)
-- **ADR-0003 loader signed exec (epoch 460):** seed migration **8 signed / 8 digest-only remaining** of 16; execution-path verify audit in ADR-0003 § Q4 (all `trust=system-signed` entry points); `/ext2/` uses `vfs::read_bytes` + same SHA256(ELF) digest
+- **ADR-0003 loader signed exec (epoch 460):** seed migration **16 signed / 0 digest-only remaining** — allowlist empty; path audit ADR Q4 + `test_loader_signed_exec_path_audit.py`
 - **Gate audit:** [`docs/GATE_AUDIT.md`](docs/GATE_AUDIT.md) — per-gate substance classification
 - **Gap audit:** [`docs/GAP_AUDIT.md`](docs/GAP_AUDIT.md) — `addressed` ≠ Implemented (204 overclaimed baseline)
 - **Desktop:** VGA 320×200, double-buffered compositor, PS/2 mouse, window manager, taskbar shell
