@@ -98,18 +98,16 @@ The project also serves as a **long-term exploration of operating system enginee
 
 # Validation
 
-Runtime boot validation uses unified **boot** and **system** gates — not per-scope `numbered boot serial` serial lines.
+Runtime validation uses a unified **validation gate** — not per-scope numbered boot serial lines.
 
 | Gate | Module | Final serial line |
 |------|--------|-------------------|
-| Boot | `kernel/src/boot_gate.rs` | `ClanOS-BootGate: ok=true` |
-| System | `kernel/src/system_gate.rs` | `ClanOS-SystemGate: ok=true` |
+| Unified | `kernel/src/validation_gate.rs` | `ClanOS-Gate: ok=true` |
 
 Full reference: [`docs/VALIDATION_GATES.md`](docs/VALIDATION_GATES.md)
 
 ```bash
-python scripts/gate/boot.py --gate boot --timeout 360
-python scripts/gate/system.py --gate system --timeout 360
+python scripts/gate/run.py --gate all --timeout 360
 ```
 
 ---
@@ -445,7 +443,7 @@ Status: ✅ Complete (validated 2026-05-22)
 ### Scope 31 — Scheduler CR3 Binding
 
 * CR3 binding on process records and preemptive context switch
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-31-checklist.md`
 
@@ -456,7 +454,7 @@ Scheduler deep dive: `docs/SCHEDULER.md`
 ### Scope 32 — User Trap Frame Persistence
 
 * saved `UserHwFrame` across scheduler yield
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-32-checklist.md`
 
@@ -465,7 +463,7 @@ Status: ✅ Complete (validated 2026-05-22)
 ### Scope 33 — Concurrent Allowlisted ELFs
 
 * `hello` and `exit42` under distinct hardware page tables
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-33-checklist.md`
 
@@ -474,7 +472,7 @@ Status: ✅ Complete (validated 2026-05-22)
 ### Scope 34 — Exit and Wait Syscalls
 
 * `ExitProcess` / `WaitProcess` syscalls
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-34-checklist.md`
 
@@ -483,7 +481,7 @@ Status: ✅ Complete (validated 2026-05-22)
 ### Scope 35 — Hardware Syscall Dispatch Table
 
 * allowlisted hardware syscall IDs
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-35-checklist.md`
 
@@ -494,7 +492,7 @@ User syscall deep dive: `docs/USER_SYSCALLS.md`
 ### Scope 36 — Storage Syscalls With Copyin
 
 * storage probe syscalls with validated user copies
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-36-checklist.md`
 
@@ -503,7 +501,7 @@ Status: ✅ Complete (validated 2026-05-22)
 ### Scope 37 — Manifest-Discovered ELF Load
 
 * discover `elf64-image` manifests; gated execution including `tickprobe`
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-37-checklist.md`
 
@@ -512,7 +510,7 @@ Status: ✅ Complete (validated 2026-05-22)
 ### Scope 38 — Demand-Zero Page Growth
 
 * user `#PF` handler and demand-zero mapping
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-38-checklist.md`
 
@@ -523,7 +521,7 @@ Demand paging deep dive: `docs/DEMAND_PAGING.md`
 ### Scope 39 — Dynamic Linking Groundwork
 
 * `DT_NEEDED` detection for CLAN seed ELFs
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-39-checklist.md`
 
@@ -532,7 +530,7 @@ Status: ✅ Complete (validated 2026-05-22)
 ### Scope 40 — Integration Milestone
 
 * end-to-end validation of scopes 31–39
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-40-checklist.md`
 
@@ -541,7 +539,7 @@ Status: ✅ Complete (validated 2026-05-22)
 ### Scope 41 — Shared Library Mapping
 
 * map `libc_stub` dependency at `0x700000` when `DT_NEEDED` is present
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-41-checklist.md`
 
@@ -552,7 +550,7 @@ Shared library deep dive: `docs/SHARED_LIBRARIES.md`
 ### Scope 42 — Dynamic Import Relocations
 
 * `R_X86_64_GLOB_DAT` imports against mapped shared library
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-42-checklist.md`
 
@@ -561,7 +559,7 @@ Status: ✅ Complete (validated 2026-05-22)
 ### Scope 43 — Trust-Gated ELF Execution
 
 * run `trust=system` manifests without name allowlist (`systrust` fixture)
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-43-checklist.md`
 
@@ -570,7 +568,7 @@ Status: ✅ Complete (validated 2026-05-22)
 ### Scope 44 — User Path Copyin
 
 * `ReadPathProbe` syscall with validated user paths
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-44-checklist.md`
 
@@ -579,7 +577,7 @@ Status: ✅ Complete (validated 2026-05-22)
 ### Scope 45 — File Descriptor Table
 
 * `OpenFile` / `CloseFile` syscalls with bring-up FD table
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-45-checklist.md`
 
@@ -590,7 +588,7 @@ File I/O deep dive: `docs/FILE_DESCRIPTORS.md`
 ### Scope 46 — FD Read/Write
 
 * `ReadFd` / `WriteFd` with validated user buffers
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-46-checklist.md`
 
@@ -599,7 +597,7 @@ Status: ✅ Complete (validated 2026-05-22)
 ### Scope 47 — File-Backed Demand Paging
 
 * demand-map file pages from storage on user `#PF`
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-47-checklist.md`
 
@@ -608,7 +606,7 @@ Status: ✅ Complete (validated 2026-05-22)
 ### Scope 48 — W^X Mapping Policy
 
 * reject writable+executable user page flags
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-48-checklist.md`
 
@@ -617,7 +615,7 @@ Status: ✅ Complete (validated 2026-05-22)
 ### Scope 49 — SMP Groundwork
 
 * CPU count detection, AP accounting, TLB flush hooks
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-49-checklist.md`
 
@@ -628,7 +626,7 @@ SMP deep dive: `docs/SMP.md`
 ### Scope 50 — Integration Milestone (41–49)
 
 * end-to-end validation of scopes 41–49
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-50-checklist.md`
 
@@ -637,349 +635,349 @@ Status: ✅ Complete (validated 2026-05-22)
 ### Scope 51 — Per-Process FD Tables
 
 * FD tables stored on `Process`; `current_process_id` from CR3
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-51-checklist.md`
 
 ### Scope 52 — Dup FD and CWD-Relative Open
 
 * `DupFd` syscall; per-process `cwd`; relative `OpenFile`
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-52-checklist.md`
 
 ### Scope 53 — mprotect and Guard Pages
 
 * `Mprotect` syscall within W^X; stack guard probe
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-53-checklist.md`
 
 ### Scope 54 — mmap Bring-Up
 
 * anonymous RW at `0x600000`; read-only file mmap
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-54-checklist.md`
 
 ### Scope 55 — User Write Path
 
 * `WritePathProbe` syscall; storage round-trip smoke
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-55-checklist.md`
 
 ### Scope 56 — Multiple Shared Libraries
 
 * `/lib/*.elf` search; `libc_stub` + `libaux_stub` mapping
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-56-checklist.md`
 
 ### Scope 57 — PLT JUMP_SLOT Relocations
 
-* `R_X86_64_JUMP_SLOT` binding; covered by boot gate `dynamic_runtime`
+* `R_X86_64_JUMP_SLOT` binding; covered by validation gate `dynamic_runtime`
 
 Checklist: `docs/scope-57-checklist.md`
 
 ### Scope 58 — Manifest Digest Trust
 
 * `digest=sha256:` manifest field; SHA-256 verification
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-58-checklist.md`
 
 ### Scope 59 — Per-CPU Runqueue Skeleton
 
 * BSP runqueue accounting on preempt; APs remain parked
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-59-checklist.md`
 
 ### Scope 60 — Integration Milestone (51–59)
 
 * cumulative validation of scopes 51–59
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-60-checklist.md`
 
 ### Scope 61 — chdir and Path Normalization
 
 * `Chdir` syscall; collapse `..` in resolved paths
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-61-checklist.md`
 
 ### Scope 62 — munmap
 
 * `Munmap` syscall; TLB shootdown on unmap
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-62-checklist.md`
 
 ### Scope 63 — Per-Process VMA Registry
 
 * region list on `Process`; mmap overlap rejection
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-63-checklist.md`
 
 ### Scope 64 — Fork-Lite with FD Inheritance
 
 * `ForkLite` syscall; shallow-copy FD table and cwd
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-64-checklist.md`
 
 ### Scope 65 — Ring 3 HW Syscall Probes
 
 * hardware `syscall` path for `WritePathProbe` / `Mprotect`
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-65-checklist.md`
 
 ### Scope 66 — Minimal fcntl Stub
 
 * `F_GETFD` and `F_DUPFD` via `Fcntl` syscall
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-66-checklist.md`
 
 ### Scope 67 — Lazy PLT Resolution
 
 * defer `R_X86_64_JUMP_SLOT` until `bind_lazy_plt`
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-67-checklist.md`
 
 ### Scope 68 — Cross-CPU TLB Shootdown Accounting
 
 * per-CPU shootdown counters on unmap/map flush
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-68-checklist.md`
 
 ### Scope 69 — AP Idle Trampoline Accounting
 
 * parked AP idle tick counter under QEMU `-smp 2`
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-69-checklist.md`
 
 ### Scope 70 — Integration Milestone (61–69)
 
 * cumulative validation of scopes 61–69
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-70-checklist.md`
 
 ### Scope 71 — HW `syscall` / `sysret` Return Path
 
 * hardware `syscall` stub with `sysret` back to user
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-71-checklist.md`
 
 ### Scope 72 — Ring 3 `chdir` from User
 
 * `Chdir` syscall from Ring 3 HW path with user path pointer
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-72-checklist.md`
 
 ### Scope 73 — `munmap` with Length (Partial Unmap)
 
 * `Munmap` `arg1` length; VMA truncate; TLB shootdown on unmap
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-73-checklist.md`
 
 ### Scope 74 — `WaitLite` on Fork-Lite Child
 
 * `WaitLite = 78` waits for fork-lite child exit code
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-74-checklist.md`
 
 ### Scope 75 — `syscallprobe` User ELF Manifest
 
 * `/bin/syscallprobe` manifest; HW syscall probes
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-75-checklist.md`
 
 ### Scope 76 — `fcntl` `F_SETFD` / Close-on-Exec
 
 * per-FD flags with `FD_CLOEXEC`
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-76-checklist.md`
 
 ### Scope 77 — Ring 3 Lazy PLT First Call
 
 * lazy PLT bind under Ring 3 smoke flag
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-77-checklist.md`
 
 ### Scope 78 — IPI TLB Shootdown Stub
 
 * logical IPI counters on `request_tlb_shootdown`
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-78-checklist.md`
 
 ### Scope 79 — AP Idle Trampoline Entry
 
 * AP `hlt` trampoline entry accounting
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-79-checklist.md`
 
 ### Scope 80 — Integration Milestone (71–79)
 
 * cumulative validation of scopes 71–79
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-80-checklist.md`
 
 ### Scope 81 — Real HW `syscall` / `sysret`
 
 * `HW_SYSRET_REAL` counter; HW probe via `hw-sysret-probe` feature on QEMU boot
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-81-checklist.md`
 
 ### Scope 82 — `getcwd` Syscall
 
 * `GetCwd = 79` copies process cwd to user buffer
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-82-checklist.md`
 
 ### Scope 83 — `chdirprobe` User ELF
 
 * `/bin/chdirprobe` manifest; `Chdir` + `GetCwd` smoke
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-83-checklist.md`
 
 ### Scope 84 — VMA In-Region Split
 
 * middle `munmap` splits VMA registry (`VMA_SPLITS`)
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-84-checklist.md`
 
 ### Scope 85 — Fork-Lite CR3 Duplicate
 
 * shallow `fork_duplicate_cr3` for fork-lite child
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-85-checklist.md`
 
 ### Scope 86 — `ExecLite` + Close-on-Exec
 
 * `ExecLite = 81` replaces image; sweeps `FD_CLOEXEC` fds
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-86-checklist.md`
 
 ### Scope 87 — `PipeLite` Anonymous Pipe
 
 * `Pipe = 80`; ring buffer; read/write on pipe fds
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-87-checklist.md`
 
 ### Scope 88 — Ring 3 PLT Fault Lazy Bind
 
 * `#PF` at PLT slot triggers lazy bind under smoke flag
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-88-checklist.md`
 
 ### Scope 89 — LAPIC IPI Send Stub
 
 * `LAPIC_IPI_SEND` on TLB shootdown request
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-89-checklist.md`
 
 ### Scope 90 — Integration Milestone (81–89)
 
 * cumulative validation of scopes 81–89 counters (no nested re-run)
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-90-checklist.md`
 
 ### Scope 91 — Fork-Lite COW Break
 
 * anon page COW break after `fork_lite`; parent/child write isolation smoke
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-91-checklist.md`
 
 ### Scope 92 — `PollLite` Syscall
 
 * `Poll = 82` single-fd readiness on pipe fds
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-92-checklist.md`
 
 ### Scope 93 — Gap-Aware `mmap` Hint
 
 * `next_anon_hint` fills lowest gap before high-water bump
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-93-checklist.md`
 
 ### Scope 94 — `ExecLite` Argv from User
 
 * bounded argv copy from user pointer vector
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-94-checklist.md`
 
 ### Scope 95 — `pipeprobe` Ring-3 HW ELF
 
 * `/bin/pipeprobe` seed; HW pipe + `Poll` path under `hw-sysret-probe`
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-95-checklist.md`
 
 ### Scope 96 — VMA Adjacent Coalesce
 
 * merge adjacent anon VMAs on munmap boundary
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-96-checklist.md`
 
 ### Scope 97 — Work-Stealing Stub
 
 * BSP steals from CPU1 runqueue counter when empty
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-97-checklist.md`
 
 ### Scope 98 — AP Runnable Enqueue Stub
 
 * synthetic runnable enqueue on CPU1 without AP scheduler loop
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-98-checklist.md`
 
 ### Scope 99 — LAPIC ICR Write Stub
 
 * discard-backed ICR-low write counter (no real MMIO in QEMU tests)
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-99-checklist.md`
 
 ### Scope 100 — Integration Milestone (91–99)
 
 * cumulative validation of scopes 91–99 counters (no nested re-run)
-* Covered by boot/system gate (see VALIDATION_GATES.md)
+* Covered by validation gate (see VALIDATION_GATES.md)
 
 Checklist: `docs/scope-100-checklist.md`
 
@@ -995,7 +993,7 @@ Validation:
 
 ```
 python scripts/semantic_lint.py
-python scripts/gate/boot.py --gate constitutional --timeout 300
+python scripts/gate/run.py --gate constitutional --timeout 300
 ```
 
 Key guides:
@@ -1008,7 +1006,7 @@ Key guides:
 
 Kernel object table, native cap lifecycle (IDs 256+ kernel-only), storage grants, compat path broker, ambient/namespace policy, and cap+compat integration milestone.
 
-Status: complete (validated — `ClanOS-BootGate: name=capabilities ok=true`)
+Status: complete (validated — `ClanOS-Gate: name=capabilities ok=true`)
 
 Checklist index: `docs/scope-111-checklist.md` … `docs/scope-120-checklist.md`
 
@@ -1017,30 +1015,30 @@ Validation:
 ```
 cargo check -p kernel
 cargo test -p kernel --features preemption --test preemption_integration
-python scripts/gate/boot.py --gate capabilities --timeout 300
+python scripts/gate/run.py --gate capabilities --timeout 300
 ```
 
 ### Scopes 121–150 — Native platform
 
 Service loaders, brokers, endpoints, service-centric scheduling — see [ROADMAP_POST100.md](docs/ROADMAP_POST100.md).
 
-Status: complete (validated — `ClanOS-BootGate: name=boundary ok=true`)
+Status: complete (validated — `ClanOS-Gate: name=boundary ok=true`)
 
 ### Scopes 151–500 — Post-150 roadmap
 
-Epochs 7–20 through milestone **500** (fully operational OS). See:
+Epochs 7–20 through **fully operational OS**. See:
 
-- [ROADMAP_151_350.md](docs/ROADMAP_151_350.md) — milestones 200–350
-- [ROADMAP_351_400.md](docs/ROADMAP_351_400.md) — desktop + userland + network (M400)
-- [ROADMAP_401_500.md](docs/ROADMAP_401_500.md) — production SMP, signed ELF, external network (M500)
+- [ROADMAP_151_350.md](docs/ROADMAP_151_350.md) — epochs 7–14 (release foundation)
+- [ROADMAP_351_400.md](docs/ROADMAP_351_400.md) — desktop + userland + network
+- [ROADMAP_401_500.md](docs/ROADMAP_401_500.md) — production SMP, signed ELF, external network
 
-Status: complete (`SYSTEM_GATE_VERSION = 1.0.0`, unified `system_gate.rs`)
+Status: complete (`VALIDATION_GATE_VERSION = 2.1.0`, unified `validation_gate.rs`)
 
-Validation (system gate):
+Validation:
 
 ```
-python scripts/gate/system.py --gate system --timeout 360
-python scripts/gate/system_host.py
+python scripts/gate/run.py --gate all --timeout 360
+python scripts/gate/host.py
 python scripts/gate/clan_rt.py
 .\scripts\run_desktop.ps1
 ```
@@ -1057,12 +1055,12 @@ Full index: [`docs/INDEX.md`](docs/INDEX.md) · Gate reference: [`docs/VALIDATIO
 Clan OS
 ├── Cargo.toml                 workspace manifest
 ├── docs/                      validation gates, guides, historical checklists (INDEX.md)
-├── scripts/                   boot/system gate checks + validation_matrix.py
+├── scripts/                   validation gate checks + validation_matrix.py
 ├── kernel/
 │   ├── Cargo.toml             kernel crate manifest
 │   ├── x86_64-unknown-none.json
 │   ├── src/
-│   │   ├── main.rs            kernel entry + boot gate smokes
+│   │   ├── main.rs            kernel entry + validation gate smokes
 │   │   ├── lib.rs             modules, init (GDT, IDT, SMP)
 │   │   ├── storage.rs         simple persistent filesystem
 │   │   ├── security.rs        identity + permission policy
@@ -1172,11 +1170,10 @@ python scripts/preemption/soak.py --duration 120 --min-samples 3 --boot-wait 90
 python scripts/preemption/latency.py --duration 120 --min-samples 5 --max-latency-ms 100 --boot-wait 90
 ```
 
-Boot and system gates:
+Validation gate:
 
 ```
-python scripts/gate/boot.py --gate boot --timeout 180
-python scripts/gate/system.py --gate system --timeout 180
+python scripts/gate/run.py --gate all --timeout 360
 ```
 
 Full validation matrix:
@@ -1188,10 +1185,10 @@ python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --b
 Resume from a specific check:
 
 ```
-python scripts/validation_matrix.py --from-check boot-gate-check --smoke-timeout 180
+python scripts/validation_matrix.py --from-check gate-check --smoke-timeout 180
 ```
 
-See [`docs/VALIDATION_GATES.md`](docs/VALIDATION_GATES.md) for boot/system subsystem `--gate` names and scope-index routing.
+See [`docs/VALIDATION_GATES.md`](docs/VALIDATION_GATES.md) for subsystem `--gate` names and scope-index routing.
 
 ---
 

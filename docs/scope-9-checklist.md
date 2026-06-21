@@ -31,19 +31,19 @@
 - [x] Shell commands: `programs`, `bin list`, `bin info <program>`
 - [x] Program count, launch count, and failed launch count syscalls
 - [x] `fsinfo` reports program count
-- [x] Covered by boot gate `loader_security` (`ClanOS-BootGate: name=loader_security ok=true`)
+- [x] Covered by validation gate `loader_security` (`ClanOS-Gate: name=loader_security ok=true`)
 
 ## 5. Validation
 
-- [x] `python scripts/gate/boot.py --gate loader_security --timeout 180` for QEMU-backed validation
-- [x] `scripts/validation_matrix.py` includes `boot-gate-check`
+- [x] `python scripts/gate/run.py --gate loader_security --timeout 180` for QEMU-backed validation
+- [x] `scripts/validation_matrix.py` includes `gate-check`
 - [x] Integration tests cover parser, discovery, run path, malformed files, and loader syscalls
 
 ## Validation
 
 ```bash
 cargo check -p kernel
-python scripts/gate/boot.py --gate loader_security --timeout 180
+python scripts/gate/run.py --gate loader_security --timeout 180
 python scripts/validation_matrix.py --smoke-timeout 180
 ```
 

@@ -1,4 +1,4 @@
-# Never-stabilize list graduated at M350 (epoch 14) and M500 (epoch 20).
+# Never-stabilize list graduated at release 1.0 (epoch 14) and fully operational OS (epoch 20).
 
 [graduation]
 milestone = 350

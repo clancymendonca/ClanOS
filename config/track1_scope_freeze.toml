@@ -21,7 +21,7 @@ resolution_required_before_gate = true
 
 [exclusions]
 workspace_restructure = "deferred — no servers/ extraction during this epoch"
-clan_rt_no_std = "deferred — tracked in DECISION_LOG clan-rt-001; architecture_state.toml has_no_std_enforcement=false"
+clan_rt_no_std = "resolved (clan-rt-001) — #![no_std] in userland/src/lib.rs; scripts/gate/clan_rt.py; architecture_state.toml has_no_std_enforcement=true"
 new_architecture_docs = "any doc not in [[docs]] list requires charter approval to add"
 subdirectory_policy = "track1_creates_specs_process_proofs — specs→docs/specs/, process→docs/process/, proofs→docs/proofs/, architecture→docs/architecture/; defers second migration"
 threat_nodes_physical_move = "deferred — docs/THREAT_NODES.toml remains canonical at flat path; config/README.md mapping only"

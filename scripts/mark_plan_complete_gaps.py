@@ -55,14 +55,14 @@ IMPL: dict[int, str] = {
 }
 
 EPOCH_SMOKE: dict[int, str] = {
-    121: "scripts/gate/boot.py --gate service_loader",
-    130: "scripts/gate/boot.py --gate platform_brokers",
-    134: "scripts/gate/boot.py --gate build_endpoints",
-    140: "scripts/gate/boot.py --gate build_endpoints",
-    201: "scripts/gate/boot.py --gate virtio_blk",
-    404: "scripts/gate/boot.py --gate network_compat",
-    149: "scripts/gate/boot.py --gate scheduler_epoch",
-    150: "scripts/gate/boot.py --gate boundary",
+    121: "scripts/gate/run.py --gate service_loader",
+    130: "scripts/gate/run.py --gate platform_brokers",
+    134: "scripts/gate/run.py --gate build_endpoints",
+    140: "scripts/gate/run.py --gate build_endpoints",
+    201: "scripts/gate/run.py --gate virtio_blk",
+    404: "scripts/gate/run.py --gate network_compat",
+    149: "scripts/gate/run.py --gate scheduler_epoch",
+    150: "scripts/gate/run.py --gate boundary",
 }
 
 

@@ -42,9 +42,9 @@ No duplicate cross-layer laws added without derivation note. Subsystem-local rul
 ## Validation
 
 - [x] `python scripts/semantic_lint.py`
-- [x] `python scripts/gate/boot.py --gate constitutional --timeout 180`
+- [x] `python scripts/gate/run.py --gate constitutional --timeout 180`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration` (smoke_constitutional_works)
-- [x] Covered by boot gate `constitutional` (`ClanOS-BootGate: name=constitutional ok=true`)
+- [x] Covered by validation gate `constitutional` (`ClanOS-Gate: name=constitutional ok=true`)
 
 
 ## Deferred

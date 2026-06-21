@@ -5,12 +5,12 @@
 ## Scope
 
 - [x] `try_ring3_plt_fault` from demand paging; `RING3_PLT_FAULT` / `RING3_PLT_BOUND`.
-- [x] Covered by boot gate `path_exec` (`ClanOS-BootGate: name=path_exec ok=true`)
+- [x] Covered by validation gate `path_exec` (`ClanOS-Gate: name=path_exec ok=true`)
 
 ## Validation
 
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/gate/boot.py --gate path_exec --timeout 180`
+- [x] `python scripts/gate/run.py --gate path_exec --timeout 180`
 
 ## Deferred
 

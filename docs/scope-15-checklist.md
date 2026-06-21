@@ -10,13 +10,13 @@
 - [x] Account copy and zero-fill bytes per backed page.
 - [x] Add loader counters and blocked process metadata for `FrameBacked` records.
 - [x] Expose frame-backed status through shell and syscall surfaces.
-- [x] Covered by boot gate `memory_layout` (`ClanOS-BootGate: name=memory_layout ok=true`)
+- [x] Covered by validation gate `memory_layout` (`ClanOS-Gate: name=memory_layout ok=true`)
 
 ## Validation
 
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/gate/boot.py --gate memory_layout --timeout 180`
+- [x] `python scripts/gate/run.py --gate memory_layout --timeout 180`
 
 ## Deferred
 

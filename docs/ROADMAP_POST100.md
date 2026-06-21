@@ -35,9 +35,9 @@ Index: [INDEX.md](INDEX.md) · Vision: [NATIVE_MODEL.md](NATIVE_MODEL.md)
 | 109 | Semantic index + lint + jurisdiction + observability outline | governance | governance | [SEMANTIC_SPECS.md](SEMANTIC_SPECS.md), [SEMANTIC_LINT.md](SEMANTIC_LINT.md), [SEMANTIC_JURISDICTION.md](SEMANTIC_JURISDICTION.md), [SEMANTIC_OBSERVABILITY.md](SEMANTIC_OBSERVABILITY.md), [ABI_RUNTIME.md](ABI_RUNTIME.md), [ABI_STABILITY.md](ABI_STABILITY.md) |
 | 110 | Constitutional sign-off | governance | governance | G1–G5; immutable identity; minimization audit; [NATIVE_DEVELOPER_EXPERIENCE.md](NATIVE_DEVELOPER_EXPERIENCE.md) outline |
 
-Integration milestone: **110**.
+Integration scope checkpoint: **110**.
 
-**Status (documentation + validation):** scopes 101–110 complete — `semantic_lint.py`, `python scripts/gate/boot.py --gate constitutional --timeout 180`, `ClanOS-BootGate: name=constitutional ok=true` boot smoke.
+**Status (documentation + validation):** scopes 101–110 complete — `semantic_lint.py`, `python scripts/gate/run.py --gate constitutional --timeout 180`, `ClanOS-Gate: name=constitutional ok=true`.
 
 ---
 
@@ -56,9 +56,9 @@ Integration milestone: **110**.
 | 119 | Compat bridge unchanged | compat | compat | ELF + FD + path |
 | 120 | Integration | kernel | governance | Cap + compat coexistence |
 
-Integration milestone: **120**.
+Integration scope checkpoint: **120**.
 
-**Status (implementation + validation):** scopes 111–120 complete — `kernel_object.rs`, `native_syscall.rs` (256–258 kernel-only), `path_broker.rs`, `storage_broker.rs`, `python scripts/gate/boot.py --gate capabilities --timeout 180`, `ClanOS-BootGate: name=capabilities ok=true` boot smoke. Ring-3 native syscall allowlist deferred to scope 128 (G4).
+**Status (implementation + validation):** scopes 111–120 complete — `kernel_object.rs`, `native_syscall.rs` (256–258 kernel-only), `path_broker.rs`, `storage_broker.rs`, `python scripts/gate/run.py --gate capabilities --timeout 180`, `ClanOS-Gate: name=capabilities ok=true`. Ring-3 native syscall allowlist deferred to scope 128 (G4).
 
 ---
 
@@ -75,9 +75,9 @@ Integration milestone: **120**.
 | 127 | Service crash isolation | platform | native | **complete** — tier-2 `service_isolation.rs` |
 | 128 | Mandatory `clan-native-v1` manifest | platform | native | **complete** — G4 `native_manifest.rs` |
 | 129 | Scoped grants in manifest | platform | native | **complete** — scoped grant validation |
-| 130 | Integration | platform | governance | **complete** — `ClanOS-BootGate: name=platform_brokers ok=true` smoke |
+| 130 | Integration | platform | governance | **complete** — `ClanOS-Gate: name=platform_brokers ok=true` |
 
-Integration milestone: **130**.
+Integration scope checkpoint: **130**.
 
 ---
 
@@ -96,7 +96,7 @@ Integration milestone: **130**.
 | 139 | Compat PipeLite preserved | compat | compat |
 | 140 | Integration | kernel | governance |
 
-Integration milestone: **140**.
+Integration scope checkpoint: **140**.
 
 ---
 
@@ -115,19 +115,19 @@ Integration milestone: **140**.
 | 149 | Compression/THP policy doc | kernel | governance | deferred impl |
 | 150 | Four-layer boundary review | governance | governance |
 
-Integration milestone: **150**.
+Integration scope checkpoint: **150**.
 
 ---
 
 ## Beyond 150
 
-**Superseded:** scopes 151–350 are defined in [ROADMAP_151_350.md](ROADMAP_151_350.md) (epochs 7–14, milestones 200/250/300/350).
+**Superseded:** scopes 151–350 are defined in [ROADMAP_151_350.md](ROADMAP_151_350.md) (epochs 7–14, scope indices 200/250/300/350).
 
 ---
 
 ## Scope 100 compat backlog (not native drivers)
 
-TCP/UDP sockets; multi-fd select; full execve envp; file-backed COW; ACPI AP; IFUNC — track under **compat** milestones, not native identity.
+TCP/UDP sockets; multi-fd select; full execve envp; file-backed COW; ACPI AP; IFUNC — track under **compat** depth targets, not native identity.
 
 ---
 

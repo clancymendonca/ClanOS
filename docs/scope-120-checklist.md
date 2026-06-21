@@ -22,8 +22,8 @@ implementation (deliverables landed)
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration` (smoke_cap_compat_works)
 - [x] `python scripts/semantic_lint.py`
-- [x] `python scripts/gate/boot.py --gate capabilities --timeout 180`
-- [x] Covered by boot gate `capabilities` (`ClanOS-BootGate: name=capabilities ok=true`)
+- [x] `python scripts/gate/run.py --gate capabilities --timeout 180`
+- [x] Covered by validation gate `capabilities` (`ClanOS-Gate: name=capabilities ok=true`)
 
 
 ## Deferred

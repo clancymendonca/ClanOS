@@ -41,9 +41,9 @@ Hardware syscall dispatch passes `arg1`/`arg2` from `rsi`/`rdx` for these calls.
 ## Validation
 
 ```bash
-python scripts/gate/boot.py --gate dynamic_runtime --timeout 180
-python scripts/gate/boot.py --gate dynamic_runtime --timeout 180
-python scripts/gate/boot.py --gate dynamic_runtime --timeout 180
+python scripts/gate/run.py --gate dynamic_runtime --timeout 180
+python scripts/gate/run.py --gate dynamic_runtime --timeout 180
+python scripts/gate/run.py --gate dynamic_runtime --timeout 180
 ```
 
 ## Deferred

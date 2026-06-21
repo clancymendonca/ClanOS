@@ -13,14 +13,14 @@ implemented
 
 ## Scope
 
-- [x] Deliverable: system gate `integrity` (`ClanOS-Gate: name=integrity ok=true`)
+- [x] Deliverable: validation gate `integrity` (`ClanOS-Gate: name=integrity ok=true`)
 - [x] Consistent with [AXIOMS.md](AXIOMS.md)
 - [x] Listed in [ROADMAP_151_350.md](ROADMAP_151_350.md)
 
 ## Validation
 
 - [x] `cargo check -p kernel`
-- [x] `python scripts/gate/system.py --gate integrity`
+- [x] `python scripts/gate/run.py --gate integrity`
 
 ## Deferred
 

@@ -6,13 +6,13 @@
 
 - [x] Switch between distinct user CR3 values and restore kernel CR3.
 - [x] Verify distinct translations after switches.
-- [x] Covered by boot gate `hw_paging` (`ClanOS-BootGate: name=hw_paging ok=true`)
+- [x] Covered by validation gate `hw_paging` (`ClanOS-Gate: name=hw_paging ok=true`)
 
 ## Validation
 
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/gate/boot.py --gate hw_paging --timeout 180`
+- [x] `python scripts/gate/run.py --gate hw_paging --timeout 180`
 
 ## Deferred
 

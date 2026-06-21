@@ -12,13 +12,13 @@
 - [x] Add loader map path and counters for mapped images, rejected mappings, mapped pages, copied bytes, and zero-filled bytes.
 - [x] Attach mapped-stub metadata to blocked process records.
 - [x] Expose mapping summaries through shell commands and syscalls.
-- [x] Covered by boot gate `loader_security` (`ClanOS-BootGate: name=loader_security ok=true`)
+- [x] Covered by validation gate `loader_security` (`ClanOS-Gate: name=loader_security ok=true`)
 
 ## Validation
 
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/gate/boot.py --gate loader_security --timeout 180`
+- [x] `python scripts/gate/run.py --gate loader_security --timeout 180`
 
 ## Deferred
 

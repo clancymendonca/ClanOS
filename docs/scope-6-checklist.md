@@ -31,7 +31,7 @@
 
 ## 5. Stabilization & QA
 
-- [x] `python scripts/gate/boot.py --gate shell_storage --timeout 180` for quick validation
+- [x] `python scripts/gate/run.py --gate shell_storage --timeout 180` for quick validation
 - [x] Build-level validation via `cargo check -p kernel`
 - [x] Existing Scope 5 checks retained for latency/fairness coverage
 - [x] One-command validation matrix (`scripts/validation_matrix.py`) with PASS/FAIL output and thresholds
@@ -40,6 +40,6 @@
 
 ```bash
 cargo check -p kernel
-python scripts/gate/boot.py --gate shell_storage --timeout 180
+python scripts/gate/run.py --gate shell_storage --timeout 180
 python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --boot-wait 90 --smoke-timeout 180
 ```

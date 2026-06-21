@@ -29,7 +29,7 @@ Scope 1 roadmap goals:
 
 ```bash
 cargo check -p kernel
-python scripts/gate/boot.py --gate boot --timeout 360
+python scripts/gate/run.py --gate boot --timeout 360
 python scripts/validation_matrix.py --smoke-timeout 180
 ```
 

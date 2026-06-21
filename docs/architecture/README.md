@@ -7,7 +7,7 @@ epoch: 14
 authored_by: architecture
 ```
 
-Canonical architecture docs live here per the Clan OS repository structure spec. During the M400 era, many authoritative specs remain at flat `docs/*.md` paths; this directory is the migration target. Cross-references in new docs should prefer paths under `docs/architecture/`.
+Canonical architecture docs live here per the Clan OS repository structure spec. During Track 1 doc migration, many authoritative specs remain at flat `docs/*.md` paths; this directory is the migration target. Cross-references in new docs should prefer paths under `docs/architecture/`.
 
 ## Authoritative in this directory
 
@@ -26,7 +26,7 @@ Canonical architecture docs live here per the Clan OS repository structure spec.
 | IPC_MODEL.md | [../ABI_IPC.md](../ABI_IPC.md), [../CAP_TRANSFER_PROTOCOL.md](../CAP_TRANSFER_PROTOCOL.md) |
 | FILESYSTEM_MODEL.md | [../STORAGE.md](../STORAGE.md) |
 | NETWORK_MODEL.md | [../EPOCH4_NETWORK_PLAN.md](../EPOCH4_NETWORK_PLAN.md) |
-| AI_SUBSYSTEM.md | Deferred post-M400 |
+| AI_SUBSYSTEM.md | Deferred post-functional-OS epoch |
 | THREAT_MODEL.md | [../THREAT_MODEL.md](../THREAT_MODEL.md) |
 | FAULT_ESCALATION.md | [../FAULT_ESCALATION.md](../FAULT_ESCALATION.md) |
 

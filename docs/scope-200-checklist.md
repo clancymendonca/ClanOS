@@ -1,6 +1,6 @@
 > **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy numbered boot serial lines are retired.
 
-# Scope 200 Checklist: Milestone 200 Gate
+# Scope 200 Checklist: Scheduling Integration Gate
 
 ## Layer
 governance
@@ -28,4 +28,4 @@ implemented
 
 ## Completed
 
-- Scope 200: Milestone 200 integration gate
+- Scope 200: scheduling integration gate (`ClanOS-Gate: name=scheduling ok=true`)

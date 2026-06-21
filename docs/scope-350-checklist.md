@@ -1,6 +1,6 @@
 > **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy numbered boot serial lines are retired.
 
-# Scope 350 Checklist: Milestone 350 Release 1.0
+# Scope 350 Checklist: Release 1.0 Gate
 
 ## Layer
 governance
@@ -28,4 +28,4 @@ implemented
 
 ## Completed
 
-- Scope 350: Milestone 350 release 1.0 gate
+- Scope 350: release 1.0 gate (`ClanOS-Gate: name=release ok=true`)

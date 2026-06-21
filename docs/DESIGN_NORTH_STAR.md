@@ -13,6 +13,8 @@ Falsifiable targets for scopes 121–150. See [`CHARTER.md`](../CHARTER.md), [`T
 
 ## Falsifiable scorecard
 
+> **Historical row labels:** Scope-index checkpoints (200–350) map to subsystem gates below.
+
 | Row | Claim | Falsifier |
 |-----|-------|-----------|
 | Capability security | No ambient authority in native path | Compat-internal counter > 0 at scope 134 gate |
@@ -21,10 +23,10 @@ Falsifiable targets for scopes 121–150. See [`CHARTER.md`](../CHARTER.md), [`T
 | Reproducible build | Dual-build hash match | BUILD_INTEGRITY CI failure |
 | Public security process | Disclosure + key compromise playbooks | Missing before M150 release |
 | Windows comparison | Named rows or explicit non-commitment | See § Comparative position |
-| **M200** scheduling | `SCHEDULING_UNIFIED` S-* cases executable; semantic lint on ABI bumps | ClanOS-Gate: name=scheduling ok=true smoke false |
-| **M250** hardware/SDK | QEMU→HW procedure + signed images; native SDK path | ClanOS-Gate: name=hardware ok=true smoke false |
-| **M300** federation | Distributed endpoint protocol + observability tooling | ClanOS-Gate: name=federation ok=true smoke false |
-| **M350** release 1.0 | Zero open threats; never-stabilize graduated; dual-build + compat threshold | ClanOS-Gate: name=release ok=true smoke false |
+| **scheduling** (scope 200) | `SCHEDULING_UNIFIED` S-* cases executable; semantic lint on ABI bumps | ClanOS-Gate: name=scheduling ok=true smoke false |
+| **hardware** (scope 250) | QEMU→HW procedure + signed images; native SDK path | ClanOS-Gate: name=hardware ok=true smoke false |
+| **federation** (scope 300) | Distributed endpoint protocol + observability tooling | ClanOS-Gate: name=federation ok=true smoke false |
+| **release** (scope 350) | Zero open threats; never-stabilize graduated; dual-build + compat threshold | ClanOS-Gate: name=release ok=true smoke false |
 
 ---
 

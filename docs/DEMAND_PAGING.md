@@ -29,8 +29,8 @@ Scope 48 rejects user mappings that combine writable and executable flags. Deman
 ## Validation
 
 ```bash
-python scripts/gate/boot.py --gate sched_userspace --timeout 180
-python scripts/gate/boot.py --gate dynamic_runtime --timeout 180
+python scripts/gate/run.py --gate sched_userspace --timeout 180
+python scripts/gate/run.py --gate dynamic_runtime --timeout 180
 ```
 
 ## Deferred

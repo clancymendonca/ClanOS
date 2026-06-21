@@ -13,8 +13,8 @@ Status: Complete
 - [x] Add process ownership metadata and checked kill policy.
 - [x] Add shell observability commands: `whoami`, `su`, `stat`, and `chmod +x|-x`.
 - [x] Add syscall counters for current identity and denied access.
-- [x] Covered by boot gate `loader_security` (`ClanOS-BootGate: name=loader_security ok=true`)
-- [x] Add QEMU-backed boot gate validation (`scripts/gate/boot.py --gate loader_security`) and matrix coverage.
+- [x] Covered by validation gate `loader_security` (`ClanOS-Gate: name=loader_security ok=true`)
+- [x] Add QEMU-backed validation gate check (`scripts/gate/run.py --gate loader_security`) and matrix coverage.
 
 Exit gate:
 
@@ -28,7 +28,7 @@ Exit gate:
 
 ```bash
 cargo check -p kernel
-python scripts/gate/boot.py --gate loader_security --timeout 180
+python scripts/gate/run.py --gate loader_security --timeout 180
 python scripts/validation_matrix.py --smoke-timeout 180
 ```
 

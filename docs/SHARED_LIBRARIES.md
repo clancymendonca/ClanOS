@@ -35,8 +35,8 @@ See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ## Validation
 
 ```bash
-python scripts/gate/boot.py --gate dynamic_runtime --timeout 180
-python scripts/gate/boot.py --gate dynamic_runtime --timeout 180
+python scripts/gate/run.py --gate dynamic_runtime --timeout 180
+python scripts/gate/run.py --gate dynamic_runtime --timeout 180
 ```
 
 ## Deferred

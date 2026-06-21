@@ -52,7 +52,7 @@ complete (5294623)
 ## Validation
 
 - [x] `cargo check -p kernel`
-- [x] Scope 121 smoke script (`python scripts/gate/boot.py --gate service_loader --timeout 180`)
+- [x] Scope 121 smoke script (`python scripts/gate/run.py --gate service_loader --timeout 180`)
 - [x] OOM stub returns `ERR_MEM_BUDGET` / E-00 `E00_SATURATED` / quota `ERR_CAP_QUOTA`
 
 ## Deferred

@@ -5,13 +5,13 @@
 ## Scope
 
 - [x] `LAPIC_IPI_SEND` counter on `request_tlb_shootdown`.
-- [x] Covered by boot gate `path_exec` (`ClanOS-BootGate: name=path_exec ok=true`)
+- [x] Covered by validation gate `path_exec` (`ClanOS-Gate: name=path_exec ok=true`)
 - [x] `docs/SMP.md` updated.
 
 ## Validation
 
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/gate/boot.py --gate path_exec --timeout 180`
+- [x] `python scripts/gate/run.py --gate path_exec --timeout 180`
 
 ## Deferred
 

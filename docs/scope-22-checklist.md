@@ -7,13 +7,13 @@
 - [x] Activate user CR3 and restore kernel CR3 with interrupts disabled.
 - [x] Verify entry-point translation under active user page tables.
 - [x] Add blocked `Cr3Activated` process metadata.
-- [x] Covered by boot gate `hw_paging` (`ClanOS-BootGate: name=hw_paging ok=true`)
+- [x] Covered by validation gate `hw_paging` (`ClanOS-Gate: name=hw_paging ok=true`)
 
 ## Validation
 
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/gate/boot.py --gate hw_paging --timeout 180`
+- [x] `python scripts/gate/run.py --gate hw_paging --timeout 180`
 
 ## Deferred
 

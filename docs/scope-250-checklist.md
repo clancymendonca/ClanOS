@@ -1,6 +1,6 @@
 > **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy numbered boot serial lines are retired.
 
-# Scope 250 Checklist: Milestone 250 Gate
+# Scope 250 Checklist: Hardware + SDK Gate
 
 ## Layer
 governance
@@ -28,4 +28,4 @@ implemented
 
 ## Completed
 
-- Scope 250: Milestone 250 hardware + SDK gate
+- Scope 250: hardware + SDK gate (`ClanOS-Gate: name=hardware ok=true`)

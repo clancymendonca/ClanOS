@@ -19,7 +19,7 @@ BOOT_ATTEMPTS = 3
 
 READY_MARKERS = (
     "Clan OS shell ready",
-    "ClanOS-SystemGate: ok=true",
+    "ClanOS-Gate: ok=true",
     "ClanOS-Gate: name=desktop_preview ok=true",
 )
 

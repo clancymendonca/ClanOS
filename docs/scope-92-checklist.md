@@ -5,12 +5,12 @@
 ## Scope
 
 - [x] `Poll = 82`: single-fd readiness (read = 1) on pipe fds.
-- [x] Covered by boot gate `smp_depth` (`ClanOS-BootGate: name=smp_depth ok=true`)
+- [x] Covered by validation gate `smp_depth` (`ClanOS-Gate: name=smp_depth ok=true`)
 
 ## Validation
 
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/gate/boot.py --gate smp_depth --timeout 180`
+- [x] `python scripts/gate/run.py --gate smp_depth --timeout 180`
 
 ## Deferred
 

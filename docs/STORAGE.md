@@ -58,11 +58,11 @@ Primary kernel APIs live in `kernel/src/storage.rs`:
 ## Validation
 
 ```bash
-python scripts/gate/boot.py --gate shell_storage --timeout 180
+python scripts/gate/run.py --gate shell_storage --timeout 180
 python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --boot-wait 90 --smoke-timeout 180
 ```
 
-Boot validation emits `ClanOS-BootGate: name=shell_storage ok=true` (see [VALIDATION_GATES.md](VALIDATION_GATES.md)).
+Validation emits `ClanOS-Gate: name=shell_storage ok=true` (see [VALIDATION_GATES.md](VALIDATION_GATES.md)).
 
 ## Scope 8 Backend
 

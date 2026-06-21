@@ -6,13 +6,13 @@
 
 - [x] `Mmap` syscall: anonymous pages at `0x600000`.
 - [x] Read-only file mmap via demand paging at `0x500000+`.
-- [x] Covered by boot gate `fd_mmap` (`ClanOS-BootGate: name=fd_mmap ok=true`)
+- [x] Covered by validation gate `fd_mmap` (`ClanOS-Gate: name=fd_mmap ok=true`)
 
 ## Validation
 
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/gate/boot.py --gate fd_mmap --timeout 180`
+- [x] `python scripts/gate/run.py --gate fd_mmap --timeout 180`
 
 ## Deferred
 

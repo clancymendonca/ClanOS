@@ -21,7 +21,7 @@ Scope 31 binds CR3 on preemptive context switch on the bootstrap processor only.
 ## Validation
 
 ```bash
-python scripts/gate/boot.py --gate dynamic_runtime --timeout 180
+python scripts/gate/run.py --gate dynamic_runtime --timeout 180
 ```
 
 ## Runqueue Skeleton (Scope 59)

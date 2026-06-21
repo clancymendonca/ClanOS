@@ -5,14 +5,14 @@
 ## Scope
 
 - [x] `HW_SYSRET_REAL` counter distinct from int 0x80 `SYSRET_APPLIED`.
-- [x] Covered by boot gate `path_exec` (`ClanOS-BootGate: name=path_exec ok=true`)
+- [x] Covered by validation gate `path_exec` (`ClanOS-Gate: name=path_exec ok=true`)
 - [x] Optional `hw-sysret-probe` feature for QEMU HW probe (host tests use counter stub).
 
 ## Validation
 
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/gate/boot.py --gate path_exec --timeout 180`
+- [x] `python scripts/gate/run.py --gate path_exec --timeout 180`
 
 ## Deferred
 

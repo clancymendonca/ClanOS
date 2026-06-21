@@ -12,7 +12,7 @@ Status: Complete
 - [x] Add loader `prepare_program_image` path and load-plan counters.
 - [x] Add process load metadata for prepared image records.
 - [x] Add `bin prepare`, richer `bin info`, and load-plan summary commands.
-- [x] Covered by boot gate `loader_security` (`ClanOS-BootGate: name=loader_security ok=true`)
+- [x] Covered by validation gate `loader_security` (`ClanOS-Gate: name=loader_security ok=true`)
 - [x] Add Scope 12 QEMU validation and validation matrix coverage.
 
 Exit gate:
@@ -26,7 +26,7 @@ Exit gate:
 
 ```bash
 cargo check -p kernel
-python scripts/gate/boot.py --gate loader_security --timeout 180
+python scripts/gate/run.py --gate loader_security --timeout 180
 python scripts/validation_matrix.py --smoke-timeout 180
 ```
 

@@ -7,7 +7,7 @@ epoch: 0
 authored_by: security
 ```
 
-Overview of the Clan OS capability-secured authorization model, attacker taxonomy, and the closure statement defining what "secure" means in the QEMU era through milestone 400.
+Overview of the Clan OS capability-secured authorization model, attacker taxonomy, and the closure statement defining what "secure" means in the QEMU era through the functional-OS epoch.
 
 Cross-references: [KERNEL_OBJECT_MODEL.md](KERNEL_OBJECT_MODEL.md), [../THREAT_MODEL.md](../THREAT_MODEL.md), [../THREAT_NODES.toml](../THREAT_NODES.toml), [../RIGHTS_ALGEBRA.md](../RIGHTS_ALGEBRA.md), [../FAULT_ESCALATION.md](../FAULT_ESCALATION.md).
 
@@ -68,7 +68,7 @@ stateDiagram-v2
 |-------|------------|---------------|
 | Unprivileged user process | Ring 3, compat syscalls, limited caps | escalation, DoS |
 | Compromised userland service | Native caps from loader manifest | all four |
-| Compromised compat shim | Compat-internal bridge (retired M400) | escalation, integrity |
+| Compromised compat shim | Compat-internal bridge (retired functional-OS epoch) | escalation, integrity |
 | Malicious IPC peer | Valid endpoint, hostile patterns | DoS, escalation |
 | Compromised CI runner | Build pipeline write | integrity |
 | Compromised contributor | Merge with review bypass | integrity, escalation |
@@ -125,12 +125,12 @@ All security errors map to `docs/ERROR_TAXONOMY.md` classes. Terminal errors on 
 
 - **Audit:** kernel-only write path; chain-hash records for cap lifecycle events; security partition non-droppable before suspend.
 - **Bootstrap ceremony:** PID-1 cap set is the only ambient-free mint path; threat node `T-bootstrap-scope-creep`.
-- **Compat layer:** untrusted translator; cannot self-grant capabilities (bridge retired at M400).
+- **Compat layer:** untrusted translator; cannot self-grant capabilities (bridge retired at functional-OS epoch).
 - **AI subsystem (future):** accelerator caps, inference sandbox with minimal cap set, content-addressed model registry.
 
 ---
 
-## Closure statement (QEMU era through M400)
+## Closure statement (QEMU era through functional-OS epoch)
 
 **"Secure" for Clan OS in the QEMU development era means:**
 

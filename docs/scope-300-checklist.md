@@ -1,6 +1,6 @@
 > **Historical scope checklist.** Runtime validation uses unified gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md). Legacy numbered boot serial lines are retired.
 
-# Scope 300 Checklist: Milestone 300 Gate
+# Scope 300 Checklist: Federation Gate
 
 ## Layer
 governance
@@ -28,4 +28,4 @@ implemented
 
 ## Completed
 
-- Scope 300: Milestone 300 federation gate
+- Scope 300: federation gate (`ClanOS-Gate: name=federation ok=true`)

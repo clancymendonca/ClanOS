@@ -6,12 +6,12 @@
 
 - [x] `enqueue_ap_runnable()` on CPU1 when `CPU_COUNT > 1`.
 - [x] `AP_RUNNABLE_ENQUEUED` counter; no AP scheduler loop or BSP `hlt`.
-- [x] Covered by boot gate `smp_depth` (`ClanOS-BootGate: name=smp_depth ok=true`)
+- [x] Covered by validation gate `smp_depth` (`ClanOS-Gate: name=smp_depth ok=true`)
 
 ## Validation
 
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/gate/boot.py --gate smp_depth --timeout 180`
+- [x] `python scripts/gate/run.py --gate smp_depth --timeout 180`
 
 ## Deferred
 

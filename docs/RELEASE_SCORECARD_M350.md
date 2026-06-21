@@ -1,38 +1,23 @@
-# Milestone 350 Release Scorecard
+# Release Scorecard — Scope 350 Era (Historical)
 
-
+> **Historical artifact.** Superseded by [RELEASE_SCORECARD.md](RELEASE_SCORECARD.md). Milestone numbering retired; validation uses unified `validation_gate.rs` (ADR-0001).
 
 ```yaml
-
-status: authoritative
-
-milestone: 350
-
+status: superseded-by
+superseded-by: docs/RELEASE_SCORECARD.md
+scope_index: 350
 semantics_version: 1.0.0
-
 ```
 
+Release 1.0 era criteria (now subsystem gates):
 
+| Criterion | Subsystem gate |
+|-----------|----------------|
+| Gap registry closed | `release_scorecard_check.py` |
+| Threat nodes closed | `threat_node_lifecycle_check.py` |
+| Covenant CI | `covenant_ci.py` |
+| Integrity → release smokes | `integrity`, `scheduling`, `hardware`, `federation`, `release` |
+| Never-stabilize graduated | `never_stabilize_graduated.toml` |
+| Public process docs | `SECURITY.md`, `CONTRIBUTING.md` |
 
-| Criterion | Target | Gate |
-
-|-----------|--------|------|
-
-| System gate | `SYSTEM_GATE_VERSION = 1.0.0` | `system_gate.rs` |
-
-| Boot gate | `BOOT_GATE_VERSION = 1.0.0` | `boot_gate.rs` |
-
-| Gap registry | 0 open | `release_scorecard_check.py` |
-
-| Threat nodes | 0 open | `threat_node_lifecycle_check.py` |
-
-| Covenant CI | green | `covenant_ci.py` |
-
-| Gate smokes | integrity → release | `scripts/gate/host.py` + QEMU |
-
-| Never-stabilize | graduated | `never_stabilize_graduated.toml` |
-
-| Public process | SECURITY + CONTRIBUTING | repo root docs |
-
-| Reviewer registry | populated | `keys/reviewer-registry.toml` |
-
+Full matrix: `python scripts/gate/run.py --gate all` · Host: `python scripts/gate/host.py`

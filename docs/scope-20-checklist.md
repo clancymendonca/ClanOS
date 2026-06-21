@@ -9,13 +9,13 @@
 - [x] Keep arbitrary ELF execution, dynamic linking, relocation, and demand paging out of scope.
 - [x] Add blocked `UserElfExited` process metadata.
 - [x] Expose ELF execution counters through shell and syscalls.
-- [x] Covered by boot gate `userspace_bootstrap` (`ClanOS-BootGate: name=userspace_bootstrap ok=true`)
+- [x] Covered by validation gate `userspace_bootstrap` (`ClanOS-Gate: name=userspace_bootstrap ok=true`)
 
 ## Validation
 
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/gate/boot.py --gate userspace_bootstrap --timeout 180`
+- [x] `python scripts/gate/run.py --gate userspace_bootstrap --timeout 180`
 
 ## Deferred
 

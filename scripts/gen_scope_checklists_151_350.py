@@ -5,18 +5,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1] / "docs"
 
-# Explicit titles for integration / milestone scopes
+# Explicit titles for integration scopes
 EXPLICIT: dict[int, tuple[str, str, str, str]] = {
     151: ("Loom ENDPOINT_QUEUES Harness", "kernel", "native", "loom_harness_registry ENDPOINT_QUEUES"),
     155: ("S-01 Executable Spec Case", "kernel", "native", "SCHEDULING_UNIFIED S-01"),
     160: ("Epoch 7 OOM Integration", "kernel", "governance", "scope147 OOM enforcement"),
     165: ("Epoch 7 Audit Build Gate", "governance", "governance", "audit tamper + dual-build"),
     170: ("Epoch 7 Evidence Gate", "governance", "governance", "Kani mandatory CI"),
-    175: ("Epoch 7 Signoff", "governance", "governance", "system gate integrity"),
-    200: ("Milestone 200 Gate", "governance", "governance", "system gate scheduling"),
-    250: ("Milestone 250 Gate", "governance", "governance", "system gate hardware"),
-    300: ("Milestone 300 Gate", "governance", "governance", "system gate federation"),
-    350: ("Milestone 350 Release 1.0", "governance", "governance", "system gate release"),
+    175: ("Epoch 7 Signoff", "governance", "governance", "validation gate integrity"),
+    200: ("Scope 200 Scheduling Gate", "governance", "governance", "validation gate scheduling"),
+    250: ("Scope 250 Hardware Gate", "governance", "governance", "validation gate hardware"),
+    300: ("Scope 300 Federation Gate", "governance", "governance", "validation gate federation"),
+    350: ("Scope 350 Release 1.0", "governance", "governance", "validation gate release"),
 }
 
 BANDS = [

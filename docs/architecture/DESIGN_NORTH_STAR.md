@@ -44,7 +44,7 @@ Rationale: seL4-class isolation, Linux-class driver crash containment, tractable
 - Hierarchical earliest-deadline-first with capability-secured priority assignment.
 - Priority ceiling protocol for inversion (see `DECISION_LOG.md` sched-001).
 - CPU partitions as first-class capabilities.
-- AI workload class (distinct partition semantics post-M400).
+- AI workload class (distinct partition semantics post-functional-OS epoch).
 
 ---
 

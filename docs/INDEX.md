@@ -6,18 +6,22 @@ Central index for validation gates, deep-dive guides, and historical scope check
 
 | Document | Role |
 |----------|------|
-| **[VALIDATION_GATES.md](VALIDATION_GATES.md)** | Boot + system gate serial lines, scripts, CI matrix |
-| [RELEASE_SCORECARD_M500.md](RELEASE_SCORECARD_M500.md) | M500 release criteria |
-| [RELEASE_SCORECARD_M400.md](RELEASE_SCORECARD_M400.md) | M400 functional OS criteria |
-| [RELEASE_SCORECARD_M350.md](RELEASE_SCORECARD_M350.md) | Release 1.0 criteria |
+| **[VALIDATION_GATES.md](VALIDATION_GATES.md)** | Unified validation gate serial lines, scripts, CI matrix |
+| **[GATE_AUDIT.md](GATE_AUDIT.md)** | Per-gate substance audit (real vs shallow vs stub) |
+| **[GAP_AUDIT.md](GAP_AUDIT.md)** | Gap registry `addressed` substance audit |
+| **[GATE_AUDIT_401_500.md](GATE_AUDIT_401_500.md)** | Post-400 gate vs roadmap falsifiers |
+| **[GATE_DESIGN_401_500.md](GATE_DESIGN_401_500.md)** | Post-400 gate design backlog (ADR-0002 priority) |
+| **[RELEASE_SCORECARD.md](RELEASE_SCORECARD.md)** | Fully operational OS release criteria |
+| [architecture/ADR/ADR-0001-unified-validation-gate.md](architecture/ADR/ADR-0001-unified-validation-gate.md) | Unified validation gate merge (ADR-0001) |
+
+Historical pre-unification scorecards (superseded): [RELEASE_SCORECARD_M350.md](RELEASE_SCORECARD_M350.md), [RELEASE_SCORECARD_M400.md](RELEASE_SCORECARD_M400.md), [RELEASE_SCORECARD_M500.md](RELEASE_SCORECARD_M500.md).
 
 Quick checks:
 
 ```bash
 cargo check -p kernel
 python scripts/gate/host.py
-python scripts/gate/boot.py --gate boot --timeout 360
-python scripts/gate/system.py --gate system --timeout 360
+python scripts/gate/run.py --gate all --timeout 360
 ```
 
 Full matrix:
@@ -26,13 +30,17 @@ Full matrix:
 python scripts/validation_matrix.py --smoke-timeout 180
 ```
 
-Canonical scripts live under `scripts/gate/` and `scripts/preemption/`. Legacy shims at `scripts/gate/boot.py` forward to the gate package.
+Canonical scripts live under `scripts/gate/` and `scripts/preemption/`. Deprecated wrappers (`boot.py`, `system.py`) forward to `run.py` with stderr warnings.
 
-## Boot gate subsystems (scopes 6–150)
+Module: `kernel/src/validation_gate.rs` (`VALIDATION_GATE_VERSION = 2.1.0`).
 
-| Gate | Scope | Check |
-|------|-------|-------|
-| `shell_storage` | 6–8 | `gate/boot.py --gate shell_storage` |
+## Validation gate subsystems
+
+All subsystems emit `ClanOS-Gate: name=<subsystem> ok=true`. Use `--gate <subsystem>` with `scripts/gate/run.py`. Scope indices map via `scripts/gate/map.py` (`gate_for_scope`).
+
+| Gate | Scope / epoch | Check |
+|------|---------------|-------|
+| `shell_storage` | 6–8 | `run.py --gate shell_storage` |
 | `loader_security` | 9–13 | `--gate loader_security` |
 | `memory_layout` | 14–16 | `--gate memory_layout` |
 | `userspace_bootstrap` | 17–20 | `--gate userspace_bootstrap` |
@@ -53,27 +61,18 @@ Canonical scripts live under `scripts/gate/` and `scripts/preemption/`. Legacy s
 | `network_compat` | 404 | `--gate network_compat` |
 | `scheduler_epoch` | 149 | `--gate scheduler_epoch` |
 | `boundary` | 150 | `--gate boundary` |
-
-Module: `kernel/src/boot_gate.rs`
-
-## System gate subsystems (epochs 7–20 / M500)
-
-| Gate | Former milestone | Check |
-|------|------------------|-------|
-| `integrity` | Epoch 7 | `gate/system.py --gate integrity` |
-| `scheduling` | M200 | `--gate scheduling` |
-| `hardware` | M250 | `--gate hardware` |
-| `federation` | M300 | `--gate federation` |
-| `release` | M350 | `--gate release` |
+| `integrity` | Epoch 7 | `--gate integrity` |
+| `scheduling` | Epoch 8 | `--gate scheduling` |
+| `hardware` | Epoch 9 | `--gate hardware` |
+| `federation` | Epoch 10 | `--gate federation` |
+| `release` | Epoch 11 | `--gate release` |
 | `desktop_preview` | Desktop preview | `--gate desktop_preview` |
-| `desktop` | M375 | `--gate desktop` |
-| `functional` | M400 | `--gate functional` |
-| `ci` | M425 | `--gate ci` |
-| `production` | M450 | `--gate production` |
-| `network` | M475 | `--gate network` |
-| `system` | M500 | `--gate system` |
-
-Module: `kernel/src/system_gate.rs`
+| `desktop` | Desktop stack | `--gate desktop` |
+| `functional` | Functional OS | `--gate functional` |
+| `ci` | CI hardening | `--gate ci` |
+| `production` | Production SMP | `--gate production` |
+| `network` | External network | `--gate network` |
+| **`all`** | Full matrix | `--gate all` → `ClanOS-Gate: ok=true` |
 
 ## Post-100 architecture guides
 
@@ -82,7 +81,7 @@ Module: `kernel/src/system_gate.rs`
 | [ROADMAP_POST100.md](ROADMAP_POST100.md) | Constitutional + capability foundation |
 | [ROADMAP_151_350.md](ROADMAP_151_350.md) | Epochs 7–14 |
 | [ROADMAP_351_400.md](ROADMAP_351_400.md) | Desktop + userland + network |
-| [ROADMAP_401_500.md](ROADMAP_401_500.md) | Production SMP + signed ELF + M500 |
+| [ROADMAP_401_500.md](ROADMAP_401_500.md) | Production SMP + signed ELF + fully operational OS |
 | [NATIVE_MODEL.md](NATIVE_MODEL.md) | Post-Unix native definition |
 | [AXIOMS.md](AXIOMS.md) | Constitutional axioms A1–A10 |
 | [KERNEL_OBJECT_MODEL.md](KERNEL_OBJECT_MODEL.md) | Universal objects; G1 |

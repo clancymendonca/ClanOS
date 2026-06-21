@@ -5,16 +5,18 @@ status: authoritative
 semantics_version: 1.0.0
 ```
 
-Continues from [ROADMAP_POST100.md](ROADMAP_POST100.md) milestone 150. Living plan: [`.cursor/plans/clanos_build_151_350.plan.md`](../.cursor/plans/clanos_build_151_350.plan.md).
+Continues from [ROADMAP_POST100.md](ROADMAP_POST100.md) (scope 150 boundary). Living plan: [`.cursor/plans/clanos_build_151_350.plan.md`](../.cursor/plans/clanos_build_151_350.plan.md).
 
-**Pace:** 1–3 scopes/month. Milestone 350 targets 1.0 release gate (~5–8 years post-150).
+**Pace:** 1–3 scopes/month. Scope **350** targets release 1.0 gate (~5–8 years post-150).
+
+> **Note:** Scope-index labels (200, 250, 300, 350, …) name integration checkpoints in this roadmap. Runtime validation uses unified subsystem gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md).
 
 ---
 
 ## Epoch map
 
-| Epoch | Scopes | Milestone | Theme |
-|-------|--------|-----------|-------|
+| Epoch | Scopes | Scope index | Theme |
+|-------|--------|-------------|-------|
 | 7 | 151–175 | — | Stub graduation: loom, OOM, audit/build, Kani tier B |
 | 8 | 176–200 | **200** | SCHEDULING_UNIFIED + meta-semantics + semantic lint CI |
 | 9 | 201–225 | — | Native SDK / UX; clan-rt production path |
@@ -58,7 +60,7 @@ Continues from [ROADMAP_POST100.md](ROADMAP_POST100.md) milestone 150. Living pl
 
 ---
 
-## Scopes 176–200 (Epoch 8 → Milestone 200)
+## Scopes 176–200 (Epoch 8 → scope 200)
 
 | Scope | Title |
 |------:|-------|
@@ -67,11 +69,11 @@ Continues from [ROADMAP_POST100.md](ROADMAP_POST100.md) milestone 150. Living pl
 | 186–190 | Semantic lint CI for clan-semantics-v* |
 | 191–195 | Full health dashboard |
 | 196–199 | Four-layer boundary review II |
-| 200 | **Milestone 200** integration gate |
+| 200 | **Scope 200** scheduling integration gate |
 
 ---
 
-## Scopes 201–250 (Epochs 9–10 → Milestone 250)
+## Scopes 201–250 (Epochs 9–10 → scope 250)
 
 | Scope | Title |
 |------:|-------|
@@ -80,11 +82,11 @@ Continues from [ROADMAP_POST100.md](ROADMAP_POST100.md) milestone 150. Living pl
 | 221–230 | POSIX compat depth + corpus expansion |
 | 231–240 | Real hardware path + architecture_state flags |
 | 241–249 | QEMU→hardware transition procedure |
-| 250 | **Milestone 250** hardware + SDK gate |
+| 250 | **Scope 250** hardware + SDK gate |
 
 ---
 
-## Scopes 251–300 (Epochs 11–12 → Milestone 300)
+## Scopes 251–300 (Epochs 11–12 → scope 300)
 
 | Scope | Title |
 |------:|-------|
@@ -92,11 +94,11 @@ Continues from [ROADMAP_POST100.md](ROADMAP_POST100.md) milestone 150. Living pl
 | 266–275 | Semantic observability tooling |
 | 276–290 | Federation + distributed endpoint protocol |
 | 291–299 | Checkpoint reopen_trigger design |
-| 300 | **Milestone 300** federation gate |
+| 300 | **Scope 300** federation gate |
 
 ---
 
-## Scopes 301–350 (Epochs 13–14 → Milestone 350)
+## Scopes 301–350 (Epochs 13–14 → scope 350)
 
 | Scope | Title |
 |------:|-------|
@@ -105,11 +107,11 @@ Continues from [ROADMAP_POST100.md](ROADMAP_POST100.md) milestone 150. Living pl
 | 321–330 | Never-stabilize graduation to 1.0 |
 | 331–340 | Public SECURITY/CONTRIBUTING; GPG gates |
 | 341–349 | Release scorecard + compat sunset target |
-| 350 | **Milestone 350** release 1.0 gate |
+| 350 | **Scope 350** release 1.0 gate |
 
 ---
 
-## Boot smokes (post-150)
+## Validation smokes (post-150)
 
 | Line | Epoch |
 |------|-------|
@@ -119,4 +121,6 @@ Continues from [ROADMAP_POST100.md](ROADMAP_POST100.md) milestone 150. Living pl
 | `ClanOS-Gate: name=federation ok=true` | 12 |
 | `ClanOS-Gate: name=release ok=true` | 14 |
 
-Scripts: `python scripts/gate/system.py --gate integrity --timeout 180`, `python scripts/gate/system.py --gate scheduling --timeout 180`, `python scripts/gate/system.py --gate hardware --timeout 180`, `python scripts/gate/system.py --gate federation --timeout 180`, `python scripts/gate/system.py --gate release --timeout 180`.
+Scripts: `python scripts/gate/run.py --gate integrity --timeout 180`, `python scripts/gate/run.py --gate scheduling --timeout 180`, `python scripts/gate/run.py --gate hardware --timeout 180`, `python scripts/gate/run.py --gate federation --timeout 180`, `python scripts/gate/run.py --gate release --timeout 180`.
+
+See [RELEASE_SCORECARD.md](RELEASE_SCORECARD.md) for current release criteria.

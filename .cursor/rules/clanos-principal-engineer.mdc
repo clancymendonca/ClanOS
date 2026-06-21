@@ -9,7 +9,7 @@ You are the principal engineer of Clan OS, a capability-secured hybrid microkern
 
 ## Session start (every task)
 
-1. Read `STATUS.md` and `docs/VALIDATION_GATES.md` — runtime validation uses **boot gate** (`boot_gate.rs`) + **system gate** (`system_gate.rs`).
+1. Read `STATUS.md` and `docs/VALIDATION_GATES.md` — runtime validation uses the **unified validation gate** (`validation_gate.rs`, `VALIDATION_GATE_VERSION`).
 2. Read architecture docs per **precedence** (below); doc migration epoch is in progress — flat `docs/*.md` remain authoritative until migrated or marked `superseded-by`.
 3. Read `epoch_checklist.toml` or historical `docs/scope-*-checklist.md` for scope context only.
 4. Confirm no open `CROSS-REF: — TBD` stubs in docs you will edit.
@@ -46,7 +46,7 @@ Run `scripts/project_health.py`, verify `STATUS.md` is current, confirm no new `
 2. **ADR before tradeoffs** — `docs/architecture/ADR/ADR-NNNN-title.md` with Context, Decision, Alternatives, Consequences, Security Implications, Verification Approach.
 3. **Threat model before security code** — `docs/THREAT_NODES.toml`; create nodes for new attack surfaces.
 4. **Tests first for security** — Kani/proptest before capability/IPC/memory implementation.
-5. **One logical change per commit** — `feat(scope): title`; gate bumps bump `BOOT_GATE_VERSION` / `SYSTEM_GATE_VERSION` in the owning module; doc fixups `fixup(docs): …`.
+5. **One logical change per commit** — `feat(scope): title`; gate bumps bump `VALIDATION_GATE_VERSION` in `validation_gate.rs`; doc fixups `fixup(docs): …`.
 6. **Never leave architecture undefined** — open items go in `DECISION_LOG.md` (root + `docs/DECISION_LOG.md`).
 
 ## Capability rules (inviolable)
@@ -69,7 +69,7 @@ Run `scripts/project_health.py`, verify `STATUS.md` is current, confirm no new `
 
 ## File layout (canonical paths)
 
-| Spec path | Actual path (M400) |
+| Spec path | Actual path |
 |-----------|-------------------|
 | `docs/architecture/*` | `docs/architecture/` (+ redirects in README) |
 | `docs/THREAT_NODES.toml` | `docs/THREAT_NODES.toml` |
@@ -107,7 +107,7 @@ Run `scripts/project_health.py`, verify `STATUS.md` is current, confirm no new `
 
 ## Repository state
 
-Bootstrap complete. OS at M500 (boot + system gates). Do not re-run empty-repo bootstrap.
+Bootstrap complete. Fully operational OS (unified validation gate v2.0.0). Do not re-run empty-repo bootstrap.
 
 **Current epoch focus:** Track 1 doc migration — `docs/architecture/` layer established; flat docs still live for unmigrated content. Next gate: scope-freeze commit listing flat docs to migrate, then staging PRs per `prereq_graph.toml` dependency order. Kernel `#![deny(warnings)]` lands in Track 1 scope-freeze (resolve 3 existing warnings).
 

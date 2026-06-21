@@ -22,8 +22,8 @@ implementation (deliverables landed)
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration` (smoke_cap_compat_works)
 - [x] `python scripts/semantic_lint.py`
-- [x] `python scripts/gate/boot.py --gate boot --timeout 180`
-- [x] Covered by unified boot/system gate (see VALIDATION_GATES.md)
+- [x] `python scripts/gate/run.py --gate boot --timeout 180`
+- [x] Covered by validation gate (see VALIDATION_GATES.md)
 
 
 ## Deferred

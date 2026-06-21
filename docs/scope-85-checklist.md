@@ -6,12 +6,12 @@
 
 - [x] `fork_lite` assigns child CR3 via shallow `fork_duplicate_cr3` (shared frames, no COW).
 - [x] `FORK_DUP_CHILDREN` / `FORK_DUP_CR3` counters.
-- [x] Covered by boot gate `path_exec` (`ClanOS-BootGate: name=path_exec ok=true`)
+- [x] Covered by validation gate `path_exec` (`ClanOS-Gate: name=path_exec ok=true`)
 
 ## Validation
 
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/gate/boot.py --gate path_exec --timeout 180`
+- [x] `python scripts/gate/run.py --gate path_exec --timeout 180`
 
 ## Deferred
 

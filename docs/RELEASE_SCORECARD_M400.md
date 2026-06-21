@@ -1,34 +1,23 @@
-# Milestone 400 Release Scorecard — Functional OS
+# Release Scorecard — Scope 400 Era (Historical)
 
-
+> **Historical artifact.** Superseded by [RELEASE_SCORECARD.md](RELEASE_SCORECARD.md). Milestone numbering retired; validation uses unified `validation_gate.rs` (ADR-0001).
 
 ```yaml
-
-status: authoritative
-
-milestone: 400
-
+status: superseded-by
+superseded-by: docs/RELEASE_SCORECARD.md
+scope_index: 400
 semantics_version: 1.0.0
-
 ```
 
+Functional OS era criteria (now subsystem gates):
 
+| Criterion | Subsystem gate |
+|-----------|----------------|
+| Desktop stack | `desktop`, `desktop_preview` |
+| Native userland | `functional`, `compat_runtime` |
+| Network | `network_compat`, `network` |
+| Release regression | `release` |
 
-| Criterion | Target | Gate |
+Full matrix: `python scripts/gate/run.py --gate functional` · Summary: `ClanOS-Gate: ok=true`
 
-|-----------|--------|------|
-
-| System gate | `SYSTEM_GATE_VERSION = 1.0.0` | `system_gate.rs` |
-
-| Functional OS | desktop + userland + network | `scripts/gate/system.py --gate functional` |
-
-| Desktop | GUI + mouse + WM + shell | `scripts/gate/system.py --gate desktop` |
-
-| Native apps | `/bin/demo-hello` runs | `functional_gate` kernel smoke |
-
-| Network | Loopback ping | `network_stack` smokes |
-
-| Prior release | M350 regression-free | `scripts/gate/system.py --gate release` |
-
-| Boot smoke | `ClanOS-Gate: name=functional ok=true` | QEMU serial |
-
+See [RELEASE_SCORECARD.md](RELEASE_SCORECARD.md) for current criteria.

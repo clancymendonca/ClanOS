@@ -13,7 +13,7 @@ Status: Complete
 - [x] Add process image metadata for loader-created process records.
 - [x] Add descriptor-only address-space and virtual-region validation.
 - [x] Expose `bin validate <program>` and richer `bin info` image fields.
-- [x] Covered by boot gate `loader_security` (`ClanOS-BootGate: name=loader_security ok=true`)
+- [x] Covered by validation gate `loader_security` (`ClanOS-Gate: name=loader_security ok=true`)
 - [x] Add Scope 11 QEMU validation and validation matrix coverage.
 
 Exit gate:
@@ -27,7 +27,7 @@ Exit gate:
 
 ```bash
 cargo check -p kernel
-python scripts/gate/boot.py --gate loader_security --timeout 180
+python scripts/gate/run.py --gate loader_security --timeout 180
 python scripts/validation_matrix.py --smoke-timeout 180
 ```
 

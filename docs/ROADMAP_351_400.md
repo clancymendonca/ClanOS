@@ -5,16 +5,18 @@ status: authoritative
 semantics_version: 1.0.0
 ```
 
-Continues from [ROADMAP_151_350.md](ROADMAP_151_350.md) milestone 350. Goal: **functional desktop OS** — interactive GUI, native userland, working network, and installable apps.
+Continues from [ROADMAP_151_350.md](ROADMAP_151_350.md) (release 1.0 epoch, scope 350). Goal: **functional desktop OS** — interactive GUI, native userland, working network, and installable apps.
 
 **Pace:** 1–3 scopes/month.
+
+> **Note:** Scope-index labels (375, 400, …) name integration checkpoints in this roadmap. Runtime validation uses unified subsystem gates — see [VALIDATION_GATES.md](VALIDATION_GATES.md).
 
 ---
 
 ## Epoch map
 
-| Epoch | Scopes | Milestone | Theme |
-|-------|--------|-----------|-------|
+| Epoch | Scopes | Scope index | Theme |
+|-------|--------|-------------|-------|
 | 15 | 351–375 | **375** | Graphics desktop: framebuffer, compositor, shell UI |
 | 16 | 376–400 | **400** | Native userland production, functional network, app ecosystem |
 
@@ -30,7 +32,7 @@ Continues from [ROADMAP_151_350.md](ROADMAP_151_350.md) milestone 350. Goal: **f
 | 354 | Desktop shell service (taskbar, launcher) | platform |
 | 355 | Font renderer + text labels in GUI | kernel |
 | 356–374 | Window manager, a11y hooks, GPU broker path | mixed |
-| 375 | **Milestone 375** desktop integration gate | governance |
+| 375 | **Scope 375** desktop integration gate | governance |
 
 ---
 
@@ -41,11 +43,11 @@ Continues from [ROADMAP_151_350.md](ROADMAP_151_350.md) milestone 350. Goal: **f
 | 376–385 | Clan OS runtime (`clan-rt`) ring-3 ELF install + syscall surface |
 | 386–395 | Virtio-net TX/RX path; compat socket depth |
 | 396–399 | Package install hook; `/bin` native programs |
-| 400 | **Milestone 400** functional OS gate | **complete** |
+| 400 | **Scope 400** functional OS gate | **complete** |
 
 ---
 
-## Milestone 400 falsifiers
+## Functional OS falsifiers
 
 | Criterion | Falsifier |
 |-----------|-----------|
@@ -53,3 +55,5 @@ Continues from [ROADMAP_151_350.md](ROADMAP_151_350.md) milestone 350. Goal: **f
 | Native apps | No ring-3 ELF runs from `/bin` manifest |
 | Network | Loopback ping smoke false |
 | Boot | ClanOS-Gate: name=release ok=true regression |
+
+See [RELEASE_SCORECARD.md](RELEASE_SCORECARD.md).

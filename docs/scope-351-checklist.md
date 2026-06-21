@@ -20,7 +20,7 @@ implemented
 ## Validation
 
 - [x] `cargo check -p kernel`
-- [x] `python scripts/gate/system.py --gate desktop_preview --timeout 180`
+- [x] `python scripts/gate/run.py --gate desktop_preview --timeout 180`
 
 ## Completed
 

@@ -16,7 +16,7 @@
 
 Staging may use `[CROSS-REF: doc §section — TBD]`; must be resolved at gate.
 
-## Milestone 150 deliverables
+## Scope 150 deliverables
 
 ### Capability transfer walkthrough
 

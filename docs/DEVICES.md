@@ -63,7 +63,7 @@ See [VALIDATION_GATES.md](VALIDATION_GATES.md) for gate serial lines.
 ## Validation
 
 ```bash
-python scripts/gate/boot.py --gate shell_storage --timeout 180
+python scripts/gate/run.py --gate shell_storage --timeout 180
 python scripts/validation_matrix.py --soak-duration 30 --latency-duration 30 --boot-wait 90 --smoke-timeout 180
 ```
 

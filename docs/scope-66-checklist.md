@@ -6,13 +6,13 @@
 
 - [x] `Fcntl = 77` supports `F_GETFD` and `F_DUPFD`.
 - [x] Unknown commands rejected with counter.
-- [x] Covered by boot gate `vm_fork` (`ClanOS-BootGate: name=vm_fork ok=true`)
+- [x] Covered by validation gate `vm_fork` (`ClanOS-Gate: name=vm_fork ok=true`)
 
 ## Validation
 
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/gate/boot.py --gate vm_fork --timeout 180`
+- [x] `python scripts/gate/run.py --gate vm_fork --timeout 180`
 
 ## Deferred
 

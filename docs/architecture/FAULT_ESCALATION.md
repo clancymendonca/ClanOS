@@ -89,7 +89,7 @@ Tier-3 halt/reboot: deliver terminal to active IPC callers before halt (max time
 
 ## Suspend vs checkpoint
 
-| State | Milestone 150 |
+| State | Scope 150 |
 |-------|---------------|
 | **Suspend** (scope 147) | Frozen-in-memory; no persistent checkpoint |
 | **Checkpoint/restore** | Out of scope until post-150 |

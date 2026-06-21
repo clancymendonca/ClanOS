@@ -6,13 +6,13 @@
 
 - [x] Ring 3 HW stub passes user path in `rdi` for `Chdir`.
 - [x] `RING3_CHDIRS` counter and `smoke_ring3_chdir`.
-- [x] Covered by boot gate `syscall_ring3` (`ClanOS-BootGate: name=syscall_ring3 ok=true`)
+- [x] Covered by validation gate `syscall_ring3` (`ClanOS-Gate: name=syscall_ring3 ok=true`)
 
 ## Validation
 
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/gate/boot.py --gate syscall_ring3 --timeout 180`
+- [x] `python scripts/gate/run.py --gate syscall_ring3 --timeout 180`
 
 ## Deferred
 

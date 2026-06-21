@@ -6,16 +6,18 @@ version: 0.1.0
 epoch: 14
 ```
 
-The repository structure spec places machine-readable configuration under `config/`. At milestone 400, canonical files remain at repository root and `docs/` for CI compatibility. This directory documents the mapping. New config files should be created here; migrations happen at epoch gates.
+The repository structure spec places machine-readable configuration under `config/`. Canonical files remain at repository root and `docs/` for CI compatibility. This directory documents the mapping. New config files should be created here; migrations happen at epoch gates.
 
 ## Path mapping
 
-| Spec path | M400 canonical path |
+| Spec path | Current canonical path |
 |-----------|---------------------|
 | `config/CAP_REGISTRY.toml` | [`docs/CAP_REGISTRY.toml`](../docs/CAP_REGISTRY.toml) |
 | `config/THREAT_NODES.toml` | [`docs/THREAT_NODES.toml`](../docs/THREAT_NODES.toml) |
 | `config/gap_registry.toml` | [`gap_registry.toml`](../gap_registry.toml) |
 | `config/architecture_state.toml` | [`architecture_state.toml`](../architecture_state.toml) |
+| `config/trust_anchor_epoch450.toml` | [`config/trust_anchor_epoch450.toml`](trust_anchor_epoch450.toml) |
+| `config/signed_elf_test_corpus/` | [`config/signed_elf_test_corpus/`](signed_elf_test_corpus/) (ADR-0002 gate corpus) |
 | `config/prereq_graph.toml` | [`prereq_graph.toml`](../prereq_graph.toml) |
 | `config/epoch_checklist.toml` | [`epoch_checklist.toml`](../epoch_checklist.toml) |
 | `config/GLOSSARY.toml` | [`GLOSSARY.toml`](../GLOSSARY.toml) |
@@ -24,7 +26,7 @@ The repository structure spec places machine-readable configuration under `confi
 
 ## Charter
 
-Governance charter: [`CHARTER.md`](../CHARTER.md) (repository root per M400 convention).
+Governance charter: [`CHARTER.md`](../CHARTER.md) (repository root).
 
 ## CI enforcement
 

@@ -37,19 +37,19 @@
 - [x] Shell commands: `devices`, `blk list`, `blk info <id>`, `mount <block-id>`
 - [x] Device/block count syscalls
 - [x] `fsinfo` reports block-device count
-- [x] Covered by boot gate `shell_storage` (`ClanOS-BootGate: name=shell_storage ok=true`)
+- [x] Covered by validation gate `shell_storage` (`ClanOS-Gate: name=shell_storage ok=true`)
 
 ## 6. Validation
 
-- [x] `python scripts/gate/boot.py --gate shell_storage --timeout 180` for QEMU-backed validation
-- [x] `scripts/validation_matrix.py` includes `boot-gate-check`
+- [x] `python scripts/gate/run.py --gate shell_storage --timeout 180` for QEMU-backed validation
+- [x] `scripts/validation_matrix.py` includes `gate-check`
 - [x] Integration tests cover device registry, block registry, and storage-through-manager behavior
 
 ## Validation
 
 ```bash
 cargo check -p kernel
-python scripts/gate/boot.py --gate shell_storage --timeout 180
+python scripts/gate/run.py --gate shell_storage --timeout 180
 python scripts/validation_matrix.py --smoke-timeout 180
 ```
 

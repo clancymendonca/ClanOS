@@ -1,22 +1,25 @@
-# Milestone 500 Release Scorecard — Fully Operational OS
+# Release Scorecard — Fully Operational OS Era (Historical)
+
+> **Historical artifact.** Superseded by [RELEASE_SCORECARD.md](RELEASE_SCORECARD.md). Milestone numbering retired; validation uses unified `validation_gate.rs` (ADR-0001).
 
 ```yaml
-status: authoritative
-milestone: 500
+status: superseded-by
+superseded-by: docs/RELEASE_SCORECARD.md
+scope_index: 500
 semantics_version: 1.0.0
 ```
 
-| Criterion | Target | Gate |
-|-----------|--------|------|
-| System gate | `SYSTEM_GATE_VERSION = 1.0.0` | `system_gate.rs` |
-| Functional OS | Desktop + userland + network | `scripts/gate/system.py --gate functional` |
-| CI matrix | Unified gate wired | `validation_matrix.py` |
-| clan-rt no_std | `#![no_std]` on lib | `scripts/gate/clan_rt.py` |
-| Production SMP | AP scheduler smoke | `scripts/gate/system.py --gate production` |
-| Signed ELF corpus | Digest-verified user manifests | `production_gate` kernel smoke |
-| External network | `has_external_network = true` | `architecture_state.toml` |
-| Compat bridge | `ipc_bridge_compat_internal = 0` | kernel boot |
-| Boot gate | `BOOT_GATE_VERSION = 1.0.0` | `boot_gate.rs` |
-| Boot smoke | `ClanOS-BootGate: ok=true` | QEMU serial |
-| System smoke | `ClanOS-SystemGate: ok=true` | QEMU serial |
-| Host checks | boot + system | `scripts/gate/host.py` |
+Fully operational OS era criteria (now unified validation gate):
+
+| Criterion | Subsystem gate |
+|-----------|----------------|
+| Functional OS regression | `functional` |
+| Production SMP | `production` |
+| Signed ELF corpus | `production_gate` kernel smoke |
+| External network | `network` |
+| CI hardening | `ci` |
+| Full boot matrix | `all` → `ClanOS-Gate: ok=true` |
+
+Host: `python scripts/gate/host.py` · QEMU: `python scripts/gate/run.py --gate all --timeout 360`
+
+See [RELEASE_SCORECARD.md](RELEASE_SCORECARD.md) for current criteria.

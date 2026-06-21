@@ -41,4 +41,4 @@ rustc = "stable"
 target = "x86_64-unknown-none"
 ```
 
-QEMU scripts: `python scripts/gate/boot.py --gate virtio_blk --timeout 180`, `python scripts/gate/boot.py --gate build_endpoints --timeout 180`, `python scripts/gate/boot.py --gate network_compat --timeout 180`, `python scripts/gate/boot.py --gate scheduler_epoch --timeout 180`, `python scripts/gate/boot.py --gate boundary --timeout 180`.
+QEMU scripts: `python scripts/gate/run.py --gate virtio_blk --timeout 180`, `python scripts/gate/run.py --gate build_endpoints --timeout 180`, `python scripts/gate/run.py --gate network_compat --timeout 180`, `python scripts/gate/run.py --gate scheduler_epoch --timeout 180`, `python scripts/gate/run.py --gate boundary --timeout 180`.

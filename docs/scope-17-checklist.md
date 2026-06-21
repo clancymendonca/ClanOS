@@ -10,13 +10,13 @@
 - [x] Add user stack descriptors.
 - [x] Add blocked `UserContextReady` process metadata.
 - [x] Expose user-context status through shell and syscall surfaces.
-- [x] Covered by boot gate `userspace_bootstrap` (`ClanOS-BootGate: name=userspace_bootstrap ok=true`)
+- [x] Covered by validation gate `userspace_bootstrap` (`ClanOS-Gate: name=userspace_bootstrap ok=true`)
 
 ## Validation
 
 - [x] `cargo check -p kernel`
 - [x] `cargo test -p kernel --features preemption --test preemption_integration`
-- [x] `python scripts/gate/boot.py --gate userspace_bootstrap --timeout 180`
+- [x] `python scripts/gate/run.py --gate userspace_bootstrap --timeout 180`
 
 ## Deferred
 

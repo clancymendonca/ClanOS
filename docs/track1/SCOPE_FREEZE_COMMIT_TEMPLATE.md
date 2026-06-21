@@ -25,7 +25,7 @@ Resolved open questions:
      Excluded: scope-*.md, ROADMAP_*.md, RELEASE_SCORECARD_*.md, epoch graduation docs,
      PLAN_SUPERSESSION.md (archived/superseded), docs/architecture/SECURITY_MODEL.md (already canonical).
 
-  2. THREAT_NODES.toml (TN): canonical location is docs/THREAT_NODES.toml at M400 — NOT config/.
+  2. THREAT_NODES.toml (TN): canonical location is docs/THREAT_NODES.toml — NOT config/.
      config/README.md maps config/THREAT_NODES.toml → docs/THREAT_NODES.toml (pointer layer).
      Batch 3 TN is cross-reference parity verification only; zero open nodes (STATUS.md);
      physical move to config/ explicitly deferred (exclusions.threat_nodes_physical_move).

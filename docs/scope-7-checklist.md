@@ -31,16 +31,16 @@
 
 ## 4. Validation
 
-- [x] Covered by boot gate `shell_storage` (`ClanOS-BootGate: name=shell_storage ok=true`)
-- [x] `python scripts/gate/boot.py --gate shell_storage --timeout 180` for QEMU-backed validation
-- [x] `scripts/validation_matrix.py` includes `boot-gate-check`
+- [x] Covered by validation gate `shell_storage` (`ClanOS-Gate: name=shell_storage ok=true`)
+- [x] `python scripts/gate/run.py --gate shell_storage --timeout 180` for QEMU-backed validation
+- [x] `scripts/validation_matrix.py` includes `gate-check`
 - [x] Integration tests cover remount persistence and syscall file lifecycle
 
 ## Validation
 
 ```bash
 cargo check -p kernel
-python scripts/gate/boot.py --gate shell_storage --timeout 180
+python scripts/gate/run.py --gate shell_storage --timeout 180
 python scripts/validation_matrix.py --smoke-timeout 180
 ```
 
