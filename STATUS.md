@@ -4,13 +4,13 @@
 
 **GitHub Actions is not currently substantiating pushes.** Run [27895509720](https://github.com/clancymendonca/ClanOS/actions/runs/27895509720) (tip `e4939f4`) failed before any job steps: account billing lock — workflow did not execute (`cargo fmt`, `validation_matrix.py`, QEMU). Re-run CI after billing is restored; do not treat a green local matrix as CI proof until then.
 
-**Last verified locally (2026-06-21):** ADR-0003 PR2 — `loader_signed_exec_integration` 12/12 in QEMU + host loader/signed-elf self-tests; gate `2.3.0`.
+**Last verified locally (2026-06-21):** scope-461 seed migration — `demo-hello` → `trust=system-signed`; rollback proof host test; gate `2.4.0` (allowlist 15/16).
 
-## Snapshot (Functional OS — scope 400, QEMU gate v2.3.0)
+## Snapshot (Functional OS — scope 400, QEMU gate v2.4.0)
 
-- **Validation gate:** `kernel/src/validation_gate.rs` (`VALIDATION_GATE_VERSION = 2.3.0`)
+- **Validation gate:** `kernel/src/validation_gate.rs` (`VALIDATION_GATE_VERSION = 2.4.0`)
 - **ADR-0002 signed ELF (epoch 450):** kernel verifier + in-QEMU negative gauntlet (`signed_elf_integration`; 9 cases)
-- **ADR-0003 loader signed exec (epoch 460):** kernel `loader_signed_exec.rs` + `loader_signed_exec_integration` (11 cases); seed `/bin/*` migration pending (allowlist sunset scope 465)
+- **ADR-0003 loader signed exec (epoch 460):** kernel `loader_signed_exec.rs` + `loader_signed_exec_integration` (12 cases); seed migration **1/16** (`demo-hello` signed; allowlist sunset scope 465)
 - **Gate audit:** [`docs/GATE_AUDIT.md`](docs/GATE_AUDIT.md) — per-gate substance classification
 - **Gap audit:** [`docs/GAP_AUDIT.md`](docs/GAP_AUDIT.md) — `addressed` ≠ Implemented (204 overclaimed baseline)
 - **Desktop:** VGA 320×200, double-buffered compositor, PS/2 mouse, window manager, taskbar shell

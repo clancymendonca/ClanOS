@@ -1,0 +1,10 @@
+clan-exec-v1
+name=demo-hello
+kind=builtin-alias
+entry=demo-hello
+requires=execute
+digest=sha256:481be7aaaa4034aa617271f18abe360a67cdeda3ff5527af84e8c4d1bf91aa5e
+trust=system-signed
+owner=admin
+description=clan-rt demo
+sig=ed25519:f5338740b9d1192d88cabf9896d601620c609cd572f61eb3793b665cb80c292e9dd8eaae745c9296d48454344ac5f457e6584c6cab3d289227467a17b6da0905

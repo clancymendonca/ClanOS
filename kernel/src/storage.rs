@@ -739,7 +739,7 @@ fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), Stor
         ),
         (
             "/bin/demo-hello",
-            "clan-exec-v1\nname=demo-hello\nkind=builtin-alias\nentry=demo-hello\ndescription=clan-rt demo\ntrust=system\nowner=admin\n",
+            include_str!("../../config/loader_signed_seed/demo-hello.signed.manifest"),
         ),
         (
             "/bin/clan-info",

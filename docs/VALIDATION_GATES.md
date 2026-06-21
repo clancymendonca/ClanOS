@@ -2,7 +2,7 @@
 
 ```yaml
 status: authoritative
-validation_gate_version: "2.3.0"
+validation_gate_version: "2.4.0"
 kernel_module: kernel/src/validation_gate.rs
 scripts_package: scripts/gate/
 ```

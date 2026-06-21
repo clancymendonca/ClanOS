@@ -17,9 +17,6 @@ name = "sysinfo"
 name = "fsinfo"
 
 [[programs]]
-name = "demo-hello"
-
-[[programs]]
 name = "clan-info"
 
 [[programs]]

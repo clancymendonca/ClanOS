@@ -1,0 +1,8 @@
+clan-exec-v1
+name=demo-hello
+kind=builtin-alias
+entry=demo-hello
+requires=execute
+trust=system
+owner=admin
+description=clan-rt demo

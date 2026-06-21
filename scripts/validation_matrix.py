@@ -211,6 +211,11 @@ def main() -> int:
             30,
         ),
         (
+            "loader-seed-migration-rollback-proof",
+            ["python", "scripts/gate/test_loader_seed_migration_rollback.py"],
+            30,
+        ),
+        (
             "loader-signed-exec-kernel-integration",
             [
                 "cargo",

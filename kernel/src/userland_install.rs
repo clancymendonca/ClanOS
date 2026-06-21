@@ -4,7 +4,8 @@ use core::sync::atomic::{AtomicU64, Ordering};
 
 static NATIVE_LAUNCHES: AtomicU64 = AtomicU64::new(0);
 
-pub const DEMO_HELLO_MANIFEST: &str = "clan-exec-v1\nname=demo-hello\nkind=builtin-alias\nentry=demo-hello\ndescription=clan-rt demo\ntrust=system\nowner=admin\n";
+pub const DEMO_HELLO_MANIFEST: &str =
+    include_str!("../../config/loader_signed_seed/demo-hello.signed.manifest");
 
 pub fn install_native_packages() -> bool {
     crate::network_stack::mark_package_installed();

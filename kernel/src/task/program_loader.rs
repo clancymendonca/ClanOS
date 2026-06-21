@@ -266,6 +266,9 @@ pub fn parse_manifest(contents: &str) -> Result<ProgramManifest, ProgramLoadErro
         if line.trim().is_empty() {
             continue;
         }
+        if line.starts_with("sig=ed25519:") {
+            continue;
+        }
         let Some((key, value)) = line.split_once('=') else {
             return Err(ProgramLoadError::InvalidField);
         };
@@ -375,6 +378,25 @@ pub fn resolve_program_for(
         }
         record_unsupported_execution();
         return Err(ProgramLoadError::UnsupportedExecution);
+    }
+    if program.trust == ProgramTrust::SystemSigned {
+        let Some(manifest) = crate::storage::read_file(&program.source_path)
+            .ok()
+            .flatten()
+        else {
+            record_launch_failure();
+            return Err(ProgramLoadError::PermissionDenied);
+        };
+        let verify_ok = match program.kind {
+            ProgramKind::BuiltinAlias => {
+                crate::loader_signed_exec::verify_signed_builtin_alias(&manifest).is_ok()
+            }
+            ProgramKind::Elf64Image => false,
+        };
+        if !verify_ok {
+            record_launch_failure();
+            return Err(ProgramLoadError::PermissionDenied);
+        }
     }
     Ok(program)
 }

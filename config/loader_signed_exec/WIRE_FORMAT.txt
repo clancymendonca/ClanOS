@@ -55,7 +55,9 @@ Canonical signed body (exact bytes Ed25519 verifies)
   Rules:
   - trust= MUST be exactly system-signed for signed verification path.
   - requires= MUST be exactly execute in signed body.
-  - digest_hex MUST equal SHA256(payload.bin) lowercase hex at verify time.
+  - digest_hex source (recomputed at verify; never trust manifest alone):
+      * kind=elf64-image: SHA256(bytes of ELF file at image= path)
+      * kind=builtin-alias: SHA256(UTF-8 `clan-builtin-alias-v1\0{name}\0{entry}\0`)
   - owner= and description= are NEVER included in signed bytes.
   - sig= line is NEVER included in signed byte sequence.
 

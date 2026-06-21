@@ -88,6 +88,17 @@ def sha256_hex(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def builtin_alias_digest_payload(name: str, entry: str) -> bytes:
+    """Digest input for kind=builtin-alias (seed migration)."""
+    return f"clan-builtin-alias-v1\0{name}\0{entry}\0".encode("utf-8")
+
+
+def digest_payload_for_manifest(manifest: ExecManifest) -> bytes:
+    if manifest.kind == "builtin-alias":
+        return builtin_alias_digest_payload(manifest.name, manifest.entry)
+    raise ValueError("elf64-image requires explicit ELF byte payload")
+
+
 def canonical_signed_body(manifest: ExecManifest) -> str:
     """Return canonical signed body string (UTF-8, LF-only). See WIRE_FORMAT.txt."""
     if manifest.trust != TRUST_SIGNED:
@@ -213,9 +224,9 @@ def sign_manifest(manifest: ExecManifest, private_key: Ed25519PrivateKey) -> str
     return render_manifest(manifest, sig)
 
 
-def verify_signed_exec(
-    payload: bytes,
+def verify_signed_manifest(
     manifest_text: str,
+    digest_payload: bytes,
     anchor: TrustAnchor,
 ) -> tuple[bool, str]:
     try:
@@ -226,9 +237,9 @@ def verify_signed_exec(
     if manifest.signature_hex is None:
         return False, "manifest missing sig=ed25519"
 
-    actual_digest = sha256_hex(payload)
+    actual_digest = sha256_hex(digest_payload)
     if actual_digest != manifest.digest_hex:
-        return False, "payload digest mismatch"
+        return False, "digest payload mismatch"
 
     signed = ExecManifest(
         name=manifest.name,
@@ -252,6 +263,28 @@ def verify_signed_exec(
         return False, "signature verify failed"
 
     return True, "ok"
+
+
+def verify_signed_exec(
+    payload: bytes,
+    manifest_text: str,
+    anchor: TrustAnchor,
+) -> tuple[bool, str]:
+    return verify_signed_manifest(manifest_text, payload, anchor)
+
+
+def verify_signed_builtin_alias(
+    manifest_text: str,
+    anchor: TrustAnchor,
+) -> tuple[bool, str]:
+    try:
+        manifest = parse_manifest(manifest_text)
+    except ValueError as exc:
+        return False, f"manifest parse: {exc}"
+    if manifest.kind != "builtin-alias":
+        return False, "expected kind=builtin-alias"
+    payload = digest_payload_for_manifest(manifest)
+    return verify_signed_manifest(manifest_text, payload, anchor)
 
 
 def verify_corpus_dir(corpus_dir: Path, anchor_path: Path) -> tuple[bool, str]:
