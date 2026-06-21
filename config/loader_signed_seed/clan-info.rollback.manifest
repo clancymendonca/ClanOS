@@ -1,0 +1,8 @@
+clan-exec-v1
+name=clan-info
+kind=builtin-alias
+entry=clan-info
+requires=execute
+trust=system
+owner=admin
+description=System info

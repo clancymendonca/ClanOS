@@ -1,0 +1,10 @@
+clan-exec-v1
+name=clan-info
+kind=builtin-alias
+entry=clan-info
+requires=execute
+digest=sha256:17bb713298833860c2f0124858ea135560650459e18354becf4cc59a9cc6f13f
+trust=system-signed
+owner=admin
+description=System info
+sig=ed25519:f571b0eecf2311a9ed9a5b2df6610f2a98cf3feeb045aa336718e534ed2f4a8958faf1623bebaa7c88bdd849690796aca68ad6a9c06139ab0008aae9bb9c4506

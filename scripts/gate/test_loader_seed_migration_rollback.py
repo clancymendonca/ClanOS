@@ -107,11 +107,11 @@ def main() -> int:
             file=sys.stderr,
         )
         failures += 1
-    elif len(names) != 11:
+    elif len(names) != 10:
         print(
             "test_loader_seed_migration_rollback: FAIL allowlist count "
-            f"{len(names)} expected 11 digest-only remaining "
-            "(demo-hello, echo, time, sysinfo, fsinfo migrated)",
+            f"{len(names)} expected 10 digest-only remaining "
+            "(all builtin-alias seeds migrated; elf64-image batch next)",
             file=sys.stderr,
         )
         failures += 1
