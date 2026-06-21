@@ -127,7 +127,7 @@ Suggested order (lowest gate blast radius first): shell builtins (`echo`, `time`
 | `validate_program_image` | ELF | `verify_system_signed_program` |
 | `corpus_runner::execute_corpus_bytes` | ELF (embedded / ext2) | `verify_system_signed_elf_payload` (bytes about to execute) |
 | `execute_corpus_elf` | raw bytes | caller must verify first (corpus_runner does) |
-| `execute_minimal_user_elf_descriptor` | `hello` only | N/A until `hello` signed |
+| `execute_minimal_user_elf_descriptor` | `hello` only (`trust=user`) | **Exempt** — not a system seed; see `GATE_AUDIT_401_500.md` § Scope honesty. Revisit if promoted to `trust=system-signed`. |
 | `userspace::run_program` | builtin | via `resolve_program_for`; ELF via allowlisted path above |
 
 ---
@@ -212,5 +212,5 @@ Build order — separate PRs:
 3. ~~Host sign/verify tooling + fixtures + `loader_signing_sunset_check.py`~~ **Done (PR1 host)**
 4. ~~Kernel verifier hook in `program_loader` + negative QEMU gauntlet~~ **Done (PR2)** — `loader_signed_exec.rs`, `loader_signed_exec_integration.rs`, `VALIDATION_GATE_VERSION` 2.3.0
 4b. ~~Anchor embed guard~~ **Done** — `test_anchor_embed_match.py`
-5. **Seed migration (next)** — one program per PR; see § Seed migration workflow; shrink allowlist only after gate green
-6. Scope **465**: allowlist empty, `loader_digest_only_grace = false`, sunset check green
+5. ~~**Seed migration (next)**~~ **Done** — 16/16 signed; scope **465** closed (`loader_digest_only_grace=false`, empty allowlist)
+6. ~~Scope **465**: allowlist empty, `loader_digest_only_grace = false`, sunset check green~~ **Done**

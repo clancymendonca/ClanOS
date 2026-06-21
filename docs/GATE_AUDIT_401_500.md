@@ -2,7 +2,7 @@
 
 ```yaml
 status: authoritative
-validation_gate_version: "2.3.0"
+validation_gate_version: "2.6.0"
 roadmap: docs/ROADMAP_401_500.md
 companion: docs/GATE_AUDIT.md
 ```
@@ -28,7 +28,7 @@ Legend matches [`GATE_AUDIT.md`](GATE_AUDIT.md): Real / Partial / Shallow / Hard
 | Functional OS regression | **Audited** | `functional_gate()` — see GATE_AUDIT.md |
 | Production SMP | **Gap** | `smoke_ap_scheduler` Real-ish counter; not multi-AP load/fairness |
 | Signed ELF (gate corpus) | **Real (pinned corpus)** | Kernel `signed_elf.rs` Ed25519 verify vs epoch-450 anchor; **execution proof:** `signed-elf-kernel-integration` (9 QEMU cases). |
-| Loader signed exec (pinned corpus) | **Real (pinned corpus)** | Kernel `loader_signed_exec.rs` vs epoch-460 anchor; distinct canonical body from ADR-0002; **execution proof:** `loader-signed-exec-kernel-integration` (11 QEMU cases incl. kind/entry tamper). General `/bin/*` seed migration still pending (allowlist). |
+| Loader signed exec (seed `/bin/*`) | **Real (digest+sig)** | 16/16 seed manifests `trust=system-signed`; verify on all enumerated exec paths (`test_loader_signed_exec_path_audit.py`); sunset closed scope 465 (`loader_digest_only_grace=false`, empty allowlist). **Exempt:** `/bin/hello` remains `trust=user` (ADR-0002 gate-corpus fixture, not a system seed) — see § Scope honesty below. |
 | External network | **Gap** | Loopback simulation; flag `false` until Real gate (fixed 2026-06-20) |
 | Release gate | **Partial** | Serial `ok=true` composes gaps above |
 
@@ -38,14 +38,24 @@ Legend matches [`GATE_AUDIT.md`](GATE_AUDIT.md): Real / Partial / Shallow / Hard
 |-----------------------------------|-------|----------------|
 | `has_no_std_enforcement` | `true` | Host `scripts/gate/clan_rt.py` — aligned |
 | `has_external_network` | `false` | Aligned — flip to `true` only when scope-475 external NIC gate passes (`architecture_state_check.py`) |
+| `loader_digest_only_grace` | `false` | Aligned — scope **465** closed; empty `loader_digest_only_allowlist.toml`; seed migration complete |
 | `has_real_hardware_target` | `false` | Aligned with shallow hardware smoke |
+
+## Scope honesty — loader signing inventory
+
+| Inventory | Signed verify at exec | Notes |
+|-----------|----------------------|-------|
+| 16 seed `/bin/*` programs (ADR-0003 migration) | **Yes** — `trust=system-signed`, epoch-460 anchor | Allowlist empty; grace `false` |
+| Pinned loader gate corpus | **Yes** — `loader_signed_exec_integration` | Synthetic fixtures only |
+| `/bin/hello` (`trust=user`) | **No** — intentional exempt | User-trust HW ELF validation fixture; not a system seed. Uses name allowlist + `execute_allowlisted_user_elf`; **not** in scope of ADR-0003 seed migration. Revisit only if `hello` is promoted to `trust=system-signed` (would require ADR amendment + `execute_minimal_user_elf_descriptor` row in Q4 table). |
+| ADR-0002 gate corpus ELFs | **Yes** — separate `signed_elf.rs` / epoch-450 anchor | Distinct from loader exec manifests |
 
 ## No gate yet (design backlog)
 
 These require **new gate design** against real backends, not wiring existing orphans:
 
 1. ~~**Signed ELF (gate corpus)** — ADR-0002~~ **Done**
-2. ~~**Loader signed exec (kernel verifier)** — ADR-0003 PR2 pinned corpus~~ **Done**; seed `/bin/*` migration + allowlist sunset (scope 465) **in progress**
+2. ~~**Loader signed exec (kernel verifier + seed migration)** — ADR-0003~~ **Done** (scope 465 closed)
 3. **External network** — virtio (or NIC) TX/RX to non-loopback peer or test harness
 4. **Production SMP** — AP scheduler under load (fairness/latency thresholds; see preemption soak patterns)
 5. **CI gate** — kernel `ci_gate` invokes host `validation_matrix.py` subset or drops stub

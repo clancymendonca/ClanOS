@@ -98,7 +98,7 @@ Records alternatives considered, rationale, and epoch. **Routine decisions** are
 **Alternatives:** sidecar manifest (Q1-B); reuse epoch-450 anchor (Q2-A); hard cutover / forward-only grandfather (Q3-A/C); host-only verify  
 **Decision:** Extend **`clan-exec-v1`** with optional `sig=ed25519:` and a **distinct** canonical signed body from ADR-0002 `clan-signed-manifest-v1` (shared syntax, different bytes signed). Separate **`trust_anchor_epoch460_loader.toml`** — never epoch-450 gate seed. Trust classes: `trust=system` digest-only **only** on explicit `config/loader_digest_only_allowlist.toml`; `trust=system-signed` requires epoch-460 sig (kernel, fail closed). Sunset: **`sunset_scope = 465`** enforced by `scripts/gate/loader_signing_sunset_check.py` + `architecture_state.toml` `loader_digest_only_grace` — non-empty allowlist after scope 465 fails CI (same hard-deny shape as `has_external_network`).  
 **Rationale:** Closes ADR-0002 deferral without conflating gate-corpus proof with loader trust; public dev seed cannot become loader root; prevents digest-only exception class calcifying like gap-registry stubs.  
-**Consequences:** [`docs/architecture/ADR/ADR-0003-loader-signed-exec-manifests.md`](architecture/ADR/ADR-0003-loader-signed-exec-manifests.md); gate `2.3.0`; seed migration per § Seed migration workflow (next).
+**Consequences:** [`docs/architecture/ADR/ADR-0003-loader-signed-exec-manifests.md`](architecture/ADR/ADR-0003-loader-signed-exec-manifests.md); gate `2.6.0`; seed migration **complete** (scope 465 closed).
 
 ### ADR-0003-seed-migration — Seed `/bin/*` signing rollout (scopes 461–465)
 
@@ -106,7 +106,15 @@ Records alternatives considered, rationale, and epoch. **Routine decisions** are
 **Alternatives:** batch-sign all seed binaries then empty allowlist; one-way signed cutover without digest fallback  
 **Decision:** **One program per commit/PR.** Allowlist is **rollback staging**: on bad sign/manifest, revert to `trust=system` and re-add `name=` to allowlist. Remove from allowlist only after host verify + applicable QEMU gate smokes pass for that binary. Progress = **`len(allowlist)`** countdown to scope 465 — not a single cutover event.  
 **Rationale:** First migration touches live dependencies; staged rollback beats unbootable batch failure.  
-**Consequences:** ADR-0003 § Seed migration workflow; `loader_digest_only_allowlist.toml` header comments.
+**Consequences:** ADR-0003 § Seed migration workflow; `loader_digest_only_allowlist.toml` header comments. **Closed 2026-06-21:** 16/16 signed; scope 465 (`loader_digest_only_grace=false`).
+
+### ADR-0003-hello-exempt — `/bin/hello` outside seed migration inventory
+
+**Status:** accepted (2026-06-21)  
+**Alternatives:** migrate `hello` as 17th seed (`trust=system-signed`); leave undocumented  
+**Decision:** **`/bin/hello` is intentionally exempt** from ADR-0003 seed migration. It remains `trust=user` — a hardware ELF validation fixture on the name allowlist, not an admin system seed. Loader signing inventory documented in `GATE_AUDIT_401_500.md` § Scope honesty.  
+**Rationale:** Seed migration scope was the 16 `trust=system` allowlist programs; `hello` serves ADR-0002 / HW bring-up with a different trust class. Promoting it requires ADR amendment + `execute_minimal_user_elf_descriptor` verify wiring.  
+**Consequences:** Gate audit honesty row; ADR Q4 exempt row unchanged until deliberate revisit.
 
 ---
 
