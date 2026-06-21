@@ -776,7 +776,7 @@ fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), Stor
         ("/bin/chdirprobe.elf", sample_elf.as_str()),
         (
             "/bin/pipeprobe",
-            "clan-exec-v1\nname=pipeprobe\nkind=elf64-image\nentry=0x400000\nimage=/bin/pipeprobe.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=HW pipe probe ELF fixture",
+            include_str!("../../config/loader_signed_seed/pipeprobe.signed.manifest"),
         ),
         ("/bin/pipeprobe.elf", sample_elf.as_str()),
         ("/bin/libc_stub.elf", sample_elf.as_str()),

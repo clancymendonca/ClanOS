@@ -6,12 +6,6 @@ version = "1.0.0"
 # Rollback: revert manifest to trust=system and re-add name here. Empty list = migration complete (scope 465).
 
 [[programs]]
-name = "chdirprobe"
-
-[[programs]]
-name = "pipeprobe"
-
-[[programs]]
 name = "mendo"
 
 [[programs]]

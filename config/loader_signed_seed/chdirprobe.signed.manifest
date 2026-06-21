@@ -1,0 +1,11 @@
+clan-exec-v1
+name=chdirprobe
+kind=elf64-image
+entry=0x400000
+image=/bin/chdirprobe.elf
+requires=execute
+digest=sha256:0d051143803d91d064935f7191b3d7c753c5538a2992b46900e009cc0aab806b
+trust=system-signed
+owner=admin
+description=HW chdir/getcwd probe ELF fixture
+sig=ed25519:6270dd1732e3adcb82bf3cb22d46f472a18833e206096d09f10cae42b55e1bdf35f2cbff84da531ba7c6b15c5b6d16c07356227388e143b922bfe28c3e227805
