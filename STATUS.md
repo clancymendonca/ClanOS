@@ -6,7 +6,7 @@
 
 **Last verified locally (2026-06-21):** ADR-0003 PR2 — `loader_signed_exec_integration` 12/12 in QEMU + host loader/signed-elf self-tests; gate `2.3.0`.
 
-## Snapshot (Functional OS — scope 400, QEMU gate v2.2.0)
+## Snapshot (Functional OS — scope 400, QEMU gate v2.3.0)
 
 - **Validation gate:** `kernel/src/validation_gate.rs` (`VALIDATION_GATE_VERSION = 2.3.0`)
 - **ADR-0002 signed ELF (epoch 450):** kernel verifier + in-QEMU negative gauntlet (`signed_elf_integration`; 9 cases)
@@ -19,7 +19,7 @@
 - gap_registry: 0 open, 350 addressed — see [`docs/GAP_AUDIT.md`](docs/GAP_AUDIT.md) (58% overclaimed baseline; audit OK = baseline held, not fully substantiated)
 - threat nodes open: 0
 - release_scorecard: [`RELEASE_SCORECARD.md`](docs/RELEASE_SCORECARD.md)
-- **ADR-0003 loader signing (epoch 460):** PR1 host + PR2 kernel pinned corpus done; seed migration + allowlist sunset (465) next
+- **ADR-0003 (epoch 460):** verification epoch **done** (PR1 host, PR2 kernel, anchor guard). **Next:** seed `/bin/*` migration — one binary per PR, allowlist as rollback staging (16 → 0 by scope 465); see ADR-0003 § Seed migration workflow
 - Track 1 doc migration: **landed** (`8579e17`)
 - **Q3 sunset (locked):** `sunset_scope=465`, `implementation_scope=460`; CI fails if `current_scope>=465` with non-empty allowlist
 

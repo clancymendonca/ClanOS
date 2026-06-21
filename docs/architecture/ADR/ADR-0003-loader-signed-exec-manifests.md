@@ -84,6 +84,22 @@ Same discipline as `architecture_state_check.py` hard-denying `has_external_netw
 
 **Migration target for scope 460–464:** shrink allowlist by signing seed programs (`trust=system-signed`); desktop/functional gates must pass with mixed inventory during grace. **Scope 465:** allowlist must be empty or CI fails — same shape as gap-registry `milestone-150-stub` prevention, but with a numeric gate trigger.
 
+#### Seed migration workflow (locked — scopes 461–465)
+
+Verification machinery (PR1–PR2, anchor guard) is proven on **pinned synthetic corpora**. Seed migration is the first touch of **real `/bin/*` binaries** the system depends on. **Not a batch cutover.**
+
+| Rule | Decision |
+|------|----------|
+| Unit of work | **One program per commit/PR** — sign manifest, run gates, shrink allowlist by one `name=` |
+| Rollback | **Not a one-way door.** Wrong sig, bad `kind`/`entry`, or typo → revert manifest to `trust=system` (digest-only) and **re-add** `name=` to `loader_digest_only_allowlist.toml` in the same revert commit. Digest-only path remains available while `loader_digest_only_grace = true`. |
+| Allowlist role | **Staging safety net**, not permanent exception bucket. A name stays on the allowlist until its signed manifest is confirmed working; only then remove it. |
+| Gate bar before shrink | Host: `test_loader_signed_exec.py` + `loader_signed_exec.py` on that manifest bytes. Matrix: `run.py --gate` smokes covering the program (e.g. `functional`, `desktop`, `dynamic_runtime` as applicable). QEMU integration already proves verifier; per-binary PR must prove **that binary** still runs. |
+| Progress metric | **`len(allowlist)`** — sunset scope 465 is a countdown (16 → 0 today), not a single event. Track in commit messages / scope checklist. |
+| Batch signing | **Rejected** — do not empty allowlist in one commit; defeats rollback and obscures which binary broke gates. |
+| Re-add to allowlist | Permitted during scopes 461–464 for rollback only; new programs after 460 still may not join allowlist (Q3). |
+
+Suggested order (lowest gate blast radius first): shell builtins (`echo`, `time`, …) → demos (`demo-hello`, `clan-info`) → probes → desktop paths (`mendo`, `ring3-io-demo`, …). Exact order is implementation choice; **one-at-a-time invariant is not.**
+
 **Rejected:** hard cutover in one commit without allowlist (A) — breaks gates. **Rejected:** forward-only permanent digest tier (C) — calcifies exception class. **Rejected:** grace without enforced sunset (B alone).
 
 ---
@@ -179,5 +195,6 @@ Build order — separate PRs:
 2. ~~Q5 wire format + golden bytes + `trust_anchor_epoch460_loader.toml`~~ **Done (PR1 host)**
 3. ~~Host sign/verify tooling + fixtures + `loader_signing_sunset_check.py`~~ **Done (PR1 host)**
 4. ~~Kernel verifier hook in `program_loader` + negative QEMU gauntlet~~ **Done (PR2)** — `loader_signed_exec.rs`, `loader_signed_exec_integration.rs`, `VALIDATION_GATE_VERSION` 2.3.0
-5. Seed corpus migration (shrink allowlist) + gate/version bump + threat node + audit update
+4b. ~~Anchor embed guard~~ **Done** — `test_anchor_embed_match.py`
+5. **Seed migration (next)** — one program per PR; see § Seed migration workflow; shrink allowlist only after gate green
 6. Scope **465**: allowlist empty, `loader_digest_only_grace = false`, sunset check green
