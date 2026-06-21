@@ -1,0 +1,8 @@
+clan-exec-v1
+name=echo
+kind=builtin-alias
+entry=echo
+requires=execute
+trust=system
+owner=admin
+description=Print arguments

@@ -1,0 +1,10 @@
+clan-exec-v1
+name=echo
+kind=builtin-alias
+entry=echo
+requires=execute
+digest=sha256:bf2db6873e13796a0d4e8e9fb6365a61611a763f712feec6759531bfd8c9b4ce
+trust=system-signed
+owner=admin
+description=Print arguments
+sig=ed25519:461e46e78df3b3e05093dadd2e879650b90f82cd99766f5a8b4dc0f6792a98ac8b4dedfbd91f15d5c9f217df7621b66781cbe988cb594fb294aaf7739761c70b

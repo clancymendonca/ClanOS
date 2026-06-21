@@ -107,10 +107,10 @@ def main() -> int:
             file=sys.stderr,
         )
         failures += 1
-    elif len(names) != 15:
+    elif len(names) != 14:
         print(
             "test_loader_seed_migration_rollback: FAIL allowlist count "
-            f"{len(names)} expected 15 after demo-hello migration",
+            f"{len(names)} expected 14 after demo-hello and echo migrations",
             file=sys.stderr,
         )
         failures += 1
