@@ -4,7 +4,7 @@
 
 **GitHub Actions is not currently substantiating pushes.** Run [27895509720](https://github.com/clancymendonca/ClanOS/actions/runs/27895509720) (tip `e4939f4`) failed before any job steps: account billing lock — workflow did not execute (`cargo fmt`, `validation_matrix.py`, QEMU). Re-run CI after billing is restored; do not treat a green local matrix as CI proof until then.
 
-**Last verified locally (2026-06-21):** scope-468 — execution-path verify audit + `ring3-io-demo-ext2` signed; gate `2.6.0` (**8 signed**, **8 digest-only remaining** of 16 seeds). **`/ext2/` image path = same ELF-byte digest** (not a third variant).
+**Last verified locally (2026-06-21):** seed migration **complete** — 16/16 signed; allowlist empty; gate `2.6.0`.
 
 ## Snapshot (Functional OS — scope 400, QEMU gate v2.6.0)
 

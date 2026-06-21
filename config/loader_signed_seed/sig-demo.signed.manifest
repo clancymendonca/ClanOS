@@ -1,0 +1,11 @@
+clan-exec-v1
+name=sig-demo
+kind=elf64-image
+entry=0x400000
+image=/bin/sig-demo.elf
+requires=execute
+digest=sha256:2d73787611ea07de12a991ec8da1b95db191ce877da6604b6077aad00d1a1422
+trust=system-signed
+owner=admin
+description=Signal demo stub
+sig=ed25519:b495164044b61a23bb3558dcd7b98ecf0c471f1e491881c7f8acf83d1c6132f78ac0ca6b23bfcc95b5d65116aaeabe40cb0a39f882799502924ccf61cc1d5b03

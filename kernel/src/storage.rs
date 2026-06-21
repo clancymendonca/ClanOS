@@ -812,8 +812,9 @@ fn seed_bootstrap_files<D: BlockDevice>(fs: &mut SimpleFs<D>) -> Result<(), Stor
         ("/bin/hello-alloc.elf", hello_alloc_elf.as_str()),
         (
             "/bin/sig-demo",
-            "clan-exec-v1\nname=sig-demo\nkind=elf64-image\nentry=0x400000\nimage=/bin/sig-demo.elf\nrequires=execute\ntrust=system\nowner=admin\ndescription=Signal demo stub",
+            include_str!("../../config/loader_signed_seed/sig-demo.signed.manifest"),
         ),
+        ("/bin/sig-demo.elf", sig_demo_elf.as_str()),
         (
             "/bin/ring3-io-demo-ext2",
             include_str!("../../config/loader_signed_seed/ring3-io-demo-ext2.signed.manifest"),
